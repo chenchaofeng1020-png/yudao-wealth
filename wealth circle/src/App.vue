@@ -92,11 +92,10 @@ import PostDetailModal from './components/modals/PostDetailModal.vue';
 
 <style scoped>
 /* 整站留白底色：大屏时主体居中，两侧露出浅灰 */
+/* 注意：介绍页/会员页是可滚动的长页面，固定视口只由 .community-shell 自己负责 */
 .app-root {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
   background-color: #f1f5f9;
 }
 

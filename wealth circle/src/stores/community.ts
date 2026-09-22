@@ -1,4 +1,4 @@
-import { reactive, computed, ref } from 'vue';
+import { reactive, computed, ref, watch } from 'vue';
 import { User, Post, Column, Course, LiveSession, MemberRecord, UserRole, TencentMeetingRecord } from '../types';
 import { currentUserMock, demoVipUserMock, demoGuestUserMock, initialPostsMock, columnsMock, coursesMock, liveSessionsMock, membersMock, tencentMeetingsMock } from '../mock/data';
 
@@ -54,6 +54,44 @@ export const appState = reactive({
   askTargetName: '' as string,
   askTargetAvatar: '' as string,
 });
+
+// ===== 会话持久化：登录/退出状态在刷新后保持 =====
+// 场景：退出登录回到介绍页后，刷新页面应停留在介绍页，而不是"自动登录"回到星球
+const SESSION_STORAGE_KEY = 'wealth-circle-session';
+
+try {
+  const savedSession = localStorage.getItem(SESSION_STORAGE_KEY);
+  if (savedSession) {
+    const saved = JSON.parse(savedSession) as Partial<{
+      appFlowState: AppFlowState;
+      isLoggedIn: boolean;
+      isVipMember: boolean;
+      currentPerspective: 'founder' | 'vip' | 'guest';
+      user: User;
+    }>;
+    if (saved.appFlowState) appState.appFlowState = saved.appFlowState;
+    if (typeof saved.isLoggedIn === 'boolean') appState.isLoggedIn = saved.isLoggedIn;
+    if (typeof saved.isVipMember === 'boolean') appState.isVipMember = saved.isVipMember;
+    if (saved.currentPerspective) appState.currentPerspective = saved.currentPerspective;
+    if (saved.user) Object.assign(appState.user, saved.user);
+  }
+} catch {
+  // 本地存档损坏时忽略，走默认流程
+}
+
+watch(
+  () => ({
+    appFlowState: appState.appFlowState,
+    isLoggedIn: appState.isLoggedIn,
+    isVipMember: appState.isVipMember,
+    currentPerspective: appState.currentPerspective,
+    user: appState.user,
+  }),
+  snapshot => {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(snapshot));
+  },
+  { deep: true },
+);
 
 // 计算属性：当前用户是否具备管理权限（星主或合伙人）
 export const isManager = computed(() => {
