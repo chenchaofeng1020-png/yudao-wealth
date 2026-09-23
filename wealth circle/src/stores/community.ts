@@ -194,9 +194,11 @@ export const actions = {
       actions.showToast('已切换至：星主/管理员视角（具备后台与发布特权）');
     } else if (role === 'vip') {
       Object.assign(appState.user, demoVipUserMock);
+      appState.isVipMember = true;
       actions.showToast('已切换至：年度VIP会员视角');
     } else {
       Object.assign(appState.user, demoGuestUserMock);
+      appState.isVipMember = false;
       actions.showToast('已切换至：注册用户视角（未开通会员，评论/提问/发布等操作将受限）');
     }
   },

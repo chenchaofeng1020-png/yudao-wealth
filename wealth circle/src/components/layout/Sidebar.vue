@@ -78,13 +78,13 @@
       </ul>
     </nav>
 
-    <!-- VIP Entry (non-founder perspectives) -->
+    <!-- VIP Entry (仅未开通会员的星友可见；会员及以上不展示) -->
     <button
-      v-if="appState.currentPerspective !== 'founder'"
+      v-if="!appState.isVipMember && ['member', 'guest'].includes(appState.user.role)"
       class="btn-sidebar-vip"
       @click="openVipModal"
     >
-      {{ appState.currentPerspective === 'guest' ? '开通会员' : '会员权益' }}
+      开通会员
     </button>
 
     <!-- User Entry with Upward Popover Menu (moved from top header) -->

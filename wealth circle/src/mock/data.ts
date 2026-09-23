@@ -42,6 +42,7 @@ export const currentUserMock: User = {
   bio: '20年二级市场投研老兵，专注全天候大类资产配置与高安全边际投资。财不外露，静水流深。',
   joinedAt: '2024-01-01',
   vipExpireAt: '2099-12-31',
+  phone: '13901390139',
   followingCount: 18,
   followersCount: 14280,
   points: 8640,
@@ -56,6 +57,7 @@ export const demoVipUserMock: User = {
   bio: '实体创业者，长期价值定投践行者，在不确定性中寻找确定性复利。',
   joinedAt: '2024-03-15',
   vipExpireAt: '2027-03-15',
+  phone: '13812345678',
   followingCount: 35,
   followersCount: 129,
   points: 1250,
@@ -70,10 +72,45 @@ export const demoGuestUserMock: User = {
   bio: '新加入「财不外露」星球，正在开启资产配置进阶之旅。',
   joinedAt: '2026-09-20',
   vipExpireAt: '未开通',
+  phone: '15966667777',
   followingCount: 0,
   followersCount: 0,
   points: 50,
 };
+
+// 会员权益文案（与需求文档 3.1 权益文案表一致，供介绍页/开通弹窗/个人中心复用）
+export const membershipBenefits = [
+  {
+    name: '交易追踪',
+    desc: '聚焦港美股重点个股，跟踪基本面、预期与资金风向，辅助识别阶段性机会。',
+    tags: ['个股资讯', '公司财报', '机构持仓'],
+  },
+  {
+    name: '市场资讯',
+    desc: '聚焦宏观环境、政策变化、机构观点与市场主线，理解资产价格核心逻辑。',
+    tags: ['机构观点', '宏观市场', '宏观周报'],
+  },
+  {
+    name: '理财资讯',
+    desc: '围绕基金、债券、港股打新、结构化产品等资产，拆解收益来源与风险边界。',
+    tags: ['港股打新', '基金组合', '债券优选'],
+  },
+  {
+    name: '话题研究',
+    desc: '每周深度解析财经热点、产业周期、宏观趋势、金融产品与投资方法论，形成系统投资认知。',
+    tags: [],
+  },
+  {
+    name: '会员直播',
+    desc: '每周会员直播，复盘市场行情、解析宏观主线、板块机会、重点个股，分享配置思路与重点机会。',
+    tags: [],
+  },
+  {
+    name: '星球专栏',
+    desc: '系统梳理经济、金融、投资、理财与资产配置知识，搭建从基础认知到实战应用的投资理财框架。',
+    tags: [],
+  },
+];
 
 export const initialPostsMock: Post[] = [
   {

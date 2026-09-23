@@ -9,6 +9,7 @@ export interface User {
   bio: string;
   joinedAt: string;
   vipExpireAt?: string;
+  phone?: string;
   followingCount: number;
   followersCount: number;
   points: number;
