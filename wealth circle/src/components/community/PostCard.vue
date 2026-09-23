@@ -50,17 +50,17 @@
 
     <!-- Post Content Container -->
     <div class="post-content-container">
-      <div :class="['post-text', { 'vip-locked-blur': isLockedForUser }]">
-        <p 
-          v-for="(paragraph, idx) in formattedParagraphs" 
-          :key="idx" 
+      <div ref="postTextRef" :class="['post-text', { 'vip-locked-blur': isLockedForUser, 'text-collapsed': !isExpanded }]">
+        <p
+          v-for="(paragraph, idx) in formattedParagraphs"
+          :key="idx"
           class="content-p"
           v-html="formatMarkdown(paragraph)"
         ></p>
       </div>
 
-      <!-- Expand / Collapse Button -->
-      <div v-if="!hideExpand" class="expand-action-row">
+      <!-- Expand / Collapse Button（正文超过折叠行数时才显示） -->
+      <div v-if="!hideExpand && contentOverflow" class="expand-action-row">
         <span class="expand-btn" @click="isExpanded = !isExpanded">
           {{ isExpanded ? '收起全部' : '展开全部' }}
         </span>
@@ -140,7 +140,7 @@
 
       <!-- Right: 查看详情 > -->
       <div v-if="showDetailLink" class="action-bar-right">
-        <span class="detail-link" @click="actions.openPostDetail(post.id)">
+        <span class="detail-link" @click="handleDetailClick">
           查看详情
           <svg class="detail-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 6 15 12 9 18"></polyline>
@@ -163,10 +163,10 @@
       </div>
     </div>
 
-    <!-- Inline Comment Drawer (默认展示) -->
+    <!-- Inline Comment Drawer（评论列表默认展示，输入框默认收起） -->
     <div class="comment-drawer">
-      <!-- Input Row -->
-      <div class="comment-input-row">
+      <!-- Input Row（默认收起，点击"讨论"按钮展开） -->
+      <div v-show="isCommentInputVisible" class="comment-input-row">
         <input 
           ref="commentInputRef"
           type="text" 
@@ -236,6 +236,15 @@ const commentInputRef = ref<HTMLInputElement>();
 const commentsListRef = ref<HTMLElement>();
 const commentsExpanded = ref(false);
 const commentsOverflow = ref(false);
+const postTextRef = ref<HTMLElement>();
+const contentOverflow = ref(false);
+
+// 帖子正文是否超过折叠行数（只在收起态测量一次，超出才显示展开按钮）
+const checkContentOverflow = () => {
+  if (contentOverflow.value || isExpanded.value) return;
+  const el = postTextRef.value;
+  contentOverflow.value = !!el && el.scrollHeight > el.clientHeight + 2;
+};
 
 // 评论列表是否超出固定高度（超出才显示 展开/收起）
 const checkCommentsOverflow = () => {
@@ -246,7 +255,10 @@ const checkCommentsOverflow = () => {
 watch([() => props.post.comments.length, commentsExpanded], () => nextTick(checkCommentsOverflow));
 
 const focusCommentInput = () => {
-  commentInputRef.value?.focus();
+  isCommentInputVisible.value = !isCommentInputVisible.value;
+  if (isCommentInputVisible.value) {
+    nextTick(() => commentInputRef.value?.focus());
+  }
 };
 
 const formattedParagraphs = computed(() => {
@@ -268,6 +280,18 @@ const isLockedForUser = computed(() => {
 
 const isGuestUser = computed(() => appState.user.role === 'guest');
 
+// 评论输入框默认收起，点击"讨论"按钮展开/收起
+const isCommentInputVisible = ref(false);
+
+// 查看详情：非会员视角引导开通会员，其余正常打开帖子详情
+const handleDetailClick = () => {
+  if (isGuestUser.value) {
+    appState.isVipJoinModalOpen = true;
+    return;
+  }
+  actions.openPostDetail(props.post.id);
+};
+
 // ---- 更多操作下拉菜单 ----
 const menuOpen = ref(false);
 
@@ -280,7 +304,10 @@ const canEditDelete = computed(() => appState.user.role === 'founder' || isCreat
 const onDocClick = () => { menuOpen.value = false; };
 onMounted(() => {
   document.addEventListener('click', onDocClick);
-  nextTick(checkCommentsOverflow);
+  nextTick(() => {
+    checkCommentsOverflow();
+    checkContentOverflow();
+  });
 });
 onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
 
@@ -522,6 +549,14 @@ const submitComment = () => {
   font-size: 14px;
   color: #334155;
   line-height: 1.68;
+}
+
+/* 收起状态：正文按宽度自适应折叠到固定行数，展开后显示全部 */
+.post-text.text-collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
 
 .content-p {
@@ -777,11 +812,13 @@ const submitComment = () => {
 }
 
 .comment-input-row input:focus {
-  border-color: #0284c7;
+  border-color: #10b981;
+  /* 只保留 1px 边框线，去掉全局的绿色光晕扩散效果 */
+  box-shadow: none;
 }
 
 .btn-comment-send {
-  background: #0ea5e9;
+  background: #10b981;
   color: #ffffff;
   border: none;
   padding: 6px 16px;
@@ -789,6 +826,10 @@ const submitComment = () => {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.btn-comment-send:hover {
+  background: #059669;
 }
 
 .btn-comment-send:disabled {

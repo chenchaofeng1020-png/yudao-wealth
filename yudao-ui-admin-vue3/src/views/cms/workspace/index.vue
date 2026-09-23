@@ -50,7 +50,7 @@
         </el-button>
         <el-button plain type="primary" @click="openCategoryModal">
           <Icon class="mr-5px" icon="ep:setting" />
-          分类设置
+          菜单设置
         </el-button>
       </el-form-item>
     </el-form>
@@ -79,11 +79,20 @@
           <div class="content-plain" @click="openDetail(scope.row)">{{ plainContent(scope.row) }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="分类" width="150px">
+      <el-table-column label="菜单" width="110px">
         <template #default="scope">
           <div class="category-cell">
-            <div v-for="pair in categoryPairs(scope.row)" :key="pair" class="category-line">
-              {{ pair }}
+            <div v-for="menu in postMenus(scope.row)" :key="menu" class="category-line">
+              {{ menu }}
+            </div>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="标签" width="120px">
+        <template #default="scope">
+          <div class="category-cell">
+            <div v-for="tag in postTags(scope.row)" :key="tag" class="category-line">
+              {{ tag }}
             </div>
           </div>
         </template>
@@ -150,15 +159,15 @@
   <!-- 内容详情弹窗（与 C 端帖子详情一致的展示样式，只读） -->
   <PostDetailModal v-if="detailPost" :post="detailPost" @close="detailPost = null" />
 
-  <!-- 分类设置弹窗 -->
-  <el-dialog v-model="categoryModalVisible" title="分类设置" width="640px">
+  <!-- 菜单设置弹窗 -->
+  <el-dialog v-model="categoryModalVisible" title="菜单设置" width="640px">
     <div class="cat-tip">
-      一级分类展示在客户端资讯页顶部分类栏；二级分类以话题形式展示在内容标题前和底部。
+      菜单展示在客户端资讯页顶部菜单栏；标签以话题形式展示在内容标题前和底部。
     </div>
     <div v-for="cat in draftCategories" :key="cat.id" class="cat-block">
       <div class="cat-head">
         <el-input v-model="cat.name" class="!w-160px" />
-        <span class="cat-count">{{ cat.children.length }} 个二级分类</span>
+        <span class="cat-count">{{ cat.children.length }} 个标签</span>
         <el-button link type="danger" @click="removeCategory(cat)">删除</el-button>
       </div>
       <div class="cat-children">
@@ -176,11 +185,11 @@
           <el-input
             v-model="newChildNames[cat.id]"
             class="!w-110px"
-            placeholder="二级名称"
+            placeholder="标签名称"
             size="small"
             @keyup.enter="addChild(cat)"
           />
-          <el-button size="small" @click="addChild(cat)">添加</el-button>
+          <el-button size="small" @click="addChild(cat)">添加标签</el-button>
         </div>
       </div>
     </div>
@@ -188,10 +197,10 @@
       <el-input
         v-model="newCategoryName"
         class="!w-160px"
-        placeholder="一级分类名称"
+        placeholder="菜单名称"
         @keyup.enter="addCategory"
       />
-      <el-button plain type="primary" @click="addCategory">添加一级分类</el-button>
+      <el-button plain type="primary" @click="addCategory">添加菜单</el-button>
     </div>
     <template #footer>
       <el-button @click="categoryModalVisible = false">取消</el-button>
@@ -222,7 +231,7 @@ const posts = reactive<AdminPost[]>(
   }))
 )
 
-// ===== 分类（一级=资讯页顶部分类栏；二级=内容标题前/底部话题标签） =====
+// ===== 菜单（一级=资讯页顶部菜单栏；二级=内容标题前/底部话题标签） =====
 type Category = { id: string; name: string; children: { id: string; name: string }[] }
 
 const initialCategories: Category[] = [
@@ -266,19 +275,28 @@ const initialCategories: Category[] = [
 
 const categories = reactive<Category[]>(initialCategories.map(c => ({ ...c, children: [...c.children] })))
 
-// 帖子归属：二级标签命中某个一级分类即归属，否则为综合讨论
+// 帖子归属：标签命中某个菜单即归属，否则为综合讨论
 const postInCategory = (p: Post, cat?: Category) =>
   !!cat && cat.children.some(ch => p.tags?.includes(ch.name))
 
-// 分类列：一级-二级（多个二级分多行展示，未归类为综合讨论）
-const categoryPairs = (p: Post): string[] => {
-  const pairs: string[] = []
+// 菜单列：命中的菜单名（未归类为综合讨论）
+const postMenus = (p: Post): string[] => {
+  const menus: string[] = []
+  categories.forEach(c => {
+    if (c.children.some(ch => p.tags?.includes(ch.name))) menus.push(c.name)
+  })
+  return menus.length ? menus : ['综合讨论']
+}
+
+// 标签列：命中的标签名
+const postTags = (p: Post): string[] => {
+  const tags: string[] = []
   categories.forEach(c => {
     c.children.forEach(ch => {
-      if (p.tags?.includes(ch.name)) pairs.push(`${c.name}-${ch.name}`)
+      if (p.tags?.includes(ch.name)) tags.push(ch.name)
     })
   })
-  return pairs.length ? pairs : ['综合讨论']
+  return tags
 }
 
 // 操作列"更多"下拉
@@ -382,7 +400,7 @@ const allComments = (p: Post): (Comment | FeaturedComment)[] => {
   return list
 }
 
-// ===== 分类设置弹窗（弹窗内编辑草稿，保存后才生效） =====
+// ===== 菜单设置弹窗（弹窗内编辑草稿，保存后才生效） =====
 const categoryModalVisible = ref(false)
 const draftCategories = ref<Category[]>([])
 const newCategoryName = ref('')
@@ -403,31 +421,31 @@ const saveCategories = () => {
   if (queryParams.type && queryParams.type !== 'general' && !categories.some(c => c.id === queryParams.type)) {
     queryParams.type = ''
   }
-  message.success('分类设置已保存')
+  message.success('菜单设置已保存')
   categoryModalVisible.value = false
 }
 
 const addCategory = () => {
   const name = newCategoryName.value.trim()
   if (!name) {
-    message.warning('请输入一级分类名称')
+    message.warning('请输入菜单名称')
     return
   }
   if (draftCategories.value.some(c => c.name === name)) {
-    message.warning('一级分类已存在')
+    message.warning('菜单已存在')
     return
   }
   draftCategories.value.push({ id: nextCategoryId(), name, children: [] })
   newCategoryName.value = ''
-  message.success(`已添加一级分类：${name}`)
+  message.success(`已添加菜单：${name}`)
 }
 
 const removeCategory = (cat: Category) => {
   message
-    .confirm(`删除一级分类「${cat.name}」及其下 ${cat.children.length} 个二级分类？`, '删除确认')
+    .confirm(`删除菜单「${cat.name}」及其下 ${cat.children.length} 个标签？`, '删除确认')
     .then(() => {
       draftCategories.value = draftCategories.value.filter(c => c.id !== cat.id)
-      message.success(`已删除一级分类：${cat.name}`)
+      message.success(`已删除菜单：${cat.name}`)
     })
     .catch(() => {})
 }
@@ -435,21 +453,21 @@ const removeCategory = (cat: Category) => {
 const addChild = (cat: Category) => {
   const name = (newChildNames[cat.id] || '').trim()
   if (!name) {
-    message.warning('请输入二级分类名称')
+    message.warning('请输入标签名称')
     return
   }
   if (cat.children.some(ch => ch.name === name)) {
-    message.warning('该二级分类已存在')
+    message.warning('该标签已存在')
     return
   }
   cat.children.push({ id: nextCategoryId(), name })
   newChildNames[cat.id] = ''
-  message.success(`已添加二级分类：${name}`)
+  message.success(`已添加标签：${name}`)
 }
 
 const removeChild = (cat: Category, child: { id: string; name: string }) => {
   cat.children = cat.children.filter(ch => ch.id !== child.id)
-  message.success(`已删除二级分类：${child.name}`)
+  message.success(`已删除标签：${child.name}`)
 }
 
 // ===== 内容操作 =====
@@ -507,7 +525,7 @@ const openDetail = (p: AdminPost) => {
   object-fit: cover;
 }
 
-/* 分类列：最多两行，超出省略 */
+/* 菜单/标签列：最多两行，超出省略 */
 .category-cell {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -539,7 +557,7 @@ const openDetail = (p: AdminPost) => {
   color: var(--el-color-primary);
 }
 
-/* 分类设置弹窗 */
+/* 菜单设置弹窗 */
 .cat-tip {
   font-size: 12px;
   color: var(--el-text-color-secondary);

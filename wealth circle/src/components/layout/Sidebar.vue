@@ -255,7 +255,7 @@ onUnmounted(() => {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
 .nav-item {
@@ -421,7 +421,7 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 700;
   padding: 7px 12px;
-  border-radius: var(--radius-full);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;

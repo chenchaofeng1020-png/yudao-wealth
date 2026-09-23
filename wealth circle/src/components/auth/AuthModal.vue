@@ -169,23 +169,22 @@ const handleSubmit = () => {
 
 .btn-close {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 14px;
+  right: 14px;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: var(--bg-subtle);
+  background: transparent;
   color: #64748b;
-  font-size: 20px;
+  font-size: 24px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 1px solid var(--border-light);
+  border: none;
 }
 .btn-close:hover {
-  background: #e2e8f0;
+  background: transparent;
   color: var(--primary-navy);
 }
 

@@ -11,8 +11,8 @@
 
       <div class="circle-card-content">
         <h3 class="circle-brand-name">财不外露</h3>
-        <p class="circle-intro-text">
-          这里是专注全球资产配置与家庭理财实践的成长基地，由一群深耕资管多年的老伙计打造。我们不堆{{ isIntroExpanded ? '砌晦涩概念，只输出穿越周期的实战框架与底仓逻辑。提供全方位大类资产配置、公募基金优选、固收与海外宽基配置方案，陪伴每一位星友稳健成长。' : '...' }}
+        <p class="circle-intro-text" :class="{ collapsed: !isIntroExpanded }">
+          这里是专注全球资产配置与家庭理财实践的成长基地，由一群深耕资管多年的老伙计打造。我们不堆砌晦涩概念，只输出穿越周期的实战框架与底仓逻辑。提供全方位大类资产配置、公募基金优选、固收与海外宽基配置方案，陪伴每一位星友稳健成长。
         </p>
         <button class="btn-expand-intro" @click="isIntroExpanded = !isIntroExpanded">
           {{ isIntroExpanded ? '收起' : '展开' }}
@@ -272,6 +272,14 @@ const quickFilterTag = (tag: string) => {
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 6px;
+}
+
+/* 收起状态：按宽度自适应截断到 3 行，省略号位置随卡片宽度自动变化 */
+.circle-intro-text.collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
 .btn-expand-intro {

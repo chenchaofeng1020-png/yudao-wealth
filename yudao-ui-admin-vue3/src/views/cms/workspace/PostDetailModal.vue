@@ -97,9 +97,9 @@
             </div>
           </div>
 
-          <!-- Likers & Featured Comment -->
-          <div v-if="(post.likers && post.likers.length) || post.featuredComment" class="post-feedback-box">
-            <div v-if="post.likers && post.likers.length" class="likers-row">
+          <!-- Likers -->
+          <div v-if="post.likers && post.likers.length" class="post-feedback-box">
+            <div class="likers-row">
               <span class="likers-list">
                 <template v-for="(liker, idx) in post.likers" :key="liker">
                   <span class="liker-name">{{ liker }}</span>
@@ -107,18 +107,6 @@
                 </template>
               </span>
               <span class="likers-count-suffix"> 等 {{ post.likersCount || post.likes }}人觉得很赞</span>
-            </div>
-
-            <div v-if="post.featuredComment" class="featured-comment-box">
-              <div class="fc-text-line">
-                <span class="fc-author">{{ post.featuredComment.author.name }}</span>
-                <span class="fc-colon">：</span>
-                <span class="fc-body">{{ post.featuredComment.content }}</span>
-              </div>
-              <div class="fc-meta-row">
-                <span class="fc-time">{{ post.featuredComment.createdAt }}</span>
-                <span class="fc-time">👍 {{ post.featuredComment.likes ?? 0 }}</span>
-              </div>
             </div>
           </div>
 
@@ -131,7 +119,10 @@
                 <div class="comment-body">
                   <div class="comment-header">
                     <span class="comment-name">{{ c.author.name }}</span>
-                    <span class="comment-time">{{ c.createdAt }}</span>
+                    <div class="comment-header-right">
+                      <span class="comment-time">{{ c.createdAt }}</span>
+                      <button class="comment-delete-btn" title="删除该评论" @click="handleDeleteComment(c)">删除</button>
+                    </div>
                   </div>
                   <p class="comment-text">{{ c.content }}</p>
                   <div class="comment-likes">👍 {{ c.likes ?? 0 }}</div>
@@ -148,10 +139,26 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
-import { Post } from '../../types'
+import { Post, Comment } from '../../types'
+import { useMessage } from '@/hooks/web/useMessage'
 
 const props = defineProps<{ post: Post }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
+
+const message = useMessage()
+
+// 评论治理：仅删除，不提供回复/精选等操作
+const handleDeleteComment = (c: Comment) => {
+  message
+    .confirm('是否确认删除该评论？删除后客户端将同步移除', '删除确认')
+    .then(() => {
+      const idx = props.post.comments.findIndex(item => item.id === c.id)
+      if (idx > -1) props.post.comments.splice(idx, 1)
+      if (props.post.commentsCount > 0) props.post.commentsCount--
+      message.success('已删除该评论')
+    })
+    .catch(() => {})
+}
 
 const formattedParagraphs = computed(() => {
   return props.post.content.split('\n').filter(p => p.trim())
@@ -459,7 +466,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   justify-content: space-between;
   padding-top: 10px;
   margin-top: 10px;
-  border-top: 1px dashed #e2e8f0;
 }
 
 .action-bar-left {
@@ -505,44 +511,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   margin-left: 2px;
 }
 
-.featured-comment-box {
-  background: #f8fafc;
-  border-radius: 6px;
-  padding: 10px 14px;
-  border: 1px solid #f1f5f9;
-}
-
-.fc-text-line {
-  font-size: 13.5px;
-  line-height: 1.65;
-  color: #334155;
-}
-
-.fc-author {
-  font-weight: 700;
-  color: #d97706;
-}
-
-.fc-colon {
-  color: #475569;
-}
-
-.fc-body {
-  color: #334155;
-}
-
-.fc-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 6px;
-}
-
-.fc-time {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
 /* Comments（只读） */
 .comment-drawer {
   margin-top: 14px;
@@ -581,8 +549,28 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 .comment-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 12px;
   margin-bottom: 2px;
+}
+
+.comment-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-delete-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+.comment-delete-btn:hover {
+  color: #dc2626;
 }
 
 .comment-name {
