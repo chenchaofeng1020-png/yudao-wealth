@@ -28,7 +28,6 @@
         @click="actions.setFeedFilter('wealth_news')"
       >
         理财资讯
-        <span class="tab-badge-dot"></span>
       </button>
       <button 
         :class="['tab-pill', { active: appState.feedFilter === 'topic_research' }]"
@@ -38,10 +37,10 @@
       </button>
     </div>
 
-    <!-- 4. Pinned Notices Card -->
+    <!-- 4. Pinned Notices Card（点击打开对应主题详情，与帖子卡片「查看详情」一致） -->
     <div class="pinned-notices-card">
       <!-- Notice 1 -->
-      <div class="notice-row" @click="actions.showToast('正在打开9.17会员直播复盘...')">
+      <div class="notice-row" @click="actions.openPostDetail('post-pin-1')">
         <span class="pin-tag">置顶</span>
         <span class="notice-text">
           【📣9.17会员直播｜加息如期兑现，AI放缓如期放鸽】本期直播将为大家带来：• 近期市况点评与分析 • 宏...
@@ -49,28 +48,22 @@
       </div>
 
       <!-- Notice 2 -->
-      <div class="notice-row">
+      <div class="notice-row" @click="actions.openPostDetail('post-pin-2')">
         <span class="pin-tag">置顶</span>
         <div class="notice-text">
           「图片」【🧧新人必看】点击链接了解→
-          <a class="notice-blue-link" href="javascript:;" @click.stop="actions.showToast('正在打开【财不外露】知识星球全景介绍...')">
-            🔗【财不外露】知识星球全景介绍
-          </a>
+          <span class="notice-blue-link">🔗【财不外露】知识星球全景介绍</span>
           <span class="link-arrow"> → </span>
-          <a class="notice-blue-link" href="javascript:;" @click.stop="actions.showToast('正在打开【财不外露】星球新手使...')">
-            🔗【财不外露】星球新手使...
-          </a>
+          <span class="notice-blue-link">🔗【财不外露】星球新手使...</span>
         </div>
       </div>
 
       <!-- Notice 3 -->
-      <div class="notice-row">
+      <div class="notice-row" @click="actions.openPostDetail('post-pin-3')">
         <span class="pin-tag">置顶</span>
         <div class="notice-text">
           「图片」【🌟财不外露星球组合】 📌 组合完整介绍：点击查看→
-          <a class="notice-blue-link" href="javascript:;" @click.stop="actions.showToast('正在打开【星球组合】财不外露星球组合全拆解...')">
-            🔗【星球组合】财不外露星球组合全拆解...
-          </a>
+          <span class="notice-blue-link">🔗【星球组合】财不外露星球组合全拆解...</span>
         </div>
       </div>
     </div>
@@ -114,9 +107,10 @@ const displayedPosts = filteredPosts;
   align-items: center;
   gap: 8px;
   background: #ffffff;
-  border-radius: var(--radius-card);
-  padding: 0;
-  margin-bottom: 12px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
   box-shadow: none;
   flex-wrap: wrap;
 }
@@ -148,16 +142,6 @@ const displayedPosts = filteredPosts;
   font-weight: 600;
 }
 
-.tab-badge-dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  background-color: #ef4444;
-  border-radius: 50%;
-}
-
 .diamond-icon {
   font-size: 11px;
 }
@@ -165,10 +149,10 @@ const displayedPosts = filteredPosts;
 /* 4. Pinned Notices Card */
 .pinned-notices-card {
   background: #ffffff;
-  border: 1px solid #eaedf1;
-  border-radius: var(--radius-card);
+  border: none;
+  border-radius: 8px;
   padding: 12px 16px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   box-shadow: none;
   display: flex;
   flex-direction: column;
@@ -231,8 +215,8 @@ const displayedPosts = filteredPosts;
 /* Empty Card */
 .empty-feed-card {
   background: #ffffff;
-  border: 1px solid #eaedf1;
-  border-radius: var(--radius-card);
+  border: none;
+  border-radius: 8px;
   padding: 48px 24px;
   text-align: center;
   box-shadow: none;

@@ -7,29 +7,36 @@
     <PaywallView v-else-if="appState.appFlowState === 'paywall'" />
 
     <!-- 3. Authenticated Community Platform -->
-    <div v-else class="community-shell">
+    <div v-else class="community-shell" :class="{ 'is-embed': appState.previewEmbed }">
       <!-- Body Row: Sidebar (brand + search + user) + Main Viewport -->
       <div class="app-layout">
-        <!-- Left Navigation Sidebar -->
-        <Sidebar />
+        <!-- Left Navigation Sidebar (hidden in admin embed mode) -->
+        <Sidebar v-if="!appState.previewEmbed" />
 
         <!-- Main Scrollable Viewport: center content + independent right column -->
-        <div class="main-viewport">
-          <main class="page-content-wrapper">
+        <div class="main-viewport" :class="{ 'is-column-layout': ['column', 'live', 'course'].includes(appState.currentView) }">
+          <main 
+            class="page-content-wrapper"
+            :class="{ 'is-column-view': ['column', 'live', 'course'].includes(appState.currentView) }"
+          >
             <!-- Center Content Column (independent) -->
-            <div class="center-column">
-              <div class="center-main-stage">
+            <div 
+              class="center-column"
+              :class="{ 'is-column-view': ['column', 'live', 'course'].includes(appState.currentView) }"
+            >
+              <div 
+                class="center-main-stage"
+                :class="{ 'is-column-view': ['column', 'live', 'course'].includes(appState.currentView) }"
+              >
                 <PostFeed v-if="appState.currentView === 'feed'" />
                 <TagFeedView
                   v-else-if="appState.currentView === 'tag'"
                 />
-                <LearningCenter
+                <ColumnView
                   v-else-if="appState.currentView === 'column'"
-                  initialTab="column"
                 />
-                <LearningCenter
+                <LiveView
                   v-else-if="appState.currentView === 'live'"
-                  initialTab="live"
                 />
                 <LearningCenter
                   v-else-if="appState.currentView === 'course'"
@@ -40,8 +47,8 @@
             </div>
           </main>
 
-          <!-- Right Information Widgets (independent column, outside main) -->
-          <Rightbar />
+          <!-- Right Information Widgets (Hide when viewing column, live, or course) -->
+          <Rightbar v-if="!['column', 'live', 'course'].includes(appState.currentView)" />
         </div>
       </div>
     </div>
@@ -58,6 +65,7 @@
     <CommunityMembersModal />
     <AskQuestionModal />
     <PostDetailModal />
+    <SearchResultsModal />
 
     <!-- Toast Notice -->
     <transition name="toast-fade">
@@ -80,6 +88,8 @@ import PostFeed from './components/community/PostFeed.vue';
 import TagFeedView from './components/community/TagFeedView.vue';
 import UserProfileView from './components/community/UserProfileView.vue';
 import LearningCenter from './components/learning/LearningCenter.vue';
+import ColumnView from './components/learning/ColumnView.vue';
+import LiveView from './components/learning/LiveView.vue';
 import PublishModal from './components/modals/PublishModal.vue';
 import VipJoinModal from './components/modals/VipJoinModal.vue';
 import ChapterReaderModal from './components/modals/ChapterReaderModal.vue';
@@ -88,6 +98,7 @@ import UserCenterModal from './components/modals/UserCenterModal.vue';
 import CommunityMembersModal from './components/modals/CommunityMembersModal.vue';
 import AskQuestionModal from './components/modals/AskQuestionModal.vue';
 import PostDetailModal from './components/modals/PostDetailModal.vue';
+import SearchResultsModal from './components/modals/SearchResultsModal.vue';
 </script>
 
 <style scoped>
@@ -133,9 +144,10 @@ import PostDetailModal from './components/modals/PostDetailModal.vue';
   display: flex;
   min-height: 0;
   overflow: hidden;
-  margin: 12px 6px 0 6px;
-  padding: 20px 10px 0 10px;
-  background-color: #ffffff;
+  margin: 12px 0 0 0;
+  padding: 0;
+  /* 外壳透明露出灰底：各视图白色根容器/资讯流卡片成为独立卡片，四周露出灰色缝隙 */
+  background-color: transparent;
   border-radius: 8px;
 }
 
@@ -150,7 +162,7 @@ import PostDetailModal from './components/modals/PostDetailModal.vue';
 
 .center-main-stage {
   width: 100%;
-  max-width: 820px;
+  max-width: 888px;
   min-width: 0;
   height: 100%;
   overflow-y: auto;
@@ -162,6 +174,53 @@ import PostDetailModal from './components/modals/PostDetailModal.vue';
 
 .center-main-stage::-webkit-scrollbar {
   display: none;
+}
+
+/* 后台嵌入模式：去除留白与限宽，文章阅读区贴满容器 */
+.community-shell.is-embed {
+  background-color: #ffffff;
+}
+
+.community-shell.is-embed .app-layout {
+  max-width: none;
+  background-color: #ffffff;
+}
+
+.community-shell.is-embed .main-viewport {
+  background-color: #ffffff;
+}
+
+.community-shell.is-embed .page-content-wrapper {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background-color: #ffffff;
+}
+
+.community-shell.is-embed .page-content-wrapper.is-column-view {
+  margin: 0;
+}
+
+.community-shell.is-embed .center-main-stage {
+  max-width: none;
+}
+
+/* 专栏/直播页面专属：不需要右侧一栏，占满主视口宽度并保持统一白色背景 */
+.page-content-wrapper.is-column-view {
+  margin: 12px 12px 0 12px;
+  padding: 0;
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+.center-column.is-column-view {
+  justify-content: stretch;
+  width: 100%;
+}
+
+.center-main-stage.is-column-view {
+  max-width: 100%;
+  padding-bottom: 0;
 }
 
 /* Global Toast */

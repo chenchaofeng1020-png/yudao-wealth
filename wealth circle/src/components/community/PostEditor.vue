@@ -25,33 +25,56 @@
             class="content-textarea"
             ref="textareaRef"
             @scroll="syncHighlightScroll"
+            @input="onContentInput"
           ></textarea>
         </div>
 
-        <!-- Attached Image Preview -->
-        <div v-if="attachedImage" class="attachments-row">
-          <span class="img-chip" @click.stop="attachedImage = ''">
-            🖼️ 已附图片 ×
-          </span>
+        <!-- 附件预览：按选择顺序展示（图片缩略图 / 文档行），最多 9 个 -->
+        <div v-if="attachments.length" class="attachments-area">
+          <template v-for="(a, i) in attachments" :key="a.url">
+            <div v-if="a.type === 'image'" class="img-preview-item">
+              <img :src="a.url" class="img-preview" alt="附件图片" />
+              <span class="img-remove" title="移除图片" @click.stop="removeAttachment(i)">×</span>
+            </div>
+            <div v-else class="file-row">
+              <FileTypeIcon :name="a.name" :size="18" />
+              <span class="file-row-name">{{ a.name }}</span>
+              <span class="file-row-size">{{ formatSize(a.size) }}</span>
+              <span class="file-remove" title="移除附件" @click.stop="removeAttachment(i)">×</span>
+            </div>
+          </template>
         </div>
+
+        <!-- 隐藏的文件选择入口：图片 / 文档附件 -->
+        <input ref="imageInputRef" type="file" accept="image/*" multiple hidden @change="onImagesPicked" />
+        <input ref="fileInputRef" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md" multiple hidden @change="onFilesPicked" />
       </div>
     </div>
+
+    <!-- 提问模式公开提示 -->
+    <p v-if="isAskMode" class="ask-public-hint">提交后问题将公开显示在星球内，TA 将在星球内回复。</p>
 
     <!-- Bottom Toolbar -->
     <div class="editor-toolbar">
       <div class="toolbar-left">
-        <!-- Emoji Button -->
-        <button class="tool-icon-btn" title="插入表情" @click="handleToolClick('emoji')">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-            <line x1="9" y1="9" x2="9.01" y2="9"></line>
-            <line x1="15" y1="9" x2="15.01" y2="9"></line>
-          </svg>
-        </button>
+        <!-- Emoji Button：弹出表情面板，点选插入光标处 -->
+        <div class="emoji-menu-wrap">
+          <button class="tool-icon-btn" :class="{ 'is-active': showEmojiPanel }" title="插入表情" @click.stop="toggleEmojiPanel">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+              <line x1="9" y1="9" x2="9.01" y2="9"></line>
+              <line x1="15" y1="9" x2="15.01" y2="9"></line>
+            </svg>
+          </button>
+          <!-- 表情面板 -->
+          <div v-if="showEmojiPanel" class="emoji-panel" @click.stop>
+            <button v-for="e in EMOJIS" :key="e" class="emoji-item" type="button" @click="insertEmoji(e)">{{ e }}</button>
+          </div>
+        </div>
 
-        <!-- Picture Button -->
-        <button class="tool-icon-btn" title="插入图片" @click="handleToolClick('image')">
+        <!-- Picture Button：选择本地图片（可多选） -->
+        <button class="tool-icon-btn" title="插入图片" @click="pickImages">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -59,8 +82,8 @@
           </svg>
         </button>
 
-        <!-- Document Button -->
-        <button class="tool-icon-btn" title="添加文档附件" @click="handleToolClick('doc')">
+        <!-- Document Button：选择文档附件（pdf/doc/xls/ppt/txt 等） -->
+        <button class="tool-icon-btn" title="添加文档附件" @click="pickFiles">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
@@ -71,7 +94,7 @@
         </button>
 
         <!-- Bold Button -->
-        <button class="tool-icon-btn bold-btn" title="加粗文本" @click="handleToolClick('bold')">
+        <button class="tool-icon-btn bold-btn" title="加粗文本" @click="handleBold">
           <span class="bold-text-icon">B</span>
         </button>
 
@@ -127,21 +150,26 @@
 import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { appState, actions } from '@/stores/community';
 import { CATEGORIES } from '@/mock/data';
-import feedChart from '@/assets/feed_chart.png';
+import type { PostAttachment } from '@/types';
+import FileTypeIcon from '@/components/common/FileTypeIcon.vue';
 
 // askTarget 传入时进入"提问模式"：作为向指定成员提问的编辑器复用
 const props = defineProps<{ askTarget?: string }>();
 const isAskMode = computed(() => !!props.askTarget);
 const askPlaceholder = computed(() =>
-  isAskMode.value ? '请输入提问内容' : '分享你的宏观洞察、研报思考或投资见解... 支持 #标签 和 Markdown **加粗**'
+  isAskMode.value ? '请输入提问内容' : '点击发表主题…'
 );
 
 const isExpanded = ref(isAskMode.value);
 const content = ref('');
 const selectedTags = ref<string[]>([]);
-const attachedImage = ref('');
+// 附件（图片/文档混合，按选择顺序排列），最多 9 个
+const MAX_ATTACHMENTS = 9;
+const attachments = ref<PostAttachment[]>([]);
 const isVipOnly = ref(false);
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const imageInputRef = ref<HTMLInputElement | null>(null);
+const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const expandEditor = () => {
   if (!isAskMode.value && appState.user.role === 'guest') {
@@ -156,23 +184,109 @@ const expandEditor = () => {
   }
 };
 
-const handleToolClick = (tool: 'emoji' | 'image' | 'doc' | 'bold' | 'hash') => {
+// ===== 工具栏功能：表情面板 / 图片上传 / 文档附件 / 加粗 =====
+
+// 常用表情（参考微信风格：表情 + 手势 + 常用物品）
+const EMOJIS = [
+  '😀','😁','😂','🤣','😊','😍','😘','😜','🤪','😝','😅','😆','😉','😋','😎','🤩',
+  '🥳','😏','😌','🤗','🤔','🤨','😐','😑','🙄','😴','🤤','😪','😵','🤯','🥱','😔',
+  '😥','😰','😭','😱','😤','😡','🤬','🥺','😢','🤒','🤕','🤑','🤠','😈','🤡','💀',
+  '👍','👎','👌','✌️','🤝','🙏','💪','👏','🫶','🤙','👋','🫡','❤️','💔','💕','💖',
+  '💯','🔥','⭐','✨','⚡','🎉','🎁','🌹','🥀','🍻','☕','🎂','🍎','🍉','🧧','💰',
+  '📈','📉','💎','🚀','⏰','📝','📌','💡','🔔','🍀','🐯','🐷','🦊','🐼','🐧','🦅',
+];
+
+const showEmojiPanel = ref(false);
+
+const toggleEmojiPanel = () => {
+  isExpanded.value = true;
+  showEmojiPanel.value = !showEmojiPanel.value;
+  if (showEmojiPanel.value) showTagMenu.value = false;
+};
+
+// 点选表情：插入正文光标处并收起面板
+const insertEmoji = (e: string) => {
+  insertAtCursor(e);
+  showEmojiPanel.value = false;
+  textareaRef.value?.focus();
+};
+
+// 图片上传：多选，生成预览缩略图
+const pickImages = () => {
+  if (attachments.value.length >= MAX_ATTACHMENTS) {
+    actions.showToast(`最多上传 ${MAX_ATTACHMENTS} 个附件（含图片和文档）`);
+    return;
+  }
+  isExpanded.value = true;
+  imageInputRef.value?.click();
+};
+
+const onImagesPicked = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const files = Array.from(input.files || []);
+  addAttachments(files.map(f => ({ type: 'image' as const, name: f.name, url: URL.createObjectURL(f), size: f.size })));
+  input.value = '';
+};
+
+// 文档附件上传：pdf / doc / xls / ppt / txt 等常见格式
+const pickFiles = () => {
+  if (attachments.value.length >= MAX_ATTACHMENTS) {
+    actions.showToast(`最多上传 ${MAX_ATTACHMENTS} 个附件（含图片和文档）`);
+    return;
+  }
+  isExpanded.value = true;
+  fileInputRef.value?.click();
+};
+
+const onFilesPicked = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const files = Array.from(input.files || []);
+  addAttachments(files.map(f => ({ type: 'file' as const, name: f.name, url: URL.createObjectURL(f), size: f.size })));
+  input.value = '';
+};
+
+// 追加附件：超出上限时截断并提示
+const addAttachments = (items: PostAttachment[]) => {
+  const remaining = MAX_ATTACHMENTS - attachments.value.length;
+  if (remaining <= 0) {
+    items.forEach(a => URL.revokeObjectURL(a.url));
+    actions.showToast(`最多上传 ${MAX_ATTACHMENTS} 个附件（含图片和文档）`);
+    return;
+  }
+  if (items.length > remaining) {
+    items.slice(remaining).forEach(a => URL.revokeObjectURL(a.url));
+    actions.showToast(`最多上传 ${MAX_ATTACHMENTS} 个附件，已保留前 ${MAX_ATTACHMENTS} 个`);
+  }
+  attachments.value.push(...items.slice(0, remaining));
+};
+
+const removeAttachment = (idx: number) => {
+  URL.revokeObjectURL(attachments.value[idx].url);
+  attachments.value.splice(idx, 1);
+};
+
+// 附件大小格式化
+const formatSize = (size: number) =>
+  size >= 1024 * 1024 ? `${(size / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(size / 1024))} KB`;
+
+// 加粗：在光标处插入 Markdown 加粗示例
+const handleBold = () => {
   isExpanded.value = true;
   nextTick(() => {
-    if (tool === 'emoji') {
-      content.value += ' 😊 ';
-      textareaRef.value?.focus();
-    } else if (tool === 'image') {
-      attachedImage.value = feedChart;
-      actions.showToast('已添加示例图表附件');
-      textareaRef.value?.focus();
-    } else if (tool === 'doc') {
-      actions.showToast('支持上传 PDF / Word 等研究文件');
-    } else if (tool === 'bold') {
-      content.value += ' **重点内容** ';
-      textareaRef.value?.focus();
-    }
+    insertAtCursor(' **重点内容** ');
+    textareaRef.value?.focus();
   });
+};
+
+// 输入 # 时自动展开标签选择菜单
+const onContentInput = () => {
+  const el = textareaRef.value;
+  if (!el) return;
+  const pos = el.selectionStart ?? 0;
+  if (pos > 0 && content.value[pos - 1] === '#') {
+    showTagMenu.value = true;
+    showEmojiPanel.value = false;
+  }
 };
 
 // ===== 分类选择菜单 =====
@@ -181,6 +295,7 @@ const showTagMenu = ref(false);
 const toggleTagMenu = () => {
   isExpanded.value = true;
   showTagMenu.value = !showTagMenu.value;
+  if (showTagMenu.value) showEmojiPanel.value = false;
   if (showTagMenu.value) {
     nextTick(() => textareaRef.value?.focus());
   }
@@ -219,13 +334,14 @@ const pickTag = (tag: string) => {
   textareaRef.value?.focus();
 };
 
-// #标签蓝色高亮层
+// #标签蓝色高亮层：仅当 # 后的内容能匹配到有效标签（与标签菜单可选项一致）才显示蓝色，否则按普通文本
 const highlightRef = ref<HTMLDivElement | null>(null);
+const VALID_TAGS = new Set(CATEGORIES.flatMap(cat => cat.children));
 const highlightSegments = computed(() =>
   content.value
     .split(/(#[^\s#]+)/g)
     .filter(p => p !== '')
-    .map(p => ({ text: p, tag: p.startsWith('#') }))
+    .map(p => ({ text: p, tag: p.startsWith('#') && VALID_TAGS.has(p.slice(1)) }))
 );
 const syncHighlightScroll = () => {
   if (highlightRef.value && textareaRef.value) {
@@ -237,9 +353,15 @@ const closeTagMenu = () => {
   showTagMenu.value = false;
 };
 
-const onDocClick = () => closeTagMenu();
+const onDocClick = () => {
+  closeTagMenu();
+  showEmojiPanel.value = false;
+};
 const onDocKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') closeTagMenu();
+  if (e.key === 'Escape') {
+    closeTagMenu();
+    showEmojiPanel.value = false;
+  }
 };
 
 onMounted(() => {
@@ -251,13 +373,21 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', onDocKeydown);
 });
 
-const cancelEdit = () => {
-  isExpanded.value = false;
+// 重置编辑器（不回收附件预览地址）：发布成功后使用，帖子仍引用这些 blob 地址
+const resetEditor = () => {
+  isExpanded.value = isAskMode.value;
   content.value = '';
   selectedTags.value = [];
-  attachedImage.value = '';
+  attachments.value = [];
   isVipOnly.value = false;
   showTagMenu.value = false;
+  showEmojiPanel.value = false;
+};
+
+const cancelEdit = () => {
+  // 取消/收起：附件不会被发布，回收预览地址
+  attachments.value.forEach(a => URL.revokeObjectURL(a.url));
+  resetEditor();
 };
 
 const handlePublish = () => {
@@ -284,9 +414,11 @@ const handlePublish = () => {
     tags: selectedTags.value.length ? [...selectedTags.value] : ['市场资讯'],
     stocks: [],
     isVipOnly: vipOnly,
+    attachments: attachments.value.length ? attachments.value.map(a => ({ ...a })) : undefined,
   });
 
-  cancelEdit();
+  // 发布成功：只重置编辑器，不回收附件地址（信息流帖子仍引用）
+  resetEditor();
   actions.showToast(vipOnly ? '主题发表成功！本主题已设为仅会员可见' : '主题发表成功！');
 };
 </script>
@@ -294,10 +426,10 @@ const handlePublish = () => {
 <style scoped>
 .editor-box-card {
   background: #ffffff;
-  border: 1px solid #eaedf1;
-  border-radius: var(--radius-card);
+  border: none;
+  border-radius: 8px;
   padding: 12px 16px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   box-shadow: none;
 }
 
@@ -323,7 +455,7 @@ const handlePublish = () => {
   border: 1px solid #e2e8f0;
   cursor: default;
   align-items: stretch;
-  min-height: 128px;
+  min-height: 180px;
   padding-bottom: 3px;
 }
 
@@ -388,9 +520,8 @@ const handlePublish = () => {
   color: transparent;
   caret-color: #1e293b;
   line-height: 1.6;
-  resize: vertical;
-  min-height: 70px;
-  flex: 1;
+  resize: none;
+  height: 200px;
   outline: none;
 }
 
@@ -403,20 +534,101 @@ const handlePublish = () => {
   box-shadow: none;
 }
 
-.attachments-row {
+/* ===== 附件预览：按选择顺序展示（图片缩略图 / 文档行） ===== */
+.attachments-area {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 8px;
   margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
 }
 
-.img-chip {
-  font-size: 12px;
-  background: #f1f5f9;
-  color: #475569;
-  padding: 2px 8px;
-  border-radius: 12px;
+/* 文档行独占一行，flex-wrap 保证与图片按选择顺序上下排列 */
+.attachments-area .file-row {
+  flex: 1 1 100%;
+}
+
+.img-preview-item {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.img-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.55);
+  color: #fff;
+  font-size: 13px;
+  line-height: 17px;
+  text-align: center;
   cursor: pointer;
+  transition: background 0.15s;
+}
+
+.img-remove:hover {
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 7px 10px;
+}
+
+.file-row-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-row-size {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.file-remove {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.file-remove:hover {
+  background: #f1f5f9;
+  color: #ef4444;
 }
 
 /* Bottom Toolbar */
@@ -452,14 +664,53 @@ const handlePublish = () => {
   background-color: #f1f5f9;
 }
 
-/* ===== 分类选择菜单 ===== */
-.hash-menu-wrap {
+/* 工具按钮激活态（表情面板/标签菜单展开时） */
+.tool-icon-btn.is-active {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+}
+
+/* ===== 表情面板 ===== */
+.emoji-menu-wrap {
   position: relative;
 }
 
-.hash-btn.is-active {
-  color: #16a34a;
-  background: rgba(22, 163, 74, 0.08);
+.emoji-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -6px;
+  z-index: 60;
+  width: 328px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+}
+
+.emoji-item {
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 5px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.emoji-item:hover {
+  background: #f1f5f9;
+}
+
+/* ===== 分类选择菜单 ===== */
+.hash-menu-wrap {
+  position: relative;
 }
 
 .tag-menu {
@@ -544,6 +795,13 @@ const handlePublish = () => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* 提问模式公开提示 */
+.ask-public-hint {
+  margin: 0 2px 8px;
+  font-size: 12px;
+  color: #94a3b8;
 }
 
 .btn-cancel {

@@ -5,21 +5,20 @@
       <h1 class="header-title">直播管理</h1>
 
       <div class="header-actions">
-        <button class="btn-sync-wemeet" @click="actions.syncTencentMeetings" title="从腾讯会议开放平台拉取最新云录制与纪要">
+        <button class="btn-sync-wemeet is-ghost" @click="openCategoryModal" title="维护直播分类，保存后 C 端同步生效">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+          <span>分类设置</span>
+        </button>
+
+        <button class="btn-sync-wemeet" @click="actions.syncTencentMeetings" title="从腾讯会议开放平台拉取最新会议排期、云录制与纪要">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <polyline points="23 4 23 10 17 10"></polyline>
             <polyline points="1 20 1 14 7 14"></polyline>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
           </svg>
           <span>同步腾讯会议</span>
-        </button>
-
-        <button class="btn-new-meeting" @click="openCreateMeetingModal">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          <span>发起直播会议</span>
         </button>
       </div>
     </header>
@@ -30,13 +29,11 @@
       <!-- 2. Controls & Filters Toolbar -->
       <div class="filters-toolbar-row">
         <div class="filter-dropdown-group">
-          <!-- Filter 1: Creator -->
+          <!-- Filter 1: 主讲人（从同步数据自动带出） -->
           <div class="select-wrapper">
             <select v-model="filterCreator" class="filter-select">
-              <option value="">全部创建人</option>
-              <option value="志诚">志诚</option>
-              <option value="若琪">若琪</option>
-              <option value="老林说宏观">老林说宏观</option>
+              <option value="">全部主讲人</option>
+              <option v-for="name in creatorOptions" :key="name" :value="name">{{ name }}</option>
             </select>
             <span class="select-arrow">▾</span>
           </div>
@@ -52,12 +49,12 @@
             <span class="select-arrow">▾</span>
           </div>
 
-          <!-- Filter 3: Column Tag -->
+          <!-- Filter 3: 直播分类 -->
           <div class="select-wrapper">
             <select v-model="filterColumn" class="filter-select">
-              <option value="">选择关联专栏</option>
-              <option v-for="col in appState.columns" :key="col.id" :value="col.title">
-                {{ col.title }}
+              <option value="">选择分类</option>
+              <option v-for="cat in appState.liveCategories" :key="cat" :value="cat">
+                {{ cat }}
               </option>
             </select>
             <span class="select-arrow">▾</span>
@@ -92,13 +89,16 @@
         <table class="meeting-records-table">
           <thead>
             <tr>
-              <th style="min-width: 150px;">会议号</th>
-              <th style="min-width: 380px;">会议主题</th>
-              <th style="min-width: 100px;">创建人</th>
-              <th style="min-width: 110px;">会议状态</th>
-              <th style="min-width: 170px;">预计开始时间</th>
-              <th style="min-width: 170px;">实际开始时间</th>
-              <th style="min-width: 150px; text-align: right;">操作</th>
+              <th style="min-width: 130px;">会议号</th>
+              <th style="min-width: 320px;">会议主题</th>
+              <th style="min-width: 110px;">主讲人</th>
+              <th style="min-width: 90px;">会议状态</th>
+              <th style="min-width: 90px;">上架状态</th>
+              <th style="min-width: 80px;">单购价</th>
+              <th style="min-width: 90px;">已解锁</th>
+              <th style="min-width: 150px;">预计开始时间</th>
+              <th style="min-width: 150px;">实际开始时间</th>
+              <th class="col-actions">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -123,9 +123,12 @@
                 </div>
               </td>
 
-              <!-- 创建人 -->
+              <!-- 主讲人 -->
               <td>
-                <span class="creator-name">{{ meeting.creator }}</span>
+                <div class="creator-cell">
+                  <img v-if="meeting.creatorAvatar" :src="meeting.creatorAvatar" :alt="meeting.creator" class="creator-avatar" />
+                  <span class="creator-name">{{ meeting.creator }}</span>
+                </div>
               </td>
 
               <!-- 会议状态 -->
@@ -138,6 +141,26 @@
                 </div>
               </td>
 
+              <!-- 上架状态 -->
+              <td>
+                <span v-if="getShelfState(meeting)" :class="['shelf-state-tag', 'shelf-' + getShelfState(meeting)]">
+                  {{ getShelfLabel(meeting) }}
+                </span>
+                <span v-else class="cell-empty-text">—</span>
+              </td>
+
+              <!-- 单购价 -->
+              <td>
+                <span v-if="meeting.isOnShelf === true && meeting.replayPrice" class="price-cell-text num-highlight">¥{{ meeting.replayPrice }}</span>
+                <span v-else class="cell-empty-text">—</span>
+              </td>
+
+              <!-- 已解锁人数 -->
+              <td>
+                <span v-if="meeting.isOnShelf === true" class="num-cell-text num-highlight">{{ meeting.purchasedCount || 0 }}</span>
+                <span v-else class="cell-empty-text">—</span>
+              </td>
+
               <!-- 预计开始时间 -->
               <td>
                 <span class="time-cell-text">{{ meeting.scheduledStartTime }}</span>
@@ -148,56 +171,50 @@
                 <span class="time-cell-text">{{ meeting.actualStartTime || '——' }}</span>
               </td>
 
-              <!-- 操作 -->
-              <td style="text-align: right;">
+              <!-- 操作：设置 + 更多（更多内按状态收纳） -->
+              <td class="col-actions" :class="{ 'menu-open': openMoreMenuId === meeting.id }">
                 <div class="action-links-row">
-                  <!-- 待开始 -->
-                  <template v-if="meeting.status === 'upcoming'">
-                    <a 
-                      :href="meeting.joinUrl" 
-                      target="_blank" 
-                      class="op-link-btn enter-btn" 
-                      @click="handleEnterMeeting(meeting)"
-                    >
-                      进入会议
-                    </a>
-                    <button class="op-link-btn danger-btn" @click="handleDelete(meeting)">
-                      删除
+                  <button class="op-link-btn replay-btn" @click="openRecordingModal(meeting)" title="编辑会议简介、定价与 AI 纪要">
+                    设置
+                  </button>
+                  <div class="more-wrap">
+                    <button class="op-link-btn more-btn" @click.stop="toggleMoreMenu(meeting.id)">
+                      更多
                     </button>
-                  </template>
-
-                  <!-- 进行中 -->
-                  <template v-else-if="meeting.status === 'live'">
-                    <a 
-                      :href="meeting.joinUrl" 
-                      target="_blank" 
-                      class="op-link-btn live-btn" 
-                      @click="handleEnterMeeting(meeting)"
-                    >
-                      进入会议
-                    </a>
-                    <button class="op-link-btn danger-btn" @click="handleDelete(meeting)">
-                      删除
-                    </button>
-                  </template>
-
-                  <!-- 已结束 (获取会议记录，拿到录播) -->
-                  <template v-else>
-                    <button class="op-link-btn replay-btn" @click="openRecordingModal(meeting)" title="查看并播放腾讯会议云录制视频">
-                      查看录屏
-                    </button>
-                    <button 
-                      v-if="!meeting.isSettledToColumn" 
-                      class="op-link-btn settle-btn" 
-                      @click="settleToColumn(meeting)"
-                      title="将录播与 AI 纪要沉淀至关联专栏"
-                    >
-                      沉淀
-                    </button>
-                    <button class="op-link-btn danger-btn" @click="handleDelete(meeting)">
-                      删除
-                    </button>
-                  </template>
+                    <div v-if="openMoreMenuId === meeting.id" class="more-menu">
+                      <button
+                        v-if="meeting.status === 'finished'"
+                        class="more-menu-item"
+                        @click="menuAction('record', meeting)"
+                      >
+                        打开录屏
+                      </button>
+                      <button
+                        v-if="meeting.status === 'finished' && getShelfState(meeting) === 'pending'"
+                        class="more-menu-item"
+                        @click="menuAction('shelf', meeting)"
+                      >
+                        上架录播
+                      </button>
+                      <button
+                        v-if="meeting.status === 'finished' && getShelfState(meeting) === 'on'"
+                        class="more-menu-item"
+                        @click="menuAction('unshelf', meeting)"
+                      >
+                        下架录播
+                      </button>
+                      <button
+                        v-if="meeting.status === 'finished' && getShelfState(meeting) === 'off'"
+                        class="more-menu-item"
+                        @click="menuAction('shelf', meeting)"
+                      >
+                        重新上架
+                      </button>
+                      <button class="more-menu-item is-danger" @click="menuAction('delete', meeting)">
+                        删除
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -258,116 +275,38 @@
       </div>
     </main>
 
-    <!-- Modal 1: 发起直播会议 (对接腾讯会议) -->
-    <transition name="modal-fade">
-      <div v-if="showCreateModal" class="modal-backdrop" @click.self="showCreateModal = false">
-        <div class="modal-dialog-box animate-slide-up">
-          <div class="modal-header">
-            <h3 class="modal-title">发起直播会议 (对接腾讯会议)</h3>
-            <button class="modal-close-btn" @click="showCreateModal = false">✕</button>
-          </div>
-
-          <div class="modal-body-scroll">
-            <div class="wemeet-notice-pill">
-              <span class="notice-icon">ℹ️</span>
-              <span>创建后将自动在腾讯会议开放平台生成会议室，并开启云录制与 AI 纪要。</span>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label required">会议主题</label>
-              <input 
-                v-model="createForm.title" 
-                type="text" 
-                class="form-input" 
-                placeholder="例如：【AI产业】剖析: 大模型产业落地与商业闭环研讨"
-              />
-            </div>
-
-            <div class="form-row-2">
-              <div class="form-group">
-                <label class="form-label required">关联专栏</label>
-                <select v-model="createForm.columnId" class="form-select">
-                  <option v-for="col in appState.columns" :key="col.id" :value="col.id">
-                    {{ col.title }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label required">创建人 / 主持人</label>
-                <select v-model="createForm.creator" class="form-select">
-                  <option value="志诚">志诚 (资深分析师)</option>
-                  <option value="若琪">若琪 (前沿产业顾问)</option>
-                  <option value="老林说宏观">老林说宏观 (星主)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label required">预计开始时间</label>
-              <input 
-                v-model="createForm.scheduledStartTime" 
-                type="text" 
-                class="form-input" 
-                placeholder="例如：2026-09-28 14:00"
-              />
-            </div>
-
-            <div class="wemeet-features-box">
-              <div class="feature-item">
-                <label class="feature-label">
-                  <input type="checkbox" checked disabled class="feature-checkbox" />
-                  <span>自动开启腾讯会议云端高清录制 (1080P)</span>
-                </label>
-                <span class="feature-sub">会议结束后自动抓取 MP4 视频切片</span>
-              </div>
-
-              <div class="feature-item">
-                <label class="feature-label">
-                  <input type="checkbox" checked disabled class="feature-checkbox" />
-                  <span>自动生成 AI 智能会议纪要与逐字稿</span>
-                </label>
-                <span class="feature-sub">智能提取核心观点并支持一键沉淀到专栏长文</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn-cancel" @click="showCreateModal = false">取消</button>
-            <button class="btn-submit" @click="submitCreateMeeting">生成会议室并排期</button>
-          </div>
-        </div>
-      </div>
-    </transition>
-
-    <!-- Modal 2: 腾讯会议云录播播放与 AI 纪要详情 (获取会议记录，拿到录播) -->
-    <transition name="modal-fade">
-      <div v-if="showDetailModal && activeDetailMeeting" class="modal-backdrop" @click.self="showDetailModal = false">
-        <div class="modal-dialog-box modal-xl animate-slide-up">
-          <div class="modal-header">
+    <!-- Drawer: 录播设置（右侧抽屉：预览云录制 + 编辑分类/主讲人/封面/简介/纪要/定价/关联商品 + 订单数据） -->
+    <Teleport to="body">
+    <transition name="drawer-slide">
+      <div v-if="showDetailModal && activeDetailMeeting" class="cms-drawer-backdrop" @click.self="showDetailModal = false">
+        <div class="cms-drawer-panel">
+          <div class="cms-drawer-header">
             <div class="modal-title-wrap">
-              <h3 class="modal-title">{{ activeDetailMeeting.title }}</h3>
+              <h3 class="drawer-h3">{{ activeDetailMeeting.title }}</h3>
               <span class="modal-code-chip">会议号: {{ activeDetailMeeting.meetingCode }}</span>
+              <span :class="['shelf-state-tag', 'shelf-' + getShelfState(activeDetailMeeting)]">
+                {{ getShelfLabel(activeDetailMeeting) }}
+              </span>
             </div>
             <button class="modal-close-btn" @click="showDetailModal = false">✕</button>
           </div>
 
-          <div class="modal-body-scroll">
+          <div class="drawer-body">
             <!-- Simulated Tencent Cloud Recording Video Player -->
             <div class="video-player-container">
               <div class="player-aspect-box">
-                <img 
-                  src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1000&auto=format&fit=crop&q=80" 
-                  class="player-poster" 
-                  alt="Video Recording Poster" 
+                <img
+                  :src="activeDetailMeeting.cover"
+                  class="player-poster"
+                  alt="Video Recording Poster"
                 />
                 <div class="player-overlay-center">
-                  <button class="btn-play-trigger" @click="playInGlobalPlayer">
+                  <button class="btn-play-trigger" @click="previewRecording">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                       <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
                   </button>
-                  <span class="play-label">腾讯会议云录制切片播放</span>
+                  <span class="play-label">腾讯会议云录制切片预览</span>
                 </div>
 
                 <div class="player-bottom-bar">
@@ -377,61 +316,219 @@
               </div>
             </div>
 
-            <!-- AI Meeting Minutes & Summary -->
+            <!-- 订单数据行（绑定商城虚拟商品后自动统计） -->
+            <div class="detail-stats-row">
+              <div class="detail-stat-item">
+                <span class="detail-stat-label">参会人次</span>
+                <span class="detail-stat-value num-highlight">{{ activeDetailMeeting.participantsCount || 0 }}</span>
+              </div>
+              <div class="detail-stat-item">
+                <span class="detail-stat-label">已解锁人数</span>
+                <span class="detail-stat-value num-highlight">{{ activeDetailMeeting.purchasedCount || 0 }}</span>
+              </div>
+              <div class="detail-stat-item">
+                <span class="detail-stat-label">单购价</span>
+                <span class="detail-stat-value num-highlight">{{ activeDetailMeeting.replayPrice ? `¥${activeDetailMeeting.replayPrice}` : '—' }}</span>
+              </div>
+              <div class="detail-stat-item">
+                <span class="detail-stat-label">上架时间</span>
+                <span class="detail-stat-value">{{ activeDetailMeeting.shelfTime || '—' }}</span>
+              </div>
+              <button class="btn-view-orders" @click="viewBoundOrders">查看商城订单</button>
+            </div>
+
+            <!-- 编辑：商品关联 / 定价 / 简介 / AI 纪要 -->
             <div class="minutes-content-box">
               <div class="minutes-header">
                 <div class="minutes-title-row">
                   <span class="ai-spark-icon">✨</span>
-                  <h4 class="minutes-heading">AI 智能会议纪要与核心讨论要点</h4>
+                  <h4 class="minutes-heading">内容编辑（保存后 C 端同步更新）</h4>
                 </div>
-
-                <button 
-                  v-if="!activeDetailMeeting.isSettledToColumn" 
-                  class="btn-settle-action" 
-                  @click="settleToColumn(activeDetailMeeting)"
-                >
-                  📥 一键将本期录播与纪要沉淀入专栏
-                </button>
-                <span v-else class="settled-status-tag">✓ 已沉淀至专栏长文</span>
               </div>
 
-              <!-- Executive Summary -->
-              <div class="summary-highlight-card">
-                <strong class="summary-lead">会议总结概览：</strong>
-                <p class="summary-paragraph">{{ activeDetailMeeting.summary }}</p>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label">直播分类</label>
+                  <select v-model="detailEditForm.columnTag" class="form-input product-select">
+                    <option value="">未分类</option>
+                    <option v-for="cat in appState.liveCategories" :key="cat" :value="cat">{{ cat }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">主讲人</label>
+                  <select v-model="detailEditForm.creator" class="form-input product-select">
+                    <option value="">请选择星球成员</option>
+                    <option v-for="mb in memberOptions" :key="mb.name" :value="mb.name">{{ mb.name }}</option>
+                  </select>
+                </div>
               </div>
 
-              <!-- Key Discussion Points -->
-              <div class="minutes-keypoints-list" v-if="activeDetailMeeting.aiMinutes && activeDetailMeeting.aiMinutes.length">
-                <h5 class="section-subheading">核心研讨切片与纪要清单：</h5>
-                <div 
-                  v-for="(point, idx) in activeDetailMeeting.aiMinutes" 
-                  :key="idx" 
-                  class="minute-point-row"
-                >
-                  <div class="point-bullet">{{ idx + 1 }}</div>
-                  <p class="point-text">{{ point }}</p>
+              <!-- 封面图 -->
+              <div class="form-group">
+                <label class="form-label">封面图</label>
+                <div class="cover-edit-row">
+                  <img :src="detailEditForm.cover || activeDetailMeeting.cover" alt="封面预览" class="cover-preview-img" />
+                  <div class="cover-edit-side">
+                    <label class="btn-upload-cover">
+                      更换封面
+                      <input type="file" accept="image/*" class="cover-file-input" @change="handleCoverChange" />
+                    </label>
+                    <p class="cover-edit-tip">默认使用腾讯会议云录制切片截图</p>
+                  </div>
                 </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">关联商城商品</label>
+                <p class="form-label-sub">用户单场付费将按该商品下单生成订单；未选择时默认按单购价自动创建虚拟商品</p>
+                <select v-model="detailEditForm.productId" class="form-input product-select">
+                  <option value="">按单购价自动创建虚拟商品（默认）</option>
+                  <option v-for="p in mallProductsMock" :key="p.id" :value="p.id">
+                    {{ p.name }} · ¥{{ p.price }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label">单购价（元）</label>
+                  <input v-model.number="detailEditForm.replayPrice" type="number" min="0" class="form-input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">划线原价（元）</label>
+                  <input v-model.number="detailEditForm.originPrice" type="number" min="0" class="form-input" placeholder="选填" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">直播简介</label>
+                <textarea v-model="detailEditForm.summary" class="form-textarea" rows="3"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">AI 会议纪要</label>
+
+                <div class="rich-toolbar">
+                  <button type="button" title="撤销" @mousedown.prevent="execRichCmd('undo')">↺</button>
+                  <button type="button" title="重做" @mousedown.prevent="execRichCmd('redo')">↻</button>
+                  <span class="rich-divider"></span>
+                  <button type="button" title="加粗" @mousedown.prevent="execRichCmd('bold')"><strong>B</strong></button>
+                  <button type="button" title="斜体" @mousedown.prevent="execRichCmd('italic')"><em>I</em></button>
+                  <button type="button" title="下划线" @mousedown.prevent="execRichCmd('underline')"><u>U</u></button>
+                  <button type="button" title="删除线" @mousedown.prevent="execRichCmd('strikeThrough')"><s>S</s></button>
+                  <span class="rich-divider"></span>
+                  <button type="button" title="章节标题" @mousedown.prevent="execRichCmd('formatBlock', 'h2')">H2</button>
+                  <button type="button" title="小节标题" @mousedown.prevent="execRichCmd('formatBlock', 'h3')">H3</button>
+                  <button type="button" title="正文段落" @mousedown.prevent="execRichCmd('formatBlock', 'p')">正文</button>
+                  <span class="rich-divider"></span>
+                  <button type="button" title="无序列表" @mousedown.prevent="execRichCmd('insertUnorderedList')">• 列表</button>
+                  <button type="button" title="有序列表" @mousedown.prevent="execRichCmd('insertOrderedList')">1. 列表</button>
+                  <button type="button" title="引用" @mousedown.prevent="execRichCmd('formatBlock', 'blockquote')">引用</button>
+                  <button type="button" title="代码块" @mousedown.prevent="execRichCmd('formatBlock', 'pre')">代码</button>
+                  <span class="rich-divider"></span>
+                  <button type="button" title="左对齐" @mousedown.prevent="execRichCmd('justifyLeft')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                      <line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="15" y2="12"></line><line x1="3" y1="18" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                  <button type="button" title="居中对齐" @mousedown.prevent="execRichCmd('justifyCenter')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                      <line x1="3" y1="6" x2="21" y2="6"></line><line x1="6" y1="12" x2="18" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                  </button>
+                  <button type="button" title="右对齐" @mousedown.prevent="execRichCmd('justifyRight')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                      <line x1="3" y1="6" x2="21" y2="6"></line><line x1="9" y1="12" x2="21" y2="12"></line><line x1="6" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                  </button>
+                  <span class="rich-divider"></span>
+                  <button type="button" title="插入链接" @mousedown.prevent="insertMinutesLink">链接</button>
+                  <button type="button" title="插入图片" @mousedown.prevent="handleMinutesImageButton">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                  </button>
+                  <button type="button" title="插入分割线" @mousedown.prevent="execRichCmd('insertHorizontalRule')">分割线</button>
+                  <span class="rich-divider"></span>
+                  <button type="button" title="清除格式" @mousedown.prevent="execRichCmd('removeFormat')">清除格式</button>
+                </div>
+
+                <input
+                  ref="minutesImageInputRef"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style="display: none"
+                  @change="handleMinutesImageFilesChange"
+                />
+
+                <div
+                  ref="richEditorRef"
+                  class="rich-editor"
+                  contenteditable="true"
+                  data-placeholder="粘贴或输入会议纪要内容，支持截图直接粘贴..."
+                  @input="onRichInput"
+                  @paste="handleMinutesPaste"
+                ></div>
               </div>
             </div>
           </div>
 
-          <div class="modal-footer">
-            <button class="btn-cancel" @click="copyText(activeDetailMeeting.recordUrl || 'https://cdn.wealth-circle.com/tencent-meeting/rec.mp4')">
-              复制录播直链
-            </button>
+          <div class="drawer-footer">
             <button class="btn-cancel" @click="showDetailModal = false">关闭</button>
-            <button class="btn-submit" @click="playInGlobalPlayer">立即观看录播</button>
+            <button class="btn-submit" @click="saveDetailEdit">保存修改</button>
           </div>
         </div>
       </div>
     </transition>
+    </Teleport>
+
+    <!-- Modal 3: 分类设置（保存后生效，后台筛选与 C 端共用） -->
+    <Teleport to="body">
+    <transition name="modal-fade">
+      <div v-if="showCategoryModal" class="modal-backdrop" @click.self="showCategoryModal = false">
+        <div class="modal-dialog-box modal-md animate-slide-up">
+          <div class="modal-header">
+            <div class="modal-title-wrap">
+              <h3 class="modal-title">分类设置</h3>
+            </div>
+            <button class="modal-close-btn" @click="showCategoryModal = false">✕</button>
+          </div>
+
+          <div class="modal-body-scroll">
+            <p class="form-label-sub" style="margin: 0 0 12px;">维护直播分类列表，保存后后台筛选与 C 端直播页的分类选项同步更新。</p>
+
+            <div class="category-edit-list">
+              <div v-for="(name, idx) in categoryDraft" :key="idx" class="category-edit-row">
+                <input
+                  v-model="categoryDraft[idx]"
+                  type="text"
+                  class="form-input"
+                  placeholder="输入分类名称"
+                  maxlength="10"
+                />
+                <button class="category-remove-btn" title="删除该分类" @click="removeCategoryRow(idx)">✕</button>
+              </div>
+            </div>
+
+            <button class="category-add-btn" @click="addCategoryRow">＋ 新增分类</button>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-cancel" @click="showCategoryModal = false">取消</button>
+            <button class="btn-submit" @click="saveCategories">保存</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { appState, actions } from '../store';
+import { mallProductsMock } from '../data';
 import type { TencentMeetingRecord } from '../types';
 import '../client.css';
 
@@ -539,73 +636,282 @@ const resetFilters = () => {
   searchKeyword.value = '';
 };
 
-// Modal 1: Create Meeting
-const showCreateModal = ref(false);
-const createForm = ref({
-  title: '',
-  columnId: appState.columns[0]?.id || 'col-ai-1',
-  creator: '志诚',
-  scheduledStartTime: '2026-09-28 14:00'
-});
+// 创建人筛选选项：从同步数据自动带出
+const creatorOptions = computed(() =>
+  Array.from(new Set(appState.tencentMeetings.map(m => m.creator).filter(Boolean)))
+);
 
-const openCreateMeetingModal = () => {
-  createForm.value = {
-    title: '',
-    columnId: appState.columns[0]?.id || 'col-ai-1',
-    creator: '志诚',
-    scheduledStartTime: '2026-09-28 14:00'
-  };
-  showCreateModal.value = true;
+// 上架状态判定：已上架 / 已下架 / 待上架（已结束且录制已同步但未上架）
+const getShelfState = (m: TencentMeetingRecord): 'on' | 'off' | 'pending' | null => {
+  if (m.status !== 'finished') return null;
+  if (m.isOnShelf === true) return 'on';
+  if (m.isOnShelf === false) return 'off';
+  return 'pending';
 };
 
-const submitCreateMeeting = () => {
-  if (!createForm.value.title.trim()) {
-    actions.showToast('请输入会议主题');
-    return;
+const getShelfLabel = (m: TencentMeetingRecord) => {
+  const state = getShelfState(m);
+  if (state === 'on') return '已上架';
+  if (state === 'off') return '已下架';
+  if (state === 'pending') return '待上架';
+  return '—';
+};
+
+// 上架：简单动作 + 二次确认，展示内容统一在「设置」抽屉维护
+const confirmShelf = (m: TencentMeetingRecord) => {
+  const isReshelf = getShelfState(m) === 'off';
+  const msg = isReshelf
+    ? `确认重新上架《${m.title}》吗？\n沿用原上架时间（${m.shelfTime || '—'}）作为 7 天免费期起点，不重新计时。`
+    : `确认上架《${m.title}》吗？\n上架后 C 端立即可见，会员 7 天免费期从本次上架时间开始计算。单购价等展示内容可在「设置」中维护。`;
+  if (confirm(msg)) {
+    actions.shelfMeetingReplay(m.id);
   }
-  const col = appState.columns.find(c => c.id === createForm.value.columnId);
-  actions.createTencentMeeting({
-    title: createForm.value.title.trim(),
-    columnId: createForm.value.columnId,
-    columnTag: col ? col.title : '「AI产业」剖析',
-    creator: createForm.value.creator,
-    scheduledStartTime: createForm.value.scheduledStartTime
-  });
-  showCreateModal.value = false;
 };
 
-// Modal 2: Meeting Detail (Recording & AI Minutes)
+// 下架：免二次确认，C 端立即隐藏
+const handleUnshelf = (m: TencentMeetingRecord) => {
+  actions.unshelfMeetingReplay(m.id);
+};
+
+// 设置抽屉：预览 + 编辑（所有状态可打开）
 const showDetailModal = ref(false);
 const activeDetailMeeting = ref<TencentMeetingRecord | null>(null);
+const detailEditForm = ref({
+  columnTag: '',
+  creator: '',
+  cover: '',
+  replayPrice: undefined as number | undefined,
+  originPrice: undefined as number | undefined,
+  summary: '',
+  minutesMarkdown: '',
+  productId: ''
+});
+
+// 主讲人候选：星球成员名录
+const memberOptions = computed(() => appState.members.map(mb => ({ name: mb.name, avatar: mb.avatar })));
+
+// ===== 分类设置弹窗 =====
+const showCategoryModal = ref(false);
+// 编辑期间的本地副本，保存后才生效
+const categoryDraft = ref<string[]>([]);
+
+const openCategoryModal = () => {
+  categoryDraft.value = [...appState.liveCategories];
+  showCategoryModal.value = true;
+};
+
+const addCategoryRow = () => {
+  categoryDraft.value.push('');
+};
+
+const removeCategoryRow = (idx: number) => {
+  categoryDraft.value.splice(idx, 1);
+};
+
+const saveCategories = () => {
+  actions.applyLiveCategories(categoryDraft.value);
+  // 当前筛选分类被删除时重置筛选
+  if (filterColumn.value && !appState.liveCategories.includes(filterColumn.value)) {
+    filterColumn.value = '';
+  }
+  showCategoryModal.value = false;
+};
+
+// 打开腾讯会议云录制回放
+const openRecordingUrl = (m: TencentMeetingRecord) => {
+  if (m.recordUrl) {
+    window.open(m.recordUrl, '_blank');
+  } else {
+    actions.showToast('该会议暂未同步到云录制回放链接');
+  }
+};
+
+// ===== 操作列「更多」下拉菜单 =====
+const openMoreMenuId = ref<string | null>(null);
+
+const toggleMoreMenu = (id: string) => {
+  openMoreMenuId.value = openMoreMenuId.value === id ? null : id;
+};
+
+const closeMoreMenu = () => {
+  openMoreMenuId.value = null;
+};
+
+// 点击菜单外部时收起下拉
+const onDocClick = () => closeMoreMenu();
+
+onMounted(() => document.addEventListener('click', onDocClick));
+onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
+
+type MoreMenuAction = 'record' | 'shelf' | 'unshelf' | 'delete';
+
+const menuAction = (type: MoreMenuAction, m: TencentMeetingRecord) => {
+  closeMoreMenu();
+  if (type === 'record') {
+    openRecordingUrl(m);
+  } else if (type === 'shelf') {
+    confirmShelf(m);
+  } else if (type === 'unshelf') {
+    handleUnshelf(m);
+  } else {
+    handleDelete(m);
+  }
+};
 
 const openRecordingModal = (m: TencentMeetingRecord) => {
   activeDetailMeeting.value = m;
+  detailEditForm.value = {
+    columnTag: m.columnTag || '',
+    creator: m.creator || '',
+    cover: '',
+    replayPrice: m.replayPrice,
+    originPrice: m.originPrice,
+    summary: m.summary || '',
+    minutesMarkdown: m.minutesMarkdown || '',
+    productId: m.productId || ''
+  };
   showDetailModal.value = true;
+  // 抽屉渲染后把纪要内容灌入富文本编辑器
+  nextTick(syncRichEditor);
 };
 
-const openMinutesDetail = (m: TencentMeetingRecord) => {
-  activeDetailMeeting.value = m;
-  showDetailModal.value = true;
+// 更换封面（保存后生效）
+const handleCoverChange = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (file) {
+    detailEditForm.value.cover = URL.createObjectURL(file);
+  }
+  input.value = '';
 };
 
-const playInGlobalPlayer = () => {
-  if (activeDetailMeeting.value) {
-    actions.playLesson(activeDetailMeeting.value.columnTag || '腾讯会议云录播', activeDetailMeeting.value.title);
+// ===== AI 会议纪要富文本编辑器（原型：execCommand 实现，参考专栏写文章编辑器） =====
+const richEditorRef = ref<HTMLDivElement | null>(null);
+
+const syncRichEditor = () => {
+  nextTick(() => {
+    if (richEditorRef.value) {
+      richEditorRef.value.innerHTML = detailEditForm.value.minutesMarkdown || '';
+    }
+  });
+};
+
+const execRichCmd = (cmd: string, val?: string) => {
+  richEditorRef.value?.focus();
+  document.execCommand(cmd, false, val);
+  onRichInput();
+};
+
+const onRichInput = () => {
+  if (richEditorRef.value) {
+    detailEditForm.value.minutesMarkdown = richEditorRef.value.innerHTML;
   }
 };
 
-const handleEnterMeeting = (m: TencentMeetingRecord) => {
-  actions.showToast(`正在跳转腾讯会议，会议号：${m.meetingCode}`);
+// ---------- 工具栏：图片插入（本地选择 / 截图粘贴），交互与专栏写文章一致 ----------
+const minutesImageInputRef = ref<HTMLInputElement | null>(null);
+let savedRange: Range | null = null;
+
+const handleMinutesImageButton = () => {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0 && richEditorRef.value?.contains(sel.anchorNode)) {
+    savedRange = sel.getRangeAt(0).cloneRange();
+  }
+  minutesImageInputRef.value?.click();
+};
+
+const insertMinutesImageFiles = (files: File[]) => {
+  const images = files.filter(f => f.type.startsWith('image/'));
+  if (!images.length) return;
+  Promise.all(images.map(f => new Promise<string>(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsDataURL(f);
+  }))).then(urls => {
+    richEditorRef.value?.focus();
+    if (savedRange) {
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(savedRange);
+      savedRange = null;
+    }
+    document.execCommand('insertHTML', false, urls.map(u => `<img src="${u}" alt="">`).join(''));
+    onRichInput();
+  });
+};
+
+const handleMinutesImageFilesChange = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  const files = Array.from(input.files || []);
+  input.value = '';
+  insertMinutesImageFiles(files);
+};
+
+// 粘贴处理：截图等图片文件直接插入纪要；网页富文本剔除隐藏图片杂质后插入
+const sanitizePastedHtml = (html: string): string => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script, style, iframe, video, audio, link, meta').forEach(el => el.remove());
+  doc.querySelectorAll('img').forEach(el => {
+    const src = el.getAttribute('src') || '';
+    if (src.startsWith('data:image/')) return; // 截图类内联图片保留
+    el.remove();
+  });
+  return doc.body.innerHTML;
+};
+
+const handleMinutesPaste = (e: ClipboardEvent) => {
+  const cd = e.clipboardData;
+  if (!cd) return;
+  const imageFiles = Array.from(cd.files || []).filter(f => f.type.startsWith('image/'));
+  if (imageFiles.length) {
+    e.preventDefault();
+    insertMinutesImageFiles(imageFiles);
+    return;
+  }
+  const html = cd.getData('text/html');
+  if (!html) return;
+  e.preventDefault();
+  document.execCommand('insertHTML', false, sanitizePastedHtml(html));
+  onRichInput();
+};
+
+const insertMinutesLink = () => {
+  const url = prompt('请输入链接地址', 'https://');
+  if (url) execRichCmd('createLink', url);
+};
+
+const previewRecording = () => {
+  actions.showToast('云录制切片预览（原型演示）');
+};
+
+// 已解锁人数来自绑定商城商品的销量，订单明细直接跳转商城订单中心
+const viewBoundOrders = () => {
+  actions.showToast('正在跳转商城订单中心，已按本场回放绑定的商品过滤订单');
+};
+
+const saveDetailEdit = () => {
+  const target = activeDetailMeeting.value;
+  if (!target) return;
+  // 主讲人：选中成员后带出头像一并保存
+  const picked = memberOptions.value.find(mb => mb.name === detailEditForm.value.creator);
+  actions.updateMeetingReplayConfig(target.id, {
+    columnTag: detailEditForm.value.columnTag,
+    creator: detailEditForm.value.creator,
+    creatorAvatar: picked?.avatar || '',
+    cover: detailEditForm.value.cover,
+    replayPrice: detailEditForm.value.replayPrice,
+    originPrice: detailEditForm.value.originPrice,
+    summary: detailEditForm.value.summary.trim(),
+    minutesMarkdown: detailEditForm.value.minutesMarkdown.trim(),
+    productId: detailEditForm.value.productId
+  });
+  showDetailModal.value = false;
 };
 
 const handleDelete = (m: TencentMeetingRecord) => {
   if (confirm(`确定要删除会议《${m.title}》吗？`)) {
     actions.deleteTencentMeeting(m.id);
   }
-};
-
-const settleToColumn = (m: TencentMeetingRecord) => {
-  actions.settleMeetingToColumn(m.id, m.columnId);
 };
 </script>
 
@@ -667,31 +973,6 @@ const settleToColumn = (m: TencentMeetingRecord) => {
 }
 
 .btn-sync-wemeet:active {
-  transform: translateY(1px);
-}
-
-.btn-new-meeting {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #1e293b;
-  padding: 7px 15px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-new-meeting:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  color: #0f172a;
-}
-
-.btn-new-meeting:active {
   transform: translateY(1px);
 }
 
@@ -806,7 +1087,8 @@ const settleToColumn = (m: TencentMeetingRecord) => {
 
 .meeting-records-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 1100px;
 }
 
@@ -831,6 +1113,33 @@ const settleToColumn = (m: TencentMeetingRecord) => {
 }
 
 .table-data-row:hover td {
+  background: #fcfcfd;
+}
+
+/* 操作列固定右侧：横向滚动时始终可见 */
+.meeting-records-table th.col-actions,
+.meeting-records-table td.col-actions {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  text-align: left;
+}
+
+/* 展开更多菜单时提升层级，避免被下方行的固定列遮挡 */
+.meeting-records-table td.col-actions.menu-open {
+  z-index: 30;
+}
+
+.meeting-records-table th.col-actions {
+  background: #f8fafc;
+}
+
+.meeting-records-table td.col-actions {
+  background: #ffffff;
+  box-shadow: -6px 0 8px -6px rgba(15, 23, 42, 0.18);
+}
+
+.table-data-row:hover td.col-actions {
   background: #fcfcfd;
 }
 
@@ -884,7 +1193,20 @@ const settleToColumn = (m: TencentMeetingRecord) => {
   text-overflow: ellipsis;
 }
 
-/* Column 4: 创建人 */
+/* Column 4: 主讲人 */
+.creator-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.creator-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+}
 .creator-name {
   font-size: 14px;
   color: #334155;
@@ -991,6 +1313,65 @@ const settleToColumn = (m: TencentMeetingRecord) => {
   text-decoration: underline;
 }
 
+.op-link-btn.record-btn {
+  color: #7c3aed;
+}
+.op-link-btn.record-btn:hover {
+  text-decoration: underline;
+}
+
+.op-link-btn.more-btn {
+  color: #475569;
+}
+.op-link-btn.more-btn:hover {
+  text-decoration: underline;
+}
+
+/* 更多下拉菜单 */
+.more-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.more-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 104px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.more-menu-item {
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.more-menu-item:hover {
+  background: #f1f5f9;
+}
+
+.more-menu-item.is-danger {
+  color: #dc2626;
+}
+
+.more-menu-item.is-danger:hover {
+  background: #fef2f2;
+}
+
 .op-link-btn.settle-btn {
   color: #059669;
 }
@@ -1003,6 +1384,159 @@ const settleToColumn = (m: TencentMeetingRecord) => {
 }
 .op-link-btn.danger-btn:hover {
   text-decoration: underline;
+}
+
+.op-link-btn.offline-btn {
+  color: #ea580c;
+}
+.op-link-btn.offline-btn:hover {
+  text-decoration: underline;
+}
+
+/* 上架状态标签 */
+.shelf-state-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.shelf-state-tag.shelf-on {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+.shelf-state-tag.shelf-off {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+.shelf-state-tag.shelf-pending {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.cell-empty-text {
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.price-cell-text,
+.num-cell-text {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+/* 设置抽屉：封面编辑 */
+.cover-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cover-preview-img {
+  width: 160px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+}
+.cover-edit-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.btn-upload-cover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+.btn-upload-cover:hover {
+  background: #f8fafc;
+}
+.cover-file-input {
+  display: none;
+}
+.cover-edit-tip {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0f172a;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.form-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.form-label-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 4px 0 8px;
+}
+
+/* 详情弹窗数据行 */
+.detail-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin: 14px 0 18px;
+  flex-wrap: wrap;
+}
+.detail-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.detail-stat-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+.detail-stat-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.btn-view-orders {
+  margin-left: auto;
+  padding: 7px 14px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+.btn-view-orders:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
 }
 
 /* Empty State in Table */
@@ -1193,6 +1727,14 @@ const settleToColumn = (m: TencentMeetingRecord) => {
   max-width: 720px;
 }
 
+.modal-body-scroll {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .modal-header {
   padding: 16px 20px;
   border-bottom: 1px solid #e2e8f0;
@@ -1235,27 +1777,6 @@ const settleToColumn = (m: TencentMeetingRecord) => {
   color: #0f172a;
 }
 
-.modal-body-scroll {
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.wemeet-notice-pill {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  font-size: 12.5px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  line-height: 1.4;
-}
-
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1293,41 +1814,6 @@ const settleToColumn = (m: TencentMeetingRecord) => {
 
 .form-input:focus, .form-select:focus {
   border-color: #2563eb;
-}
-
-.wemeet-features-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.feature-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.feature-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.feature-checkbox {
-  accent-color: #2563eb;
-}
-
-.feature-sub {
-  font-size: 11.5px;
-  color: #64748b;
-  padding-left: 24px;
 }
 
 /* Video Player in Modal */
@@ -1444,89 +1930,6 @@ const settleToColumn = (m: TencentMeetingRecord) => {
   margin: 0;
 }
 
-.btn-settle-action {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #059669;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-settle-action:hover {
-  background: #d1fae5;
-}
-
-.settled-status-tag {
-  font-size: 12px;
-  font-weight: 600;
-  color: #059669;
-}
-
-.summary-highlight-card {
-  background: #f8fafc;
-  border-left: 3px solid #2563eb;
-  padding: 10px 14px;
-  border-radius: 0 6px 6px 0;
-}
-
-.summary-lead {
-  font-size: 13px;
-  color: #1e293b;
-}
-
-.summary-paragraph {
-  font-size: 13px;
-  color: #475569;
-  line-height: 1.55;
-  margin: 4px 0 0 0;
-}
-
-.section-subheading {
-  font-size: 13px;
-  font-weight: 700;
-  color: #334155;
-  margin: 0 0 8px 0;
-}
-
-.minutes-keypoints-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.minute-point-row {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  font-size: 13px;
-  color: #334155;
-  line-height: 1.5;
-}
-
-.point-bullet {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #eff6ff;
-  color: #2563eb;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.point-text {
-  margin: 0;
-  flex: 1;
-}
-
 .modal-footer {
   padding: 14px 20px;
   border-top: 1px solid #e2e8f0;
@@ -1570,5 +1973,195 @@ const settleToColumn = (m: TencentMeetingRecord) => {
 }
 .modal-fade-enter-from, .modal-fade-leave-to {
   opacity: 0;
+}
+
+/* ===== 分类设置入口（次级按钮样式） ===== */
+.btn-sync-wemeet.is-ghost {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+.btn-sync-wemeet.is-ghost:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+/* ===== 分类设置弹窗 ===== */
+.category-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.category-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-remove-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.category-remove-btn:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.category-add-btn {
+  width: 100%;
+  padding: 8px 0;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: transparent;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.category-add-btn:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+/* ===== 录播设置抽屉（右侧滑入，与长文详情抽屉同模式） ===== */
+.cms-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 2100;
+}
+
+.cms-drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(680px, 94vw);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.18);
+}
+
+.cms-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.drawer-h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.drawer-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.drawer-slide-enter-active, .drawer-slide-leave-active {
+  transition: opacity 0.2s ease;
+}
+.drawer-slide-enter-active .cms-drawer-panel, .drawer-slide-leave-active .cms-drawer-panel {
+  transition: transform 0.28s ease;
+}
+.drawer-slide-enter-from, .drawer-slide-leave-to {
+  opacity: 0;
+}
+.drawer-slide-enter-from .cms-drawer-panel, .drawer-slide-leave-to .cms-drawer-panel {
+  transform: translateX(100%);
+}
+
+/* ===== AI 会议纪要富文本编辑器 ===== */
+.rich-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border: 1px solid #e2e8f0;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: #f8fafc;
+  flex-wrap: wrap;
+}
+.rich-toolbar button {
+  border: none;
+  background: transparent;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  color: #334155;
+  cursor: pointer;
+  min-width: 26px;
+}
+.rich-toolbar button:hover {
+  background: #e2e8f0;
+}
+.rich-divider {
+  width: 1px;
+  height: 14px;
+  background: #e2e8f0;
+  margin: 0 4px;
+}
+
+.rich-editor {
+  min-height: 440px;
+  max-height: 640px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 0 8px 8px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #1e293b;
+  outline: none;
+  background: #ffffff;
+}
+.rich-editor:focus {
+  border-color: #93c5fd;
+}
+.rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  pointer-events: none;
+}
+.rich-editor img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+.product-select {
+  cursor: pointer;
 }
 </style>

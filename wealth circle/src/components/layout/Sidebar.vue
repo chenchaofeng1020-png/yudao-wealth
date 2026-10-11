@@ -12,8 +12,8 @@
     <!-- Main Navigation List -->
     <nav class="nav-section">
       <ul class="nav-list">
-        <!-- Search: 直接显示输入框 -->
-        <li class="nav-item search-expanded">
+        <!-- Search: 点击直接打开搜索弹窗，关键词在弹窗内输入 -->
+        <li class="nav-item search-expanded" @click="openSearchModal" title="点击打开全站搜索">
           <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -22,9 +22,25 @@
             v-model="searchQuery"
             class="search-inline-input"
             type="text"
-            placeholder="搜索主题、专栏..."
-            @keyup.enter="handleSearch"
+            placeholder="全站搜索..."
+            readonly
           />
+          <svg
+            v-if="searchQuery"
+            class="search-clear-icon"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            title="清空搜索"
+            @click.stop="clearSearch"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
         </li>
 
         <li
@@ -167,16 +183,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { appState, actions } from '@/stores/community';
 
-// 搜索输入框：常驻显示，回车触发搜索
-const searchQuery = ref('');
+// 搜索入口：点击搜索框直接打开搜索弹窗，关键词在弹窗内输入
+// 输入文本存于全局状态，便于与搜索弹窗输入框双向同步
+const searchQuery = computed({
+  get: () => appState.searchInput,
+  set: (val: string) => {
+    appState.searchInput = val;
+  },
+});
 
-const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    actions.showToast(`已搜索关键词: "${searchQuery.value.trim()}"`);
-  }
+const openSearchModal = () => actions.openSearchModal();
+
+const clearSearch = () => {
+  appState.searchInput = '';
+  appState.searchKeyword = '';
+  actions.closeSearchModal();
 };
 
 // 品牌 + 用户菜单逻辑（自顶栏迁移）
@@ -272,13 +296,13 @@ onUnmounted(() => {
 }
 
 .nav-item:not(.search-expanded):hover {
-  background: var(--bg-sidebar-hover);
+  background: rgba(226, 232, 240, 0.65);
   color: var(--text-primary);
 }
 
 .nav-item.active {
-  background: var(--bg-sidebar-hover);
-  color: var(--brand-green);
+  background: #ffffff;
+  color: #0f172a;
   font-weight: 600;
 }
 
@@ -288,6 +312,7 @@ onUnmounted(() => {
   height: 6px;
   border-radius: 50%;
   background: var(--brand-green);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -387,12 +412,18 @@ onUnmounted(() => {
 
 /* 搜索输入框：常驻显示，聚焦时绿色描边 */
 .search-expanded {
-  background: var(--bg-subtle);
-  border: 1px solid #eef2f7;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(226, 232, 240, 0.95);
   border-radius: 8px;
   padding: 0 11px;
-  cursor: text;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
   transition: all var(--transition-fast);
+}
+
+.search-expanded:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
 }
 
 .search-expanded:focus-within {
@@ -411,6 +442,19 @@ onUnmounted(() => {
   outline: none;
   padding: 0;
   box-shadow: none;
+  cursor: pointer;
+}
+
+.search-clear-icon {
+  color: #94a3b8;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 6px;
+  transition: color var(--transition-fast);
+}
+
+.search-clear-icon:hover {
+  color: #475569;
 }
 
 /* VIP Entry Button */

@@ -1,6 +1,6 @@
-import { reactive, computed, ref } from 'vue';
-import { User, Post, Column, Course, LiveSession, MemberRecord, UserRole, TencentMeetingRecord } from './types';
-import { currentUserMock, demoVipUserMock, demoGuestUserMock, initialPostsMock, columnsMock, coursesMock, liveSessionsMock, membersMock, tencentMeetingsMock } from './data';
+import { reactive, computed } from 'vue';
+import { User, Post, Column, Course, CourseLesson, LiveSession, MemberRecord, UserRole, TencentMeetingRecord } from './types';
+import { currentUserMock, demoVipUserMock, demoGuestUserMock, initialPostsMock, columnsMock, coursesMock, liveSessionsMock, membersMock, tencentMeetingsMock, liveCategoriesMock, mallProductsMock } from './data';
 
 export type AppView = 'feed' | 'column' | 'course' | 'live' | 'user' | 'admin_column' | 'admin_live' | 'admin_course' | 'admin_members' | 'admin_content';
 
@@ -33,6 +33,8 @@ export const appState = reactive({
   liveSessions: [...liveSessionsMock] as LiveSession[],
   members: [...membersMock] as MemberRecord[],
   tencentMeetings: [...tencentMeetingsMock] as TencentMeetingRecord[],
+  // 直播分类（后台「分类设置」维护，后台筛选与 C 端直播页共用）
+  liveCategories: [...liveCategoriesMock] as string[],
   
   // 弹窗状态
   isPublishModalOpen: false,
@@ -372,28 +374,31 @@ export const actions = {
       chapterCount: 1,
       tags: ['实战专栏'],
       status: 'published',
+      // 排序号越大越靠前：新专栏取当前最大值 +1，保证排在目录最前
+      sortNo: Math.max(0, ...appState.columns.map(c => c.sortNo ?? 0)) + 1,
       chapters: [
         {
           id: 'ch-new-1',
           title: '发刊词：把握确定性',
-          duration: '15分钟',
           wordCount: 3200,
-          isFreeTrial: true,
+          status: 'published',
           updatedAt: '今天',
           readCount: 1,
+          readerCount: 1,
+          likesCount: 0,
           summary: '新专栏发刊词内容'
         }
       ]
     };
     appState.columns.unshift(newCol);
-    actions.showToast('专栏发布成功！已在学习中心上架');
+    actions.showToast('专栏创建成功！已在学习中心上架');
   },
 
   // 管理后台：下架专栏
   toggleColumnStatus(colId: string) {
     const col = appState.columns.find(c => c.id === colId);
     if (col) {
-      col.status = col.status === 'published' ? 'draft' : 'published';
+      col.status = col.status === 'published' ? 'archived' : 'published';
       actions.showToast(`专栏《${col.title}》已${col.status === 'published' ? '上架' : '下架'}`);
     }
   },
@@ -549,42 +554,10 @@ export const actions = {
         item.recordDuration = '1小时20分钟';
         item.recordSize = '1.18 GB';
         item.recordUrl = 'https://cdn.wealth-circle.com/tencent-meeting/rec_340592206.mp4';
-        item.aiMinutes = [
-          '1. 结构化固收+工具特点与散户适用边界。',
-          '2. 利率债与可转债底仓配置比例，如何动态平衡贝塔收益与下行回撤。',
-          '3. 问答汇总：解答了关于中短债基金换手率及同业存单配置风险的提问。'
-        ];
+        item.minutesMarkdown = '1. 结构化固收+工具特点与散户适用边界。\n2. 利率债与可转债底仓配置比例，如何动态平衡贝塔收益与下行回撤。\n3. 问答汇总：解答了关于中短债基金换手率及同业存单配置风险的提问。';
       }
       actions.showToast('✅ 腾讯会议同步完成！已成功拉取最新云录制切片与 AI 纪要');
     }, 900);
-  },
-
-  // 发起新腾讯会议 / 直播排期
-  createTencentMeeting(data: Partial<TencentMeetingRecord>) {
-    // 随机生成 9 位格式化腾讯会议号: "xxx xxx xxx"
-    const p1 = Math.floor(100 + Math.random() * 900);
-    const p2 = Math.floor(100 + Math.random() * 900);
-    const p3 = Math.floor(100 + Math.random() * 900);
-    const code = `${p1} ${p2} ${p3}`;
-    const cleanCode = `${p1}${p2}${p3}`;
-
-    const newMeeting: TencentMeetingRecord = {
-      id: 'tm-' + Date.now(),
-      meetingCode: code,
-      title: data.title || '【前沿研讨】宏观大势与资产配置闭门会',
-      columnTag: data.columnTag || '「AI产业」剖析',
-      columnId: data.columnId || 'col-ai-1',
-      summary: '——',
-      creator: data.creator || appState.user.name,
-      status: 'upcoming',
-      scheduledStartTime: data.scheduledStartTime || '2026-09-25 20:00',
-      actualStartTime: '——',
-      joinUrl: `https://meeting.tencent.com/dm/${cleanCode}`,
-      isSettledToColumn: false
-    };
-
-    appState.tencentMeetings.unshift(newMeeting);
-    actions.showToast(`已成功发起腾讯会议，会议号：${code}！`);
   },
 
   // 删除腾讯会议记录
@@ -603,30 +576,72 @@ export const actions = {
     actions.showToast('腾讯会议排期与录制数据已重置');
   },
 
-  // 一键将腾讯会议录播与 AI 纪要沉淀至专栏长文
-  settleMeetingToColumn(meetingId: string, targetColId?: string) {
+  // 录播上架：简单动作，展示内容（价格/封面/简介/纪要等）由「设置」抽屉统一维护
+  shelfMeetingReplay(meetingId: string) {
     const meeting = appState.tencentMeetings.find(m => m.id === meetingId);
     if (!meeting) return;
 
-    const colId = targetColId || meeting.columnId || 'col-ai-1';
-    const col = appState.columns.find(c => c.id === colId) || appState.columns[0];
-    if (col) {
-      const newChapter = {
-        id: 'ch-live-' + Date.now(),
-        title: `【直播纪要】${meeting.title.replace(/^【.*?】/, '')}`,
-        author: meeting.creator,
-        wordCount: 4200,
-        summary: meeting.summary || '腾讯会议云录制及 AI 智能纪要核心沉淀。',
-        isFreeTrial: true,
-        isPinned: false,
-        tags: [meeting.columnTag?.replace(/[「」]/g, '') || '会议录播', 'AI纪要'],
-        createdAt: '刚刚',
-        updatedAt: '刚刚',
-        readCount: 1
-      };
-      col.chapters.unshift(newChapter);
-      meeting.isSettledToColumn = true;
-      actions.showToast(`已成功将本场会议录播沉淀至专栏《${col.title}》！`);
+    const isFirstShelf = meeting.isOnShelf !== true; // 首次上架才起算免费期，重新上架沿用原绑定
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const shelfTime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+    meeting.isOnShelf = true;
+    if (!meeting.replayPrice) meeting.replayPrice = 49; // 未配置价格时给默认单购价，可在设置中修改
+    if (isFirstShelf) {
+      meeting.shelfTime = shelfTime;
+      meeting.daysSinceShelf = 0;
     }
+
+    actions.showToast(isFirstShelf
+      ? `✅ 录播已上架，单购价 ¥${meeting.replayPrice}，会员限免 7 天自即日起算`
+      : `✅ 录播已重新上架，免费期沿用原上架时间（${meeting.shelfTime}）`);
+  },
+
+  // 录播下架：C 端回放画廊不再展示，历史配置保留
+  unshelfMeetingReplay(meetingId: string) {
+    const meeting = appState.tencentMeetings.find(m => m.id === meetingId);
+    if (meeting) {
+      meeting.isOnShelf = false;
+      actions.showToast(`已下架录播：《${meeting.title.slice(0, 16)}...》`);
+    }
+  },
+
+  // 保存录播的编辑内容（分类 / 主讲人 / 封面 / 简介 / AI 纪要 / 定价 / 关联商城商品）
+  updateMeetingReplayConfig(meetingId: string, patch: {
+    columnTag?: string;
+    creator?: string;
+    creatorAvatar?: string;
+    replayPrice?: number;
+    originPrice?: number;
+    summary?: string;
+    cover?: string;
+    minutesMarkdown?: string;
+    productId?: string;
+  }) {
+    const meeting = appState.tencentMeetings.find(m => m.id === meetingId);
+    if (!meeting) return;
+    if (patch.columnTag !== undefined) meeting.columnTag = patch.columnTag;
+    if (patch.creator !== undefined) meeting.creator = patch.creator;
+    if (patch.creatorAvatar !== undefined) meeting.creatorAvatar = patch.creatorAvatar || undefined;
+    if (typeof patch.replayPrice === 'number') meeting.replayPrice = patch.replayPrice;
+    if (patch.originPrice !== undefined) meeting.originPrice = patch.originPrice;
+    if (patch.summary !== undefined) meeting.summary = patch.summary;
+    if (patch.cover) meeting.cover = patch.cover;
+    if (patch.minutesMarkdown !== undefined) meeting.minutesMarkdown = patch.minutesMarkdown;
+    if (patch.productId !== undefined) meeting.productId = patch.productId;
+    actions.showToast('已保存修改，C 端将同步更新');
+  },
+
+  // ===== 直播分类设置 =====
+  // 保存分类列表（整体替换，去空去重）
+  applyLiveCategories(list: string[]) {
+    const cleaned = Array.from(new Set(list.map(s => s.trim()).filter(Boolean)));
+    if (cleaned.length === 0) {
+      actions.showToast('请至少保留一个分类');
+      return;
+    }
+    appState.liveCategories = cleaned;
+    actions.showToast('分类设置已保存');
   }
 };

@@ -239,7 +239,8 @@ const getBenefitTheme = (name: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  /* 高于全部业务弹窗：星友在搜索结果弹窗等场景触发开通会员时需置顶展示 */
+  z-index: 1300;
   padding: 16px;
   overflow-y: auto;
 }

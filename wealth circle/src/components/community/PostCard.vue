@@ -33,6 +33,12 @@
       </div>
     </div>
 
+    <!-- 提问标识行：提问帖在作者行下方展示被提问人 -->
+    <div v-if="post.questionTarget" class="question-indicator">
+      <span class="question-badge">提问</span>
+      <span class="question-lead">向 <span class="question-target">{{ post.questionTarget }}</span> 提问：</span>
+    </div>
+
     <!-- Post Title Row (Tags in sky blue + Title in bold text) -->
     <div v-if="post.title || (post.tags && post.tags.length)" class="post-title-row">
       <span 
@@ -50,7 +56,7 @@
 
     <!-- Post Content Container -->
     <div class="post-content-container">
-      <div ref="postTextRef" :class="['post-text', { 'vip-locked-blur': isLockedForUser, 'text-collapsed': !isExpanded }]">
+      <div ref="postTextRef" :class="['post-text', { 'text-collapsed': !isExpanded }]">
         <p
           v-for="(paragraph, idx) in formattedParagraphs"
           :key="idx"
@@ -61,7 +67,7 @@
 
       <!-- Expand / Collapse Button（正文超过折叠行数时才显示） -->
       <div v-if="!hideExpand && contentOverflow" class="expand-action-row">
-        <span class="expand-btn" @click="isExpanded = !isExpanded">
+        <span class="expand-btn" @click="handleExpandToggle">
           {{ isExpanded ? '收起全部' : '展开全部' }}
         </span>
       </div>
@@ -78,27 +84,39 @@
         </span>
       </div>
 
-      <!-- VIP Paywall Overlay if locked -->
-      <div v-if="isLockedForUser" class="vip-lock-overlay">
-        <div class="lock-icon-wrap">🔒</div>
-        <div class="lock-title">本篇为「财不外露」私享会员独享研报</div>
-        <p class="lock-tip">已包含深度安全边际估值模型与底仓清单</p>
-        <button class="btn-vip" @click="appState.isVipJoinModalOpen = true">
-          开通会员
-        </button>
-      </div>
     </div>
 
     <!-- Attached Images / Chart Preview -->
-    <div v-if="post.images && post.images.length && !isLockedForUser" class="post-images-container">
-      <div 
-        v-for="(img, idx) in post.images" 
-        :key="idx" 
+    <div v-if="post.images && post.images.length" class="post-images-container">
+      <div
+        v-for="(img, idx) in post.images"
+        :key="idx"
         class="chart-img-wrap"
-        @click="actions.showToast('点击查看高清大图')"
+        @click="openImageViewer(post.images!, idx)"
       >
         <img :src="img" class="feed-chart-img" alt="研究图表" />
       </div>
+    </div>
+
+    <!-- Attached Attachments：正文下方按选择顺序展示附件（图片缩略图 / 文档行） -->
+    <div v-if="post.attachments && post.attachments.length" class="post-attachments">
+      <template v-for="(a, idx) in post.attachments" :key="idx">
+        <img
+          v-if="a.type === 'image'"
+          :src="a.url"
+          class="post-attach-img"
+          alt="附件图片"
+          @click="openAttachmentImage(idx)"
+        />
+        <div v-else class="post-file-row">
+          <FileTypeIcon :name="a.name" :size="18" />
+          <span class="post-file-name">{{ a.name }}</span>
+          <span class="post-file-size">{{ formatFileSize(a.size) }}</span>
+          <a class="post-file-download" :href="a.url" :download="a.name" title="下载" @click.stop>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </a>
+        </div>
+      </template>
     </div>
 
     <!-- Action Bar (Likes, Comments, Favorite, Report, Share, Detail) -->
@@ -213,12 +231,30 @@
         {{ commentsExpanded ? '收起' : '展开' }}
       </div>
     </div>
+
+    <!-- 图片大图查看器：全屏遮罩（挂载到 body），左右箭头/键盘切换 -->
+    <Teleport to="body">
+      <div v-if="viewer" class="img-lightbox" @click.self="closeViewer">
+        <button class="lb-close" title="关闭 (Esc)" @click="closeViewer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <button v-if="viewer.images.length > 1" class="lb-nav lb-prev" title="上一张" @click.stop="stepViewer(-1)">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <img :src="viewer.images[viewer.index]" class="lb-img" alt="大图预览" @click.stop />
+        <button v-if="viewer.images.length > 1" class="lb-nav lb-next" title="下一张" @click.stop="stepViewer(1)">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <div v-if="viewer.images.length > 1" class="lb-counter">{{ viewer.index + 1 }} / {{ viewer.images.length }}</div>
+      </div>
+    </Teleport>
   </article>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { Post, UserRole } from '@/types';
+import FileTypeIcon from '@/components/common/FileTypeIcon.vue';
 import { appState, actions } from '@/stores/community';
 
 const props = withDefaults(defineProps<{
@@ -238,6 +274,39 @@ const commentsExpanded = ref(false);
 const commentsOverflow = ref(false);
 const postTextRef = ref<HTMLElement>();
 const contentOverflow = ref(false);
+
+// 图片大图查看器：左右切换、Esc 关闭
+const viewer = ref<{ images: string[]; index: number } | null>(null);
+
+const openImageViewer = (images: string[], index: number) => {
+  if (!images.length) return;
+  viewer.value = { images, index };
+};
+
+// 附件图片点击：按附件顺序构建图片列表并定位
+const openAttachmentImage = (attachIdx: number) => {
+  const imgs: string[] = [];
+  let at = 0;
+  (props.post.attachments || []).forEach((a, i) => {
+    if (a.type === 'image') {
+      if (i < attachIdx) at++;
+      imgs.push(a.url);
+    }
+  });
+  openImageViewer(imgs, at);
+};
+
+const stepViewer = (delta: number) => {
+  if (!viewer.value) return;
+  const n = viewer.value.images.length;
+  viewer.value.index = (viewer.value.index + delta + n) % n;
+};
+
+const closeViewer = () => { viewer.value = null; };
+
+// 附件大小格式化
+const formatFileSize = (size: number) =>
+  size >= 1024 * 1024 ? `${(size / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(size / 1024))} KB`;
 
 // 帖子正文是否超过折叠行数（只在收起态测量一次，超出才显示展开按钮）
 const checkContentOverflow = () => {
@@ -267,25 +336,38 @@ const formattedParagraphs = computed(() => {
 
 const formatMarkdown = (text: string) => {
   if (!text) return '';
-  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // 先转义 HTML，再做加粗与链接识别，保证纯文本安全渲染
+  let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // 粘贴的链接识别为蓝色超链接（非卡片），点击新窗口打开
+  html = html.replace(/(https?:\/\/[^\s<]+)/g, '<a class="content-link" href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  return html;
 };
 
-const isLockedForUser = computed(() => {
-  if (!props.post.isVipOnly) return false;
-  if (appState.user.role === 'founder' || appState.user.role === 'partner' || appState.user.role === 'vip') {
-    return false;
-  }
-  return true;
-});
-
-const isGuestUser = computed(() => appState.user.role === 'guest');
+// 星友（未开通会员的注册用户）：列表内容全部可见，仅深入查看动作（展开全部/查看详情）时校验会员身份
+const isStarFriend = computed(
+  () => !appState.isVipMember && ['member', 'guest'].includes(appState.user.role),
+);
 
 // 评论输入框默认收起，点击"讨论"按钮展开/收起
 const isCommentInputVisible = ref(false);
 
-// 查看详情：非会员视角引导开通会员，其余正常打开帖子详情
+// 展开全部：非会员弹出开通会员弹窗；收起不做校验
+const handleExpandToggle = () => {
+  if (isExpanded.value) {
+    isExpanded.value = false;
+    return;
+  }
+  if (isStarFriend.value) {
+    appState.isVipJoinModalOpen = true;
+    return;
+  }
+  isExpanded.value = true;
+};
+
+// 查看详情：非会员引导开通会员，其余正常打开帖子详情
 const handleDetailClick = () => {
-  if (isGuestUser.value) {
+  if (isStarFriend.value) {
     appState.isVipJoinModalOpen = true;
     return;
   }
@@ -302,14 +384,27 @@ const canEditDelete = computed(() => appState.user.role === 'founder' || isCreat
 
 // 点击页面其他区域时关闭菜单
 const onDocClick = () => { menuOpen.value = false; };
+
+// 键盘：Esc 关闭查看器，左右方向键切换图片
+const onKeydown = (e: KeyboardEvent) => {
+  if (!viewer.value) return;
+  if (e.key === 'Escape') closeViewer();
+  if (e.key === 'ArrowLeft') stepViewer(-1);
+  if (e.key === 'ArrowRight') stepViewer(1);
+};
+
 onMounted(() => {
   document.addEventListener('click', onDocClick);
+  document.addEventListener('keydown', onKeydown);
   nextTick(() => {
     checkCommentsOverflow();
     checkContentOverflow();
   });
 });
-onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick);
+  document.removeEventListener('keydown', onKeydown);
+});
 
 const handleCopyLink = async () => {
   menuOpen.value = false;
@@ -341,10 +436,10 @@ const submitComment = () => {
 <style scoped>
 .post-card {
   background: #ffffff;
-  border: 1px solid #eaedf1;
-  border-radius: var(--radius-card);
+  border: none;
+  border-radius: 8px;
   padding: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
   box-shadow: none;
 }
 
@@ -353,6 +448,35 @@ const submitComment = () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+}
+
+/* 提问标识行：绿色「提问」标签 + 被提问人 */
+.question-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.question-badge {
+  flex-shrink: 0;
+  background: #e8f7ef;
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.question-lead {
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.question-target {
+  color: rgb(2, 132, 199);
+  font-weight: 600;
 }
 
 .author-left {
@@ -607,6 +731,63 @@ const submitComment = () => {
   object-fit: cover;
 }
 
+/* Attached Attachments：按选择顺序展示附件（图片缩略图 / 文档行） */
+.post-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 14px 0;
+}
+
+.post-attach-img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+/* 文档行独占一行，flex-wrap 保证与图片按选择顺序上下排列 */
+.post-attachments .post-file-row {
+  flex: 1 1 100%;
+}
+
+.post-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 520px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.post-file-row:hover {
+  background: #f1f5f9;
+}
+
+.post-file-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-file-size {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
 /* Bottom Topic Tags Pill Row */
 .post-tags-pill-row {
   display: flex;
@@ -736,59 +917,6 @@ const submitComment = () => {
   margin-left: 2px;
 }
 
-/* VIP Overlay */
-.vip-locked-blur {
-  filter: blur(5px);
-  user-select: none;
-  pointer-events: none;
-  max-height: 80px;
-  overflow: hidden;
-}
-
-.vip-lock-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.92);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  padding: 16px;
-  text-align: center;
-}
-
-.lock-icon-wrap {
-  font-size: 26px;
-  margin-bottom: 4px;
-}
-
-.lock-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.lock-tip {
-  font-size: 12px;
-  color: #64748b;
-  margin: 4px 0 12px 0;
-}
-
-.btn-vip {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 13px;
-  padding: 7px 18px;
-  border-radius: 20px;
-  border: none;
-  cursor: pointer;
-}
-
 /* Comments Drawer */
 .comment-drawer {
   margin-top: 14px;
@@ -912,5 +1040,108 @@ const submitComment = () => {
   color: #94a3b8;
   text-align: center;
   padding: 12px 0;
+}
+
+/* 正文内链接：蓝色超链接样式（非卡片） */
+.content-p :deep(.content-link) {
+  color: rgb(2, 132, 199);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.content-p :deep(.content-link:hover) {
+  text-decoration: underline;
+}
+
+/* 图片大图查看器 */
+.img-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lb-img {
+  max-width: 86vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+.lb-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.lb-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.lb-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lb-nav:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.lb-prev { left: 20px; }
+.lb-next { right: 20px; }
+
+.lb-counter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+/* 文档行下载图标 */
+.post-file-download {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.post-file-download:hover {
+  color: #10b981;
+  background: #f1f5f9;
 }
 </style>

@@ -92,7 +92,7 @@
       </div>
 
       <div class="ask-footer">
-        <button class="btn-more-experts" @click="actions.showToast('已展示全部 9 位合伙人与特邀嘉宾')">
+        <button class="btn-more-experts" @click="actions.openMembersModal">
           查看更多 &gt;
         </button>
       </div>
@@ -102,7 +102,7 @@
     <div class="widget-card featured-columns-widget">
       <div class="widget-title-row">
         <h4 class="widget-title">精选专栏</h4>
-        <span class="widget-action" @click="actions.switchView('column')">查看更多</span>
+        <span class="widget-action" @click="actions.setCurrentView('column')">查看更多</span>
       </div>
       <div class="columns-header-divider"></div>
 
@@ -153,7 +153,7 @@ const handleAsk = (expertName: string, expertAvatar?: string) => {
 };
 
 const handleColumnClick = (col: any) => {
-  actions.switchView('column');
+  actions.setCurrentView('column');
   actions.showToast(`已进入专栏：${col.title}`);
 };
 
@@ -168,7 +168,7 @@ const quickFilterTag = (tag: string) => {
   width: 324px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   height: 100%;
   overflow-y: auto;
   overscroll-behavior-y: contain;
