@@ -13,7 +13,7 @@
             v-model="keywordInput"
             class="search-field-input"
             type="text"
-            placeholder="搜索主题、话题、专栏、直播、课程..."
+            placeholder="搜索资讯、话题、专栏、直播、课程..."
             @keyup.enter="doSearch"
           />
           <svg
@@ -51,7 +51,7 @@
           <!-- 主题：资讯卡片完整展示 -->
           <div v-if="matchedPosts.length" class="result-section">
             <div class="section-title">
-              主题
+              资讯
               <span class="section-count">{{ matchedPosts.length }}</span>
             </div>
             <div class="posts-stream">
@@ -160,7 +160,7 @@ const compactGroups = computed<CompactGroup[]>(() => {
       label: '话题',
       items: tags.map(([tag, count]) => ({
         main: `#${tag}`,
-        sub: `${count} 条相关主题`,
+        sub: `${count} 条相关资讯`,
         onClick: () => {
           closeModal();
           actions.openTagView(tag);

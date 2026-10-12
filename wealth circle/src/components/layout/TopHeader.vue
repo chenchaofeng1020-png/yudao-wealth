@@ -20,7 +20,7 @@
         </svg>
         <input
           type="text"
-          placeholder="搜索主题、专栏..."
+          placeholder="搜索资讯、专栏..."
           v-model="searchQuery"
           @keyup.enter="handleSearch"
         />

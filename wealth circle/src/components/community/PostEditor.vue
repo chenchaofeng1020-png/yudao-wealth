@@ -10,7 +10,7 @@
       
       <!-- Collapsed placeholder -->
       <div v-if="!isExpanded" class="placeholder-text">
-        点击发表主题...
+        点击发表资讯...
       </div>
 
       <!-- Expanded editing area -->
@@ -157,7 +157,7 @@ import FileTypeIcon from '@/components/common/FileTypeIcon.vue';
 const props = defineProps<{ askTarget?: string }>();
 const isAskMode = computed(() => !!props.askTarget);
 const askPlaceholder = computed(() =>
-  isAskMode.value ? '请输入提问内容' : '点击发表主题…'
+  isAskMode.value ? '请输入提问内容' : '点击发表资讯…'
 );
 
 const isExpanded = ref(isAskMode.value);
@@ -173,7 +173,7 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const expandEditor = () => {
   if (!isAskMode.value && appState.user.role === 'guest') {
-    actions.requireVip('开通会员后即可发布主题，与星友深度交流');
+    actions.requireVip('开通会员后即可发布资讯，与星友深度交流');
     return;
   }
   if (!isExpanded.value) {
@@ -403,7 +403,7 @@ const handlePublish = () => {
   }
 
   if (appState.user.role === 'guest') {
-    actions.requireVip('开通会员后即可发布主题，与星友深度交流');
+    actions.requireVip('开通会员后即可发布资讯，与星友深度交流');
     return;
   }
 
@@ -419,7 +419,7 @@ const handlePublish = () => {
 
   // 发布成功：只重置编辑器，不回收附件地址（信息流帖子仍引用）
   resetEditor();
-  actions.showToast(vipOnly ? '主题发表成功！本主题已设为仅会员可见' : '主题发表成功！');
+  actions.showToast(vipOnly ? '资讯发表成功！本条资讯已设为仅会员可见' : '资讯发表成功！');
 };
 </script>
 

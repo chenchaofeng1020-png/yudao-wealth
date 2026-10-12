@@ -402,7 +402,7 @@ export const actions = {
     };
     appState.posts.unshift(newPost);
     appState.isPublishModalOpen = false;
-    actions.showToast('主题动态发布成功！已同步至星球信息流');
+    actions.showToast('资讯发布成功！已同步至星球信息流');
   },
 
   // 删除动态

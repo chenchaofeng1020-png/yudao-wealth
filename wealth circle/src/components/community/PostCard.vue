@@ -189,7 +189,7 @@
           ref="commentInputRef"
           type="text" 
           v-model="commentText" 
-          :placeholder="isGuestUser ? '开通会员后即可参与主题评论与讨论...' : '发表你的评论'"
+          :placeholder="isGuestUser ? '开通会员后即可参与资讯评论与讨论...' : '发表你的评论'"
           @keyup.enter="submitComment"
         />
         <button 
@@ -425,7 +425,7 @@ const handleDelete = () => {
 const submitComment = () => {
   if (!commentText.value.trim()) return;
   if (isGuestUser.value) {
-    actions.requireVip('开通会员后即可参与主题评论与讨论');
+    actions.requireVip('开通会员后即可参与资讯评论与讨论');
     return;
   }
   actions.addComment(props.post.id, commentText.value.trim());
@@ -436,7 +436,7 @@ const submitComment = () => {
 <style scoped>
 .post-card {
   background: #ffffff;
-  border: none;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 6px;

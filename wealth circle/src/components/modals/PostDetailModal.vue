@@ -3,7 +3,7 @@
     <div class="post-detail-card animate-scale-up" role="dialog" aria-modal="true">
       <!-- Modal Header -->
       <div class="detail-header">
-        <h3 class="detail-title">主题详情</h3>
+        <h3 class="detail-title">资讯详情</h3>
         <button class="modal-close-btn" @click="actions.closePostDetail" title="关闭弹窗 (Esc)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
