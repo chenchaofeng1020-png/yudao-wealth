@@ -42,24 +42,23 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">短信验证码</label>
-          <div class="code-input-wrap">
-            <input 
-              type="text" 
-              v-model="code" 
-              placeholder="请输入 4 位验证码" 
-              maxlength="6" 
-              class="form-input code-input"
-            />
-            <button 
-              type="button" 
-              class="btn-send-code" 
-              :disabled="countdown > 0" 
-              @click="sendCode"
-            >
-              {{ countdown > 0 ? `${countdown}s 后重新获取` : '获取验证码' }}
-            </button>
-          </div>
+          <label class="form-label">密码</label>
+          <input
+            type="password"
+            v-model="password"
+            :placeholder="appState.authModalMode === 'register' ? '请设置密码' : '请输入密码'"
+            class="form-input password-input"
+          />
+        </div>
+
+        <div v-if="appState.authModalMode === 'register'" class="form-group">
+          <label class="form-label">确认密码</label>
+          <input
+            type="password"
+            v-model="confirmPassword"
+            placeholder="请再次输入密码"
+            class="form-input password-input"
+          />
         </div>
       </div>
 
@@ -83,10 +82,10 @@
 
         <div class="auth-mode-switch">
           <span v-if="appState.authModalMode === 'register'">
-            已有账号？<a href="javascript:void(0)" @click="appState.authModalMode = 'login'">立即登录</a>
+            已有账号？<a href="javascript:void(0)" @click="switchMode('login')">立即登录</a>
           </span>
           <span v-else>
-            没有账号？<a href="javascript:void(0)" @click="appState.authModalMode = 'register'">立即免费注册</a>
+            没有账号？<a href="javascript:void(0)" @click="switchMode('register')">立即免费注册</a>
           </span>
         </div>
       </div>
@@ -100,25 +99,15 @@ import { appState, actions } from '@/stores/community';
 
 const nickname = ref('');
 const phone = ref('13800008888');
-const code = ref('8888');
+const password = ref('');
+const confirmPassword = ref('');
 const agreeTerms = ref(true);
-const countdown = ref(0);
 const isSubmitting = ref(false);
 
-const sendCode = () => {
-  if (!phone.value || phone.value.length < 11) {
-    actions.showToast('请输入正确的 11 位手机号');
-    return;
-  }
-  countdown.value = 60;
-  code.value = '8888';
-  actions.showToast('【演示短信】验证码 8888 已发送至手机');
-  const timer = setInterval(() => {
-    countdown.value--;
-    if (countdown.value <= 0) {
-      clearInterval(timer);
-    }
-  }, 1000);
+const switchMode = (mode: 'register' | 'login') => {
+  appState.authModalMode = mode;
+  password.value = '';
+  confirmPassword.value = '';
 };
 
 const handleSubmit = () => {
@@ -132,6 +121,15 @@ const handleSubmit = () => {
   }
   if (!phone.value.trim()) {
     actions.showToast('请输入手机号码');
+    return;
+  }
+  if (!password.value) {
+    actions.showToast(appState.authModalMode === 'register' ? '请设置密码' : '请输入密码');
+    return;
+  }
+  if (appState.authModalMode === 'register' && password.value !== confirmPassword.value) {
+    actions.showToast('两次输入的密码不一致，请重新输入');
+    confirmPassword.value = '';
     return;
   }
 
@@ -240,7 +238,7 @@ const handleSubmit = () => {
   color: var(--tertiary-navy);
 }
 
-.phone-input-wrap, .code-input-wrap {
+.phone-input-wrap {
   display: flex;
   align-items: center;
   background: #ffffff;
@@ -249,7 +247,7 @@ const handleSubmit = () => {
   overflow: hidden;
   transition: border-color 0.15s ease;
 }
-.phone-input-wrap:focus-within, .code-input-wrap:focus-within {
+.phone-input-wrap:focus-within {
   border-color: var(--brand-green);
 }
 
@@ -284,24 +282,14 @@ const handleSubmit = () => {
   border-color: var(--brand-green);
 }
 
-.code-input-wrap input {
-  border: none;
+.password-input {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  background: #ffffff;
+  transition: border-color 0.15s ease;
 }
-
-.btn-send-code {
-  background: transparent;
-  color: var(--brand-green);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 0 12px;
-  height: 40px;
-  white-space: nowrap;
-  border-left: 1px solid var(--border-light);
-  cursor: pointer;
-}
-.btn-send-code:disabled {
-  color: #94a3b8;
-  cursor: not-allowed;
+.password-input:focus {
+  border-color: var(--brand-green);
 }
 
 .terms-row {
