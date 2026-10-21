@@ -1,0 +1,48 @@
+/* 财富星球移动端全局 SCSS 变量 - 投研深度社群与黑金私享规范 */
+$brand-green: #10b981;
+$brand-green-hover: #059669;
+$brand-green-light: #ecfdf5;
+$brand-green-border: #a7f3d0;
+$brand-green-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+$brand-gold: #d97706;
+$brand-gold-light: #fef3c7;
+$brand-gold-dark: #b45309;
+$brand-gold-bg: #fffbf0;
+$brand-gold-border: #fde68a;
+$brand-gold-text: #b45309;
+$brand-gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+
+$primary-navy: #0f172a;
+$secondary-navy: #1e293b;
+$tertiary-navy: #334155;
+
+/* Sage 鼠尾草灰阶中性色谱 (契合绿色品牌主调，去除生硬通用灰) */
+$sage-50: #f2f5f2;
+$sage-100: #e7ece7;
+$sage-panel: #f4f6f4;
+$sage-border: rgba(40, 60, 45, 0.06);
+
+$text-primary: #0f172a;
+$text-secondary: #475569;
+$text-muted: #94a3b8;
+$border-light: #e2e8f0;
+$border-subtle: #edf2f7;
+$bg-slate: #f6f8fa;
+$bg-white: #ffffff;
+
+/* uni-app 内置变量覆写 */
+$uni-color-primary: #10b981;
+$uni-color-success: #10b981;
+$uni-color-warning: #f59e0b;
+$uni-color-error: #ef4444;
+
+$uni-text-color: #0f172a;
+$uni-text-color-inverse: #ffffff;
+$uni-text-color-grey: #64748b;
+$uni-text-color-placeholder: #94a3b8;
+
+$uni-bg-color: #ffffff;
+$uni-bg-color-grey: #f6f8fa;
+$uni-border-color: #e2e8f0;
+

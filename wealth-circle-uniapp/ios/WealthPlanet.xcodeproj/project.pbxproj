@@ -1,0 +1,339 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3935227ACB49EFB63F708520 /* www in Resources */ = {isa = PBXBuildFile; fileRef = 17DD4A8846051750ECBFEC2A /* www */; };
+		3EC280848828A6B83950842D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F0EAD79088A652F152A53C54 /* LaunchScreen.storyboard */; };
+		996DC04811A7EF6EF0CD22B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6090084CC9C00A3758AF61ED /* Assets.xcassets */; };
+		A0CCFC8A50701A5AF645B154 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65B38654A31C68CFFC73A66 /* AppDelegate.swift */; };
+		A1E4DC55909730CE8B8E70EB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D658D7C653C089CA6C48DCDA /* ViewController.swift */; };
+		B5AB6A892FFA2424DF53BF8B /* LocalWebServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3011329358C987A1D4681EF /* LocalWebServer.swift */; };
+		BB10EA022ABA0C451F17838F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3348ED2D62DB134C4B36B5C6 /* SceneDelegate.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		17DD4A8846051750ECBFEC2A /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = WealthPlanet/www; sourceTree = SOURCE_ROOT; };
+		3348ED2D62DB134C4B36B5C6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		6090084CC9C00A3758AF61ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		796D066FA318F922D994F22D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		87CB036DDE928E9B292A2C8B /* WealthPlanet.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WealthPlanet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A65B38654A31C68CFFC73A66 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D3011329358C987A1D4681EF /* LocalWebServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalWebServer.swift; sourceTree = "<group>"; };
+		D658D7C653C089CA6C48DCDA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		F0EAD79088A652F152A53C54 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		3094D3A7302D3E3EEF42F2C7 = {
+			isa = PBXGroup;
+			children = (
+				A3FC5A4281527920BD2ECB23 /* WealthPlanet */,
+				C12FB7BEC31D9AC6C0C4AD87 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A3FC5A4281527920BD2ECB23 /* WealthPlanet */ = {
+			isa = PBXGroup;
+			children = (
+				A65B38654A31C68CFFC73A66 /* AppDelegate.swift */,
+				6090084CC9C00A3758AF61ED /* Assets.xcassets */,
+				796D066FA318F922D994F22D /* Info.plist */,
+				F0EAD79088A652F152A53C54 /* LaunchScreen.storyboard */,
+				D3011329358C987A1D4681EF /* LocalWebServer.swift */,
+				3348ED2D62DB134C4B36B5C6 /* SceneDelegate.swift */,
+				D658D7C653C089CA6C48DCDA /* ViewController.swift */,
+				17DD4A8846051750ECBFEC2A /* www */,
+			);
+			path = WealthPlanet;
+			sourceTree = "<group>";
+		};
+		C12FB7BEC31D9AC6C0C4AD87 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				87CB036DDE928E9B292A2C8B /* WealthPlanet.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E104C0F75D1AA1E56F11D2A7 /* WealthPlanet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E79B209EBF479CF9964BB55C /* Build configuration list for PBXNativeTarget "WealthPlanet" */;
+			buildPhases = (
+				CA781C901085B6F62D679A1B /* Sources */,
+				4C512251F27F3F059D0DE5D9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WealthPlanet;
+			packageProductDependencies = (
+			);
+			productName = WealthPlanet;
+			productReference = 87CB036DDE928E9B292A2C8B /* WealthPlanet.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F974748889FE922E8DEAACDD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					E104C0F75D1AA1E56F11D2A7 = {
+						DevelopmentTeam = PT288UG546;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 4A5B6A933933749E99241566 /* Build configuration list for PBXProject "WealthPlanet" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 3094D3A7302D3E3EEF42F2C7;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = C12FB7BEC31D9AC6C0C4AD87 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E104C0F75D1AA1E56F11D2A7 /* WealthPlanet */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4C512251F27F3F059D0DE5D9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				996DC04811A7EF6EF0CD22B3 /* Assets.xcassets in Resources */,
+				3EC280848828A6B83950842D /* LaunchScreen.storyboard in Resources */,
+				3935227ACB49EFB63F708520 /* www in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CA781C901085B6F62D679A1B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0CCFC8A50701A5AF645B154 /* AppDelegate.swift in Sources */,
+				B5AB6A892FFA2424DF53BF8B /* LocalWebServer.swift in Sources */,
+				BB10EA022ABA0C451F17838F /* SceneDelegate.swift in Sources */,
+				A1E4DC55909730CE8B8E70EB /* ViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4ACDF7E7A23A0F2EB41E4900 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = PT288UG546;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		99F7C5E07A0A994D606BF9C6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT288UG546;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = WealthPlanet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = sdy.wealthplanet;
+				PRODUCT_NAME = "财富星球";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AF0B0D5A2BEB987108124755 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = PT288UG546;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		D0ADE2D2E383F5787108EAAF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = PT288UG546;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = WealthPlanet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = sdy.wealthplanet;
+				PRODUCT_NAME = "财富星球";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4A5B6A933933749E99241566 /* Build configuration list for PBXProject "WealthPlanet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4ACDF7E7A23A0F2EB41E4900 /* Debug */,
+				AF0B0D5A2BEB987108124755 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E79B209EBF479CF9964BB55C /* Build configuration list for PBXNativeTarget "WealthPlanet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0ADE2D2E383F5787108EAAF /* Debug */,
+				99F7C5E07A0A994D606BF9C6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F974748889FE922E8DEAACDD /* Project object */;
+}

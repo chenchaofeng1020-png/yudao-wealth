@@ -1,0 +1,35 @@
+name: WealthPlanet
+options:
+  bundleIdPrefix: sdy
+  createIntermediateGroups: true
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: "PT288UG546"
+    CODE_SIGN_STYLE: Automatic
+targets:
+  WealthPlanet:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: WealthPlanet
+        excludes:
+          - "www"
+          - "**/.DS_Store"
+      - path: WealthPlanet/www
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: sdy.wealthplanet
+        PRODUCT_NAME: 财富星球
+        DEVELOPMENT_TEAM: "PT288UG546"
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"
+        INFOPLIST_FILE: WealthPlanet/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_BITCODE: NO

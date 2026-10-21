@@ -1,0 +1,119 @@
+{
+  "pages": [
+    {
+      "path": "pages/feed/index",
+      "style": {
+        "navigationBarTitleText": "财不外露",
+        "navigationStyle": "custom",
+        "backgroundColor": "#ffffff",
+        "backgroundColorTop": "#07152b",
+        "backgroundColorBottom": "#ffffff",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/column/index",
+      "style": {
+        "navigationBarTitleText": "专栏",
+        "navigationStyle": "custom",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black",
+        "backgroundColor": "#ffffff",
+        "backgroundColorTop": "#ffffff",
+        "backgroundColorBottom": "#ffffff",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/profile/settings",
+      "style": {
+        "navigationBarTitleText": "设置",
+        "navigationStyle": "custom",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/column/reader",
+      "style": {
+        "navigationBarTitleText": "长文研读",
+        "navigationStyle": "custom",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+
+    {
+      "path": "pages/activity/index",
+      "style": {
+        "navigationBarTitleText": "线下活动",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/activity/detail",
+      "style": {
+        "navigationBarTitleText": "活动详情",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/feed/detail",
+      "style": {
+        "navigationBarTitleText": "动态详情",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "财不外露",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f2f2f7",
+    "app-plus": {
+      "background": "#f2f2f7"
+    }
+  },
+  "tabBar": {
+    "color": "#8e8e93",
+    "selectedColor": "#10b981",
+    "borderStyle": "white",
+    "backgroundColor": "#ffffff",
+    "fontSize": "11px",
+    "iconWidth": "28px",
+    "spacing": "3px",
+    "list": [
+      {
+        "pagePath": "pages/feed/index",
+        "text": "资讯",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/homeHL.png"
+      },
+      {
+        "pagePath": "pages/column/index",
+        "text": "专栏",
+        "iconPath": "static/tabbar/example.png",
+        "selectedIconPath": "static/tabbar/exampleHL.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "static/tabbar/personal.png",
+        "selectedIconPath": "static/tabbar/personalHL.png"
+      }
+    ]
+  }
+}

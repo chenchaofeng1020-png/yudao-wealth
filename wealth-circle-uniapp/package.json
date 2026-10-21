@@ -1,0 +1,29 @@
+{
+  "name": "wealth-circle-uniapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "财富星球移动端 (UniApp) - 适配 H5 与 iOS/Android App",
+  "scripts": {
+    "dev:h5": "UNI_INPUT_DIR=$PWD uni",
+    "build:h5": "UNI_INPUT_DIR=$PWD uni build",
+    "dev:app": "UNI_INPUT_DIR=$PWD uni -p app",
+    "build:app": "UNI_INPUT_DIR=$PWD uni build -p app",
+    "build:ios": "UNI_INPUT_DIR=$PWD uni build && rm -rf ios/WealthPlanet/www && cp -R dist/build/h5 ios/WealthPlanet/www && cd ios && xcodegen generate",
+    "open:ios": "open ios/WealthPlanet.xcodeproj",
+    "install:ios": "npm run build:ios && xcodebuild -project ios/WealthPlanet.xcodeproj -scheme WealthPlanet -destination 'id=00008130-000465863AD2001C' -derivedDataPath ./ios/build build && xcrun devicectl device install app --device 00008130-000465863AD2001C ios/build/Build/Products/Debug-iphoneos/财富星球.app && xcrun devicectl device process launch --device 00008130-000465863AD2001C --terminate-existing sdy.wealthplanet"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-4070620250821001",
+    "@dcloudio/uni-app-plus": "3.0.0-4070620250821001",
+    "@dcloudio/uni-components": "3.0.0-4070620250821001",
+    "@dcloudio/uni-h5": "3.0.0-4070620250821001",
+    "vue": "^3.5.11"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.8",
+    "@dcloudio/uni-cli-shared": "3.0.0-4070620250821001",
+    "@dcloudio/vite-plugin-uni": "3.0.0-4070620250821001",
+    "sass": "^1.104.1",
+    "vite": "5.2.8"
+  }
+}
