@@ -915,8 +915,8 @@ onPullDownRefresh(() => {
   }
 
   &.active {
-    background: #1c1c1e;
-    border-color: #1c1c1e;
+    background: #4e4e4e;
+    border-color: #4e4e4e;
     box-shadow: none;
     padding: 0 16px !important;
 

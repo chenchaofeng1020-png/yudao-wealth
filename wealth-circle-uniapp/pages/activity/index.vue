@@ -340,8 +340,8 @@ const handleGoBack = () => {
   transition: all 0.18s ease;
 
   &.active {
-    background: #0f172a;
-    border-color: #0f172a;
+    background: #4e4e4e;
+    border-color: #4e4e4e;
 
     .filter-pill-text {
       color: #ffffff;
