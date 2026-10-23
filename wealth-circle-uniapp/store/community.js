@@ -696,7 +696,19 @@ export const activitiesMock = [
     location: '上海市浦东新区世纪大道 88 号 金茂大厦 2F 宴会厅',
     signupDeadline: '2026-10-27 18:00',
     status: 'recruiting',
-    registered: false,
+    registered: true,
+    registration: {
+      orderId: '20261020173500123456',
+      payTime: '2026-10-20 17:35',
+      amount: 1396,
+      refunded: 299,
+      attendees: [
+        { name: '陈朝峰', phone: '138****6688', ticket: '标准票', price: 299, status: 'ok' },
+        { name: '林晓', phone: '139****8899', ticket: '标准票', price: 299, status: 'ok' },
+        { name: '周颖', phone: '136****2233', ticket: '嘉宾票', price: 499, status: 'ok' },
+        { name: '张同', phone: '158****5511', ticket: '标准票', price: 299, status: 'cancelled' }
+      ]
+    },
     tickets: [
       { id: 't-std', name: '标准票', price: 299, count: 60, sold: 41, desc: '含全程议程与活动资料' },
       { id: 't-vip', name: '嘉宾票', price: 499, count: 20, sold: 12, desc: '含前排就座、闭门交流与主讲人一对一答疑' }
@@ -706,6 +718,23 @@ export const activitiesMock = [
       { id: 'f-phone', type: 'phone', label: '手机号', required: true, optionsText: '', fixed: true },
       { id: 'f-industry', type: 'radio', label: '从事行业', required: true, optionsText: '银行/证券,保险,基金/资管,其他' },
       { id: 'f-question', type: 'textarea', label: '想向嘉宾提的问题', required: false, optionsText: '' }
+    ],
+    detailHtml: actDetailHtml
+  },
+  {
+    id: 'act-open-02',
+    name: '十一月宏观策略闭门会·北京站',
+    poster: 'https://images.unsplash.com/photo-1560439514-4e9645039924?w=750&h=560&fit=crop',
+    startTime: '2026-11-15 14:00',
+    endTime: '2026-11-15 17:30',
+    location: '北京市朝阳区建国门外大街 1 号 国贸大酒店 3F 会议厅',
+    signupDeadline: '2026-11-14 18:00',
+    status: 'recruiting',
+    registered: false,
+    tickets: [{ id: 't-std-3', name: '标准票', price: 199, count: 30, sold: 18, desc: '含全程议程与活动资料' }],
+    regFields: [
+      { id: 'f-name-3', type: 'name', label: '姓名', required: true, optionsText: '', fixed: true },
+      { id: 'f-phone-3', type: 'phone', label: '手机号', required: true, optionsText: '', fixed: true }
     ],
     detailHtml: actDetailHtml
   },

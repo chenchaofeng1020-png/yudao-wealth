@@ -57,14 +57,20 @@
       "path": "pages/activity/index",
       "style": {
         "navigationBarTitleText": "线下活动",
+        "navigationStyle": "custom",
         "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "black"
+        "navigationBarTextStyle": "black",
+        "backgroundColor": "#f2f2f7",
+        "backgroundColorTop": "#07152b",
+        "backgroundColorBottom": "#f2f2f7",
+        "enablePullDownRefresh": true
       }
     },
     {
       "path": "pages/activity/detail",
       "style": {
         "navigationBarTitleText": "活动详情",
+        "navigationStyle": "custom",
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }

@@ -209,16 +209,28 @@
         </el-button>
       </div>
       <el-table :data="detailRecords" :stripe="true">
+        <el-table-column type="expand">
+          <template #default="scope">
+            <div class="signup-form-info">
+              <span class="sfi-title">报名信息</span>
+              <span v-for="(f, fi) in scope.row.formInfo" :key="fi" class="sfi-item">
+                <span class="sfi-label">{{ f.label }}</span>
+                <span class="sfi-value">{{ f.value }}</span>
+              </span>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="报名用户" prop="name" width="100px" />
         <el-table-column label="手机号" prop="phone" width="120px" />
         <el-table-column label="理财师" prop="advisor" width="90px" />
+        <el-table-column label="票种" prop="ticket" width="100px" />
         <el-table-column label="报名时间" prop="payTime" width="150px" />
         <el-table-column label="价格" width="90px">
           <template #default="scope">
             <span class="price-text">{{ fmtMoney(scope.row.amount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100px">
+        <el-table-column label="状态" width="120px">
           <template #default="scope">
             <span
               class="signup-status"
@@ -227,9 +239,23 @@
               <span class="signup-status-dot"></span>
               {{ scope.row.status === 'registered' ? '已报名' : '已取消' }}
             </span>
+            <span v-if="scope.row.refunded" class="refund-mark">已退款</span>
           </template>
         </el-table-column>
         <el-table-column label="订单号" prop="orderNo" min-width="180px" />
+        <el-table-column fixed="right" label="操作" width="110px">
+          <template #default="scope">
+            <el-button
+              v-if="scope.row.status === 'registered'"
+              link
+              type="danger"
+              @click="cancelSignup(scope.row)"
+            >
+              取消报名
+            </el-button>
+            <span v-else class="op-dash">-</span>
+          </template>
+        </el-table-column>
       </el-table>
     </ContentWrap>
   </template>
@@ -560,10 +586,13 @@ interface SignupRecord {
   name: string
   phone: string
   advisor: string
+  ticket: string // 票种名称（一份票对应一份报名记录）
   status: SignupStatus
-  amount: number
+  amount: number // 该份票实付价格
   payTime: string
   orderNo: string
+  refunded?: boolean // 已取消后原路退款标记
+  formInfo: { label: string; value: string }[] // 该份票填写的报名表单信息
 }
 
 const STATUS_META: Record<
@@ -778,43 +807,94 @@ const activitiesMockRaw: ActivityItem[] = [
   }
 ]
 
-type SignupSeed = { n: string; p: string; a: string; s?: SignupStatus }
+// 种子：n 姓名 / p 手机号 / a 理财师 / s 状态 / t 票种名称（缺省取活动第一个票种）/ price 该份票价格 / g 订单分组（同组共享一笔订单，即一次购买多张票）
+type SignupSeed = {
+  n: string
+  p: string
+  a: string
+  s?: SignupStatus
+  t?: string
+  price?: number
+  g?: number
+}
 
-// 报名记录生成：支付时间自首笔起每 6 分钟一笔，订单号取支付时间数字 + 序号，保持名单数据的真实感
+// 表单信息：按活动报名组件逐项生成该份票填写的内容（选项类按记录序号轮换，制造填写差异）
+const buildFormInfo = (regFields: RegField[], seed: SignupSeed, i: number) =>
+  regFields.map((f) => {
+    const options = f.optionsText
+      .split(/[，,]/)
+      .map((o) => o.trim())
+      .filter(Boolean)
+    let value = ''
+    if (f.type === 'name') value = seed.n
+    else if (f.type === 'phone') value = seed.p
+    else if (f.type === 'radio') value = options[i % options.length] ?? ''
+    else if (f.type === 'checkbox') value = options.slice(0, (i % 2) + 1).join('、')
+    else value = '—'
+    return { label: f.label, value }
+  })
+
+// 报名记录生成：一份票对应一份报名记录；g 相同的种子属于同一笔订单（共享订单号与支付时间）
+// 支付时间自首笔起每 6 分钟一笔，订单号取支付时间数字 + 序号，保持名单数据的真实感
 const buildSignups = (
   activityId: string,
-  amount: number,
+  defaultAmount: number,
   firstPayTime: string,
   seeds: SignupSeed[]
 ): SignupRecord[] => {
+  const act = activitiesMockRaw.find((a) => a.id === activityId)
+  const regFields = act?.regFields ?? defaultRegFields()
+  const defaultTicket = act?.tickets[0]?.name ?? '标准票'
   const base = parseTime(firstPayTime)
-  return seeds.map((seed, i) => {
-    const t = new Date(base + i * 6 * 60 * 1000)
+
+  // 按订单分组（未标 g 的种子各自成单）
+  const groups = new Map<string, SignupSeed[]>()
+  seeds.forEach((seed, i) => {
+    const key = seed.g !== undefined ? `g${seed.g}` : `s${i}`
+    const arr = groups.get(key) ?? []
+    arr.push(seed)
+    groups.set(key, arr)
+  })
+
+  let seq = 0
+  let i = 0 // 记录序号，用于表单选项轮换
+  return Array.from(groups.values()).flatMap((group, gIdx) => {
+    const t = new Date(base + gIdx * 6 * 60 * 1000)
     const payTime = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ${pad(t.getHours())}:${pad(t.getMinutes())}`
-    return {
-      id: `sg-${activityId}-${i + 1}`,
-      activityId,
-      name: seed.n,
-      phone: seed.p,
-      advisor: seed.a,
-      status: seed.s || 'registered',
-      amount,
-      payTime,
-      orderNo: payTime.replace(/[- :]/g, '') + String(1000 + i * 3).padStart(4, '0')
-    }
+    const orderNo = payTime.replace(/[- :]/g, '') + String(1000 + gIdx * 3).padStart(4, '0')
+    return group.map((seed) => {
+      const status = seed.s || 'registered'
+      const record: SignupRecord = {
+        id: `sg-${activityId}-${++seq}`,
+        activityId,
+        name: seed.n,
+        phone: seed.p,
+        advisor: seed.a,
+        ticket: seed.t ?? defaultTicket,
+        status,
+        amount: seed.price ?? defaultAmount,
+        payTime,
+        orderNo,
+        // 取消由后台直接操作：历史已取消记录均视为已原路退款
+        refunded: status === 'cancelled',
+        formInfo: buildFormInfo(regFields, seed, i++)
+      }
+      return record
+    })
   })
 }
 
 const signupRecords = ref<SignupRecord[]>([
-  // 十月投资沙龙·上海站：主活动 20 条记录（17 已报名 + 3 已取消）→ 17/80
+  // 十月投资沙龙·上海站：主活动 20 条记录（17 已报名 + 3 已取消·已退款）→ 17/80
+  // 演示：张启航一笔订单购买 2 张标准票（本人 + 同事赵一鸣，其中 1 张已取消）；王雅琴/周敬之/林晚晴购买嘉宾票
   ...buildSignups('act-1', 299, '2026-10-09 18:32', [
-    { n: '张启航', p: '138****1234', a: '李四' },
-    { n: '王雅琴', p: '139****5678', a: '王芳' },
+    { n: '张启航', p: '138****1234', a: '李四', g: 1 },
+    { n: '赵一鸣', p: '135****7890', a: '李四', s: 'cancelled', g: 1 },
+    { n: '王雅琴', p: '139****5678', a: '王芳', t: '嘉宾票', price: 499 },
     { n: '陈默', p: '136****9012', a: '陈国栋' },
     { n: '刘思远', p: '137****3456', a: '刘敏' },
-    { n: '赵一鸣', p: '135****7890', a: '张启明', s: 'cancelled' },
     { n: '孙晓梅', p: '188****2345', a: '李四' },
-    { n: '周敬之', p: '186****3456', a: '王芳' },
+    { n: '周敬之', p: '186****3456', a: '王芳', t: '嘉宾票', price: 499 },
     { n: '吴桐', p: '158****4567', a: '陈国栋' },
     { n: '郑楚仪', p: '159****5678', a: '刘敏' },
     { n: '冯婧', p: '150****6789', a: '张启明' },
@@ -824,7 +904,7 @@ const signupRecords = ref<SignupRecord[]>([
     { n: '杨知远', p: '130****4567', a: '刘敏' },
     { n: '朱静怡', p: '131****5678', a: '张启明' },
     { n: '胡明轩', p: '132****6789', a: '李四' },
-    { n: '林晚晴', p: '133****7890', a: '王芳' },
+    { n: '林晚晴', p: '133****7890', a: '王芳', t: '嘉宾票', price: 499 },
     { n: '何俊杰', p: '135****8901', a: '陈国栋', s: 'cancelled' },
     { n: '高子涵', p: '136****9012', a: '刘敏' },
     { n: '罗世坚', p: '137****0123', a: '张启明' }
@@ -893,6 +973,7 @@ const signupRecords = ref<SignupRecord[]>([
 const activities = ref<ActivityItem[]>(JSON.parse(JSON.stringify(activitiesMockRaw)))
 
 // ==================== 行级工具 ====================
+// 有效报名数：已报名（取消由后台直接操作，取消后立即释放席位）
 const validCountOf = (a: ActivityItem) =>
   signupRecords.value.filter((r) => r.activityId === a.id && r.status === 'registered').length
 
@@ -1396,18 +1477,36 @@ const detailCounts = computed(() => {
   }
 })
 
+// ==================== 取消报名（后台直接操作） ====================
+// 取消后席位立即释放，实付费用原路退回
+const cancelSignup = (r: SignupRecord) => {
+  message
+    .confirm(
+      `取消「${r.name}」的「${r.ticket}」报名后，席位立即释放，实付 ${fmtMoney(r.amount)} 将原路退回。确认取消？`,
+      '取消报名'
+    )
+    .then(() => {
+      r.status = 'cancelled'
+      r.refunded = true
+      message.success('已取消报名，费用将原路退回')
+    })
+    .catch(() => {})
+}
+
 // 前端原型导出：生成 CSV（带 BOM 保证 Excel 中文不乱码）
+// 表头前部按活动报名组件动态展开（每份票填写的表单信息各占一列），后部为固定信息列
 const exportSignupsCsv = () => {
   const a = detailActivity.value
   if (!a) return
-  const header = ['姓名', '手机号', '理财师', '报名时间', '价格', '状态', '订单号']
+  const fieldLabels = a.regFields.map((f) => f.label)
+  const header = [...fieldLabels, '理财师', '票种', '报名时间', '价格', '状态', '订单号']
   const rows = detailRecords.value.map((r) => [
-    r.name,
-    r.phone,
+    ...fieldLabels.map((label) => r.formInfo.find((x) => x.label === label)?.value ?? ''),
     r.advisor,
+    r.ticket,
     r.payTime,
     String(r.amount),
-    r.status === 'registered' ? '已报名' : '已取消',
+    r.status === 'registered' ? '已报名' : r.refunded ? '已取消（已退款）' : '已取消',
     r.orderNo
   ])
   const csv =
@@ -1701,7 +1800,53 @@ const exportSignupsCsv = () => {
 }
 
 .signup-status.is-cancel .signup-status-dot {
-  background: var(--el-text-color-disabled);
+  background: var(--el-color-disabled);
+}
+
+.refund-mark {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--el-color-success);
+  background: var(--el-color-success-light-9);
+}
+
+.op-dash {
+  color: var(--el-text-color-placeholder);
+}
+
+/* 报名记录展开区：该份票填写的报名信息 */
+.signup-form-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 24px;
+  padding: 2px 12px 6px 46px;
+}
+
+.signup-form-info .sfi-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--el-text-color-secondary);
+}
+
+.signup-form-info .sfi-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.signup-form-info .sfi-label {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.signup-form-info .sfi-value {
+  font-size: 12px;
+  color: var(--el-text-color-primary);
 }
 
 /* 封面上传：750×480 比例单图卡片 */

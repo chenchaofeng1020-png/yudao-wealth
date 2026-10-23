@@ -55,16 +55,6 @@
           </view>
         </view>
 
-        <!-- 风险提示横条 (极简矢量警示框，无 emoji) -->
-        <view class="risk-warning-box">
-          <svg class="risk-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <text class="risk-text">{{ currentArticle.riskWarning || '风险提示：市场有风险，投资需谨慎。本专栏仅供投研参考。' }}</text>
-        </view>
-
         <!-- 核心导读提要框 -->
         <view v-if="currentArticle.summary" class="article-summary-box">
           <view class="summary-header">
@@ -826,30 +816,6 @@ const handleShare = () => {
 .meta-dot {
   color: #cbd5e1;
   font-size: 10px;
-}
-
-/* 风险提示 */
-.risk-warning-box {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  background: rgba(245, 158, 11, 0.06);
-  border: 0.5px solid rgba(245, 158, 11, 0.2);
-  border-radius: 8px;
-  padding: 9px 11px;
-  margin-bottom: 16px;
-}
-
-.risk-icon-svg {
-  flex-shrink: 0;
-  margin-top: 1.5px;
-}
-
-.risk-text {
-  font-size: 11.5px;
-  color: #b45309;
-  line-height: 1.45;
-  flex: 1;
 }
 
 /* 核心摘要 */
