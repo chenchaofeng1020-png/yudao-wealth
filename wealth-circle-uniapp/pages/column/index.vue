@@ -1,80 +1,92 @@
 <template>
   <view class="column-page">
-    <!-- 1. 顶部安全区固定导航条 (一级页面，无返回键) -->
-    <view class="nav-top-bar">
-      <view class="nav-left">
-        <text class="nav-title">专栏</text>
-      </view>
+    <!-- 1. 顶部状态栏透明占位（App 端 WebView 全屏需避让状态栏/灵动岛） -->
+    <view class="status-bar-spacer"></view>
 
-      <view class="nav-right" @tap="handleShareGroup">
-        <view class="nav-share-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-            <polyline points="16 6 12 2 8 6"></polyline>
-            <line x1="12" y1="2" x2="12" y2="15"></line>
+    <!-- 2. 最近阅读视觉中心大卡 (左文右画黄金构图 + 双行大字标题 + 立体书卷星轨插画) -->
+    <view v-if="lastReadArticle" class="recent-read-section">
+      <view class="recent-card-wrapper" @tap="handleResumeReading">
+        <view class="recent-paper-card">
+          <!-- 右侧主视觉装饰插画：微立体展开书卷 + 星轨光环 + 垂挂书签（浅雅水印级质感） -->
+          <svg class="recent-hero-illust" width="148" height="136" viewBox="0 0 148 136" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="bookPageLeft" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#ecfdf5" stop-opacity="0.7"/>
+              </linearGradient>
+              <linearGradient id="bookPageRight" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f0fdf4" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#d1fae5" stop-opacity="0.55"/>
+              </linearGradient>
+              <linearGradient id="bookCoverGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#10b981" stop-opacity="0.14"/>
+                <stop offset="100%" stop-color="#059669" stop-opacity="0.06"/>
+              </linearGradient>
+            </defs>
+
+            <!-- 背景大号星轨虚线环与实线环 -->
+            <ellipse cx="102" cy="68" rx="68" ry="44" transform="rotate(-18 102 68)" stroke="rgba(16, 185, 129, 0.10)" stroke-width="1" stroke-dasharray="3 4"/>
+            <ellipse cx="104" cy="68" rx="48" ry="29" transform="rotate(-18 104 68)" stroke="rgba(16, 185, 129, 0.07)" stroke-width="1"/>
+
+            <!-- 悬浮立体书卷主图形 -->
+            <g transform="translate(52, 34) rotate(-8)">
+              <!-- 底层精装硬壳书封阴影与衬底 -->
+              <path d="M34 11C21 11 9 15.5 2 22V66C9 59.5 21 55 34 55C47 55 59 59.5 66 66V22C59 15.5 47 11 34 11Z" fill="url(#bookCoverGrad)" stroke="rgba(16, 185, 129, 0.16)" stroke-width="1.1" stroke-linejoin="round"/>
+              <!-- 左半页书页 -->
+              <path d="M34 8C22 8 11 12.5 5 18.5V60C11 54 22 49.5 34 49.5V8Z" fill="url(#bookPageLeft)" stroke="rgba(16, 185, 129, 0.20)" stroke-width="1.1" stroke-linejoin="round"/>
+              <!-- 右半页书页 -->
+              <path d="M34 8C46 8 57 12.5 63 18.5V60C57 54 46 49.5 34 49.5V8Z" fill="url(#bookPageRight)" stroke="rgba(16, 185, 129, 0.22)" stroke-width="1.1" stroke-linejoin="round"/>
+              <!-- 左页内文装饰线 -->
+              <line x1="12" y1="23" x2="27" y2="19.5" stroke="rgba(16, 185, 129, 0.20)" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="12" y1="30" x2="27" y2="26.5" stroke="rgba(16, 185, 129, 0.14)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="12" y1="37" x2="23" y2="34.5" stroke="rgba(16, 185, 129, 0.12)" stroke-width="1.2" stroke-linecap="round"/>
+              <!-- 右页内文装饰线 -->
+              <line x1="41" y1="19.5" x2="56" y2="23" stroke="rgba(5, 150, 105, 0.20)" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="41" y1="26.5" x2="56" y2="30" stroke="rgba(5, 150, 105, 0.14)" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="41" y1="34" x2="52" y2="36.5" stroke="rgba(5, 150, 105, 0.12)" stroke-width="1.2" stroke-linecap="round"/>
+              <!-- 书缝夹着的浅金微书签丝带 -->
+              <path d="M32 49.5H36.5V65L34.25 62L32 65V49.5Z" fill="rgba(245, 158, 11, 0.42)"/>
+            </g>
+
+            <!-- 星芒与轨道微粒点缀 -->
+            <path d="M46 22L47.8 27.2L53 29L47.8 30.8L46 36L44.2 30.8L39 29L44.2 27.2L46 22Z" fill="rgba(16, 185, 129, 0.15)"/>
+            <path d="M122 18L123.1 21.4L126.5 22.5L123.1 23.6L122 27L120.9 23.6L117.5 22.5L120.9 21.4L122 18Z" fill="rgba(245, 158, 11, 0.24)"/>
+            <circle cx="34" cy="54" r="2" fill="rgba(16, 185, 129, 0.12)"/>
+            <circle cx="130" cy="48" r="2.2" fill="rgba(16, 185, 129, 0.14)"/>
           </svg>
-        </view>
-      </view>
-    </view>
 
-    <!-- 2. 差异化顶部案卷身份卡 (The Differentiated Vault Dossier Header) -->
-    <view class="vault-hero-section">
-      <view class="vault-dossier-card">
-        <!-- 头部主信息行 -->
-        <view class="vault-main-row">
-          <!-- 立体多层案卷徽标 (纯矢量 3D Layer Stack SVG) -->
-          <view class="vault-emblem-box">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <!-- 底层 -->
-              <path d="M12 21L2 15.5L12 10L22 15.5L12 21Z" fill="#1e293b" stroke="#334155" stroke-width="1.2" stroke-linejoin="round"/>
-              <!-- 中层 -->
-              <path d="M12 17L2 11.5L12 6L22 11.5L12 17Z" fill="#0f766e" stroke="#10b981" stroke-width="1.2" stroke-linejoin="round"/>
-              <!-- 顶层 -->
-              <path d="M12 13L2 7.5L12 2L22 7.5L12 13Z" fill="#10b981" stroke="#34d399" stroke-width="1.2" stroke-linejoin="round"/>
-            </svg>
-          </view>
-
-          <!-- 专栏合集标题与数据规模 -->
-          <view class="vault-info-col">
-            <view class="vault-title-line">
-              <text class="vault-title-text">认知提升：投资理财必备</text>
+          <!-- 左侧内容纵列：眉题专栏 -> 双行大标题 -> 底部实体胶囊按钮 -->
+          <view class="recent-content-col">
+            <!-- 1. 顶部眉题：书签标 + 最近阅读 · 所属专栏 -->
+            <view class="recent-eyebrow-row">
+              <view class="recent-badge-tag">
+                <svg class="recent-bookmark-svg" width="11" height="11" viewBox="0 0 24 24" fill="#059669" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <text class="kicker-text">最近阅读</text>
+              </view>
+              <text class="recent-col-title">{{ lastReadColumn ? lastReadColumn.title : '' }}</text>
             </view>
-            <view class="vault-meta-line">
-              <text class="vault-meta-text">共 9 个专栏 · 60 篇深度研报 · 26.8万字沉淀</text>
+
+            <!-- 2. 中部核心：大字号双行文章主标题（成为页面视觉中心） -->
+            <view class="recent-main-row">
+              <text class="recent-headline-hero">{{ lastReadArticle.title }}</text>
+            </view>
+
+            <!-- 3. 底部行动栏：实体翠绿胶囊按钮 -->
+            <view class="recent-footer-row">
+              <view class="recent-cta-btn">
+                <text class="recent-cta-label">继续阅读</text>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </view>
             </view>
           </view>
         </view>
 
-        <!-- 差异化专属功能 1：全站研读进度罗盘 -->
-        <view class="vault-progress-block">
-          <view class="vault-progress-labels">
-            <view class="progress-left-label">
-              <view class="pulse-emerald-dot"></view>
-              <text class="progress-txt">研读进度 {{ overallProgress.percentage }}%</text>
-            </view>
-            <text class="progress-right-txt">已完成 {{ overallProgress.readCount }}/{{ overallProgress.totalCount }} 篇</text>
-          </view>
-          <view class="vault-progress-track">
-            <view class="vault-progress-fill" :style="{ width: overallProgress.percentage + '%' }"></view>
-          </view>
-        </view>
-
-        <!-- 差异化专属功能 2：一键直达「上次读至」快捷书签 -->
-        <view v-if="lastReadArticle" class="vault-bookmark-strip" @tap="handleResumeReading">
-          <view class="bookmark-left">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <text class="bookmark-label">上次读至：</text>
-            <text class="bookmark-title">{{ lastReadArticle.title }}</text>
-          </view>
-          <view class="bookmark-right-cta">
-            <text class="resume-text">继续精读</text>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </view>
-        </view>
+        <!-- 底部微露的第二层书页叠边 -->
+        <view class="recent-paper-underlay"></view>
       </view>
     </view>
 
@@ -214,7 +226,7 @@
             </view>
 
             <!-- 右侧「新」橙色微标 (仅在未读且为新篇章时显示) -->
-            <view v-if="!isArticleRead(chapter.id) && chapter.isNew !== false" class="badge-new-box">
+            <view v-if="isNewBadge(chapter)" class="badge-new-box">
               <text class="badge-new-text">新</text>
             </view>
           </view>
@@ -285,12 +297,30 @@ const overallProgress = computed(() => {
   return { totalCount, readCount, percentage };
 });
 
-// 上次读至的书签（取已读列表中最新关联的章节，或首专栏待读章节）
+// 最近阅读的专栏与章节（关联当前选中或默认首专栏最近章节）
+const lastReadColumn = computed(() => {
+  const cols = appState.columns || [];
+  return cols.find(c => c.id === (appState.selectedColumnId || 'col-us-stock')) || cols[0] || null;
+});
+
 const lastReadArticle = computed(() => {
-  const col = appState.columns && appState.columns.find(c => c.id === 'col-us-stock');
+  const col = lastReadColumn.value;
   if (!col || !col.chapters) return null;
-  // 返回第 4 篇章节作为高亮书签
+  if (appState.selectedArticleId && appState.selectedArticleId !== 'art-mg-1') {
+    const matched = col.chapters.find(ch => ch.id === appState.selectedArticleId);
+    if (matched) return matched;
+  }
   return col.chapters[3] || col.chapters[0];
+});
+
+// 拆分文章标题中的【模块前缀】与正文标题，赋予杂志级排版层次
+const parsedLastArticle = computed(() => {
+  const raw = lastReadArticle.value ? lastReadArticle.value.title : '';
+  const match = raw.match(/^【([^】]+)】\s*(.*)$/);
+  if (match) {
+    return { prefix: match[1], body: match[2] };
+  }
+  return { prefix: '', body: raw };
 });
 
 // 过滤与排序后的专栏列表
@@ -312,6 +342,14 @@ const displayedColumns = computed(() => {
 
 const isArticleRead = (articleId) => {
   return appState.readArticleIds.includes(articleId);
+};
+
+// 「新」标规则：未读 且 发布时间在 7 天内（无发布时间的文章以 isNew 标记兜底，isNew=false 为运营手动关闭）
+const isNewBadge = (chapter) => {
+  if (isArticleRead(chapter.id) || chapter.isNew === false) return false;
+  if (!chapter.createdAt) return chapter.isNew === true;
+  const t = new Date(String(chapter.createdAt).replace(/-/g, '/')).getTime();
+  return Date.now() - t <= 7 * 24 * 3600 * 1000;
 };
 
 const isColumnExpanded = (colId) => {
@@ -337,21 +375,14 @@ const handleOpenChapter = (colId, chapterId) => {
 };
 
 const handleResumeReading = () => {
-  if (lastReadArticle.value) {
-    handleOpenChapter('col-us-stock', lastReadArticle.value.id);
+  if (lastReadArticle.value && lastReadColumn.value) {
+    handleOpenChapter(lastReadColumn.value.id, lastReadArticle.value.id);
   }
 };
 
 const handleBackToFeed = () => {
   uni.switchTab({
     url: '/pages/feed/index'
-  });
-};
-
-const handleShareGroup = () => {
-  uni.showToast({
-    title: '已复制专栏智库链接',
-    icon: 'none'
   });
 };
 
@@ -396,6 +427,8 @@ page {
 }
 
 .column-page {
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
   padding-bottom: 75px;
   background-color: #ffffff;
   min-height: 100vh;
@@ -403,215 +436,179 @@ page {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 1. 顶部安全区固定导航条 */
-.nav-top-bar {
-  position: sticky;
+/* 1. 顶部状态栏固定遮罩（App 端滚动时盖住状态栏区域，避免内容透出） */
+.status-bar-spacer {
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 60;
-  background-color: #ffffff;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: calc(8px + constant(safe-area-inset-top)) 16px 10px 16px;
-  padding: calc(8px + env(safe-area-inset-top)) 16px 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  height: constant(safe-area-inset-top);
+  height: env(safe-area-inset-top);
 }
 
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* 2. 最近阅读视觉中心大卡 (左文右画黄金构图 + 双行大字标题 + 立体书卷星轨插画) */
+.recent-read-section {
+  padding: 12px 14px 6px 14px;
+  background: #ffffff;
 }
 
-.nav-title {
-  font-size: 19px;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.3px;
+.recent-card-wrapper {
+  position: relative;
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &:active {
+    transform: scale(0.985);
+  }
 }
 
-.nav-share-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(16, 185, 129, 0.08);
-}
-
-/* 2. 差异化顶部案卷身份卡 (The Differentiated Vault Dossier Header) */
-.vault-hero-section {
-  padding: 12px 14px 10px 14px;
-}
-
-.vault-dossier-card {
-  background: linear-gradient(135deg, #0b132b 0%, #152347 100%);
-  border-radius: 8px !important;
+.recent-paper-card {
+  position: relative;
+  z-index: 2;
+  background:
+    radial-gradient(110% 130% at 95% 20%, rgba(16, 185, 129, 0.06) 0%, rgba(16, 185, 129, 0.015) 48%, transparent 78%),
+    linear-gradient(135deg, #f6fcfa 0%, #fbfefd 48%, #ffffff 100%);
+  border-radius: 14px;
+  border: 0.5px solid rgba(16, 185, 129, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 6px 18px -8px rgba(15, 23, 42, 0.05),
+    0 2px 5px -1px rgba(15, 23, 42, 0.025);
+  padding: 16px 16px 15px 17px;
   overflow: hidden;
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
-  padding: 15px 14px 13px 14px;
-  box-shadow: none !important;
+
+  /* 左侧内嵌翡翠书脊饰条（与按钮同色系，仅比按钮略浅半度） */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(180deg, #22c58b 0%, #34d399 100%);
+  }
 }
 
-.vault-main-row {
+/* 右侧立体书卷与星轨装饰插画 */
+.recent-hero-illust {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.72;
+}
+
+/* 底部微露叠纸层 */
+.recent-paper-underlay {
+  position: relative;
+  z-index: 1;
+  height: 5px;
+  margin: 0 12px;
+  background: linear-gradient(90deg, #f3fbf7 0%, #f8fafc 100%);
+  border: 0.5px solid rgba(16, 185, 129, 0.11);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+
+.recent-content-col {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding-right: 92px;
+}
+
+.recent-eyebrow-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.vault-emblem-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px !important;
-  background: rgba(255, 255, 255, 0.07);
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.vault-info-col {
-  flex: 1;
-  min-width: 0;
-}
-
-.vault-title-line {
-  margin-bottom: 4px;
-}
-
-.vault-title-text {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.2px;
-}
-
-.vault-meta-line {
-  display: flex;
-  align-items: center;
-}
-
-.vault-meta-text {
-  font-size: 11px;
-  color: #94a3b8;
-}
-
-/* 进度罗盘 */
-.vault-progress-block {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px !important;
-  padding: 8px 10px;
+  gap: 7px;
   margin-bottom: 10px;
-  border: 0.5px solid rgba(255, 255, 255, 0.06);
-}
-
-.vault-progress-labels {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.progress-left-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.pulse-emerald-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10b981;
-}
-
-.progress-txt {
-  font-size: 11px;
-  font-weight: 600;
-  color: #10b981;
-}
-
-.progress-right-txt {
-  font-size: 11px;
-  color: #94a3b8;
-}
-
-.vault-progress-track {
-  width: 100%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.vault-progress-fill {
-  height: 100%;
-  background: #10b981;
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-/* 上次读至快捷书签 */
-.vault-bookmark-strip {
-  background: rgba(245, 158, 11, 0.1);
-  border: 0.5px solid rgba(245, 158, 11, 0.25);
-  border-radius: 8px !important;
-  padding: 7px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.bookmark-left {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex: 1;
   min-width: 0;
 }
 
-.bookmark-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #f59e0b;
+.recent-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  padding: 2px 7px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 0.5px solid rgba(16, 185, 129, 0.24);
+  border-radius: 5px;
   flex-shrink: 0;
 }
 
-.bookmark-title {
+.recent-bookmark-svg {
+  flex-shrink: 0;
+}
+
+.kicker-text {
   font-size: 11px;
-  color: #e2e8f0;
+  font-weight: 600;
+  color: #047857;
+  line-height: 1.2;
+}
+
+.recent-col-title {
+  margin-left: -3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.bookmark-right-cta {
+.recent-main-row {
+  margin-bottom: 13px;
+}
+
+.recent-headline-hero {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.42;
+  letter-spacing: -0.25px;
+  font-feature-settings: "halt" 1;
+}
+
+.recent-footer-row {
   display: flex;
   align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-  margin-left: 8px;
 }
 
-.resume-text {
-  font-size: 11px;
+.recent-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5.5px 12px 5.5px 13px;
+  background: linear-gradient(135deg, #16c486 0%, #10b981 100%);
+  border-radius: 99px;
+  box-shadow: 0 3px 10px -2px rgba(16, 185, 129, 0.28);
+}
+
+.recent-cta-label {
+  font-size: 11.5px;
   font-weight: 600;
-  color: #10b981;
+  color: #ffffff;
+  line-height: 1.1;
 }
 
-/* 3. 筛选与排序控制条 (Sticky Bar) */
+/* 3. 筛选与排序控制条 (Sticky Bar - 去除顶部生硬横线，与上方卡片紧凑衔接) */
 .controls-sticky-bar {
   position: sticky;
-  top: calc(48px + constant(safe-area-inset-top));
-  top: calc(48px + env(safe-area-inset-top));
+  top: constant(safe-area-inset-top);
+  top: env(safe-area-inset-top);
   z-index: 50;
   background-color: #ffffff;
-  border-top: 0.5px solid rgba(0, 0, 0, 0.04);
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
 }
 

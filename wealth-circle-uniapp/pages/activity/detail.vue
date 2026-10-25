@@ -536,7 +536,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { onLoad, onPageScroll } from '@dcloudio/uni-app';
-import { activitiesMock } from '../../store/community.js';
+import { activitiesMock, actions } from '../../store/community.js';
 
 const activity = ref({});
 const selectedTicketId = ref('');

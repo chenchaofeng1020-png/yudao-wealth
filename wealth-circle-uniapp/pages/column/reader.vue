@@ -383,11 +383,14 @@ const isEmojiPanelVisible = ref(false);
 const emojiList = ['😀', '😁', '😂', '🤣', '😊', '😍', '🤔', '😎', '😭', '😅', '👍', '👏', '🙏', '💪', '🙌', '🔥', '💯', '🎉', '🚀', '💰', '📈', '📉', '🧠', '⚡'];
 
 onLoad((options) => {
-  if (options && options.id) {
-    articleId.value = options.id;
+  if (options && (options.id || options.articleId)) {
+    articleId.value = options.id || options.articleId;
   }
-  if (options && options.colId) {
-    colId.value = options.colId;
+  if (options && (options.colId || options.columnId)) {
+    colId.value = options.colId || options.columnId;
+  } else if (articleId.value) {
+    const matchedCol = appState.columns.find((c) => c.chapters.some((ch) => ch.id === articleId.value));
+    if (matchedCol) colId.value = matchedCol.id;
   }
   appState.selectedColumnId = colId.value;
   appState.selectedArticleId = articleId.value;

@@ -174,14 +174,13 @@ const handleClearCache = () => {
 const handleLogout = () => {
   uni.showModal({
     title: '确认退出账号',
-    content: '退出登录后将返回未认证访客状态，是否确认退出？',
+    content: '退出登录后需重新登录方可进入「财不外露」星球，是否确认退出？',
     success: (res) => {
       if (res.confirm) {
-        actions.switchPerspective('guest');
-        uni.showToast({ title: '已退出当前账号', icon: 'none' });
+        uni.showToast({ title: '已安全退出登录', icon: 'none' });
         setTimeout(() => {
-          handleBack();
-        }, 500);
+          actions.logout('/pages/feed/index', false);
+        }, 300);
       }
     }
   });

@@ -14,6 +14,9 @@ export const appState = reactive({
   appFlowState: 'community' as AppFlowState,
   isAuthModalOpen: false,
   authModalMode: 'register' as 'login' | 'register',
+  // 协议/隐私政策查看弹窗（内容与移动端一致）
+  isLegalModalOpen: false,
+  legalModalType: 'terms' as 'terms' | 'privacy',
   isLoggedIn: false,
   isVipMember: false,
 
@@ -311,6 +314,15 @@ export const actions = {
 
   closeAuth() {
     appState.isAuthModalOpen = false;
+  },
+
+  openLegal(type: 'terms' | 'privacy' = 'terms') {
+    appState.legalModalType = type;
+    appState.isLegalModalOpen = true;
+  },
+
+  closeLegal() {
+    appState.isLegalModalOpen = false;
   },
 
   submitAuth(phone: string = '13800008888', nickname?: string) {

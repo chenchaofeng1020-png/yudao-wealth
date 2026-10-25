@@ -569,7 +569,7 @@ export const initialPostsMock = [
       {
         type: 'file',
         name: '2026Q4全球宏观流动性与资产配置研报.pdf',
-        url: '#',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
         size: 3420000
       }
     ],
@@ -759,6 +759,12 @@ export const activitiesMock = [
 
 // 全局响应式状态
 export const appState = reactive({
+  // 登录与认证状态（进入星球及打开分享链接均需先登录）
+  isLoggedIn: false,
+  authMode: 'login', // 'login' | 'register'
+  pendingRedirectUrl: '',
+  pendingShareFrom: false,
+
   // 当前视角：'founder' (星主) | 'vip' (会员) | 'guest' (星友)
   currentPerspective: 'founder',
   user: { ...currentUserMock },
@@ -782,6 +788,173 @@ export const appState = reactive({
   payChannel: 'wechat', // 'wechat' | 'alipay'
   selectedVipTier: 'annual' // 'annual' | 'lifetime'
 });
+
+const MOBILE_AUTH_STORAGE_KEY = 'wealth_circle_mobile_auth_v1';
+
+export const saveAuthSession = () => {
+  try {
+    const payload = JSON.stringify({
+      isLoggedIn: appState.isLoggedIn,
+      currentPerspective: appState.currentPerspective,
+      isVipMember: appState.isVipMember,
+      user: appState.user
+    });
+    if (typeof uni !== 'undefined' && uni.setStorageSync) {
+      uni.setStorageSync(MOBILE_AUTH_STORAGE_KEY, payload);
+    } else if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(MOBILE_AUTH_STORAGE_KEY, payload);
+    }
+  } catch (e) {
+    // ignore storage errors
+  }
+};
+
+export const restoreAuthSession = () => {
+  try {
+    let raw = '';
+    if (typeof uni !== 'undefined' && uni.getStorageSync) {
+      raw = uni.getStorageSync(MOBILE_AUTH_STORAGE_KEY);
+    } else if (typeof localStorage !== 'undefined') {
+      raw = localStorage.getItem(MOBILE_AUTH_STORAGE_KEY) || '';
+    }
+    if (raw) {
+      const saved = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (typeof saved.isLoggedIn === 'boolean') appState.isLoggedIn = saved.isLoggedIn;
+      if (saved.currentPerspective) appState.currentPerspective = saved.currentPerspective;
+      if (typeof saved.isVipMember === 'boolean') appState.isVipMember = saved.isVipMember;
+      if (saved.user) Object.assign(appState.user, saved.user);
+    }
+  } catch (e) {
+    // ignore corrupted session
+  }
+};
+
+restoreAuthSession();
+
+// 解析 URL 查询参数工具函数
+export const parseUrlPathAndQuery = (rawUrl = '') => {
+  if (!rawUrl) return { path: '/pages/feed/index', query: {}, cleanUrl: '/pages/feed/index' };
+  let normalized = String(rawUrl).trim();
+  if (normalized.startsWith('#')) normalized = normalized.slice(1);
+  if (!normalized.startsWith('/')) normalized = '/' + normalized;
+
+  const qIdx = normalized.indexOf('?');
+  const path = qIdx > -1 ? normalized.slice(0, qIdx) : normalized;
+  const queryString = qIdx > -1 ? normalized.slice(qIdx + 1) : '';
+  const query = {};
+  if (queryString) {
+    queryString.split('&').forEach((pair) => {
+      if (!pair) return;
+      const [k, v = ''] = pair.split('=');
+      if (k) {
+        try {
+          query[decodeURIComponent(k)] = decodeURIComponent(v);
+        } catch {
+          query[k] = v;
+        }
+      }
+    });
+  }
+
+  // 构建去除临时标记 share=1 后的干净目标地址，避免登录回跳再次触发分享拦截
+  const cleanPairs = [];
+  Object.keys(query).forEach((k) => {
+    if (k !== 'share') {
+      cleanPairs.push(`${encodeURIComponent(k)}=${encodeURIComponent(query[k])}`);
+    }
+  });
+  const cleanUrl = cleanPairs.length > 0 ? `${path}?${cleanPairs.join('&')}` : path;
+  return { path, query, cleanUrl };
+};
+
+// 根据目标路径解析分享内容上下文（用于在登录页展示「来自星友分享」卡片）
+export const resolveShareTargetInfo = (rawUrl = '') => {
+  const target = rawUrl || appState.pendingRedirectUrl || '';
+  if (!target) return null;
+  const { path, query, cleanUrl } = parseUrlPathAndQuery(target);
+
+  if (path === '/pages/column/reader') {
+    const artId = query.id || query.articleId || appState.selectedArticleId;
+    const colId = query.colId || query.columnId || appState.selectedColumnId;
+    let foundCol = appState.columns.find((c) => c.id === colId);
+    let foundArt = null;
+    if (foundCol) {
+      foundArt = foundCol.chapters.find((ch) => ch.id === artId);
+    }
+    if (!foundArt) {
+      for (const c of appState.columns) {
+        const ch = c.chapters.find((item) => item.id === artId);
+        if (ch) {
+          foundCol = c;
+          foundArt = ch;
+          break;
+        }
+      }
+    }
+    foundCol = foundCol || appState.columns[0];
+    foundArt = foundArt || foundCol.chapters[0];
+    return {
+      isContentLink: true,
+      typeLabel: '专栏深度长文',
+      badge: `专栏 · ${foundCol.title}`,
+      title: foundArt ? foundArt.title : '专栏核心研报长文',
+      author: (foundArt && foundArt.author) || foundCol.author || 'Rich',
+      cleanUrl
+    };
+  }
+
+  if (path === '/pages/feed/detail') {
+    const postId = query.id || 'post-1';
+    const post = appState.posts.find((p) => p.id === postId) || appState.posts[0];
+    return {
+      isContentLink: true,
+      typeLabel: '星球动态详情',
+      badge: `星友动态 · ${post.author.name}`,
+      title: post.title || post.content.slice(0, 44) + '...',
+      author: post.author.name,
+      cleanUrl
+    };
+  }
+
+  if (path === '/pages/activity/detail') {
+    const actId = query.id || 'act-open-01';
+    const act = activitiesMock.find((a) => a.id === actId) || activitiesMock[0];
+    return {
+      isContentLink: true,
+      typeLabel: '线下闭门活动',
+      badge: `闭门沙龙 · ${act.startTime.split(' ')[0]}`,
+      title: act.name,
+      author: '老林说宏观 · 财富星球',
+      cleanUrl
+    };
+  }
+
+  if (path === '/pages/column/index' && (query.colId || query.columnId || appState.pendingShareFrom)) {
+    const colId = query.colId || query.columnId || 'col-us-stock';
+    const col = appState.columns.find((c) => c.id === colId) || appState.columns[0];
+    return {
+      isContentLink: true,
+      typeLabel: '投研专栏合辑',
+      badge: `专栏连载 · 共 ${col.chapterCount} 篇`,
+      title: `${col.title}：${col.subtitle}`,
+      author: col.author,
+      cleanUrl
+    };
+  }
+
+  if (query.invite || appState.pendingShareFrom) {
+    return {
+      isContentLink: true,
+      typeLabel: '星友专属邀请',
+      badge: `邀请码 · ${query.invite || 'WP97181206'}`,
+      title: '邀请你加入「财不外露」买方视角全球投研星球',
+      author: '老林说宏观 & 9位合伙人',
+      cleanUrl
+    };
+  }
+
+  return null;
+};
 
 // 计算属性：当前用户是否为 VIP 或 管理员
 export const isVipOrAbove = computed(() => {
@@ -823,6 +996,174 @@ export const actions = {
       appState.isVipMember = false;
       uni.showToast({ title: '已切换至：星友视角(未开通会员)', icon: 'none' });
     }
+    saveAuthSession();
+  },
+
+  // 移动端登录/注册提交（参考 PC 端 AuthModal.vue 逻辑）
+  submitAuth({ mode = 'login', phone = '13800008888', nickname = '', role = '' } = {}) {
+    const cleanPhone = String(phone || '13800008888').trim();
+    appState.isLoggedIn = true;
+
+    if (role === 'founder') {
+      appState.currentPerspective = 'founder';
+      Object.assign(appState.user, currentUserMock, { phone: cleanPhone || currentUserMock.phone });
+      appState.isVipMember = true;
+    } else if (role === 'vip') {
+      appState.currentPerspective = 'vip';
+      Object.assign(appState.user, demoVipUserMock, { phone: cleanPhone || demoVipUserMock.phone });
+      appState.isVipMember = true;
+    } else if (role === 'guest') {
+      appState.currentPerspective = 'guest';
+      Object.assign(appState.user, demoGuestUserMock, { phone: cleanPhone || demoGuestUserMock.phone });
+      appState.isVipMember = false;
+    } else if (mode === 'register') {
+      // 新注册用户：初始化星友档案（对齐 PC 端 submitAuth）
+      const tail = cleanPhone.length >= 4 ? cleanPhone.slice(-4) : '8888';
+      appState.currentPerspective = 'guest';
+      appState.isVipMember = false;
+      appState.user = {
+        id: 'u-reg-' + Date.now().toString().slice(-4),
+        name: (nickname && nickname.trim()) || `新晋星友_${tail}`,
+        avatar: '/static/avatar_user.jpg',
+        role: 'guest',
+        roleTitle: '已注册 (未开通VIP)',
+        bio: '新加入「财不外露」星球，正在开启资产配置进阶之旅。',
+        joinedAt: new Date().toISOString().split('T')[0],
+        joinedDays: '1 天',
+        vipExpireAt: '未开通',
+        phone: cleanPhone,
+        followingCount: 0,
+        followersCount: 0,
+        points: 50
+      };
+    } else {
+      // 登录模式：根据手机号智能匹配或保持星主/会员账号
+      if (cleanPhone === '15966667777') {
+        appState.currentPerspective = 'guest';
+        Object.assign(appState.user, demoGuestUserMock, { phone: cleanPhone });
+        appState.isVipMember = false;
+      } else if (cleanPhone === '13812345678') {
+        appState.currentPerspective = 'vip';
+        Object.assign(appState.user, demoVipUserMock, { phone: cleanPhone });
+        appState.isVipMember = true;
+      } else {
+        appState.currentPerspective = 'founder';
+        Object.assign(appState.user, currentUserMock, { phone: cleanPhone });
+        appState.isVipMember = true;
+      }
+    }
+
+    saveAuthSession();
+  },
+
+  // 登录/注册成功后跳转到目标页面（支持回跳分享的内容详情页或星球主页）
+  navigateAfterAuth(redirectOverride = '') {
+    const rawTarget = redirectOverride || appState.pendingRedirectUrl || '/pages/feed/index';
+    const { path, query, cleanUrl } = parseUrlPathAndQuery(rawTarget);
+
+    appState.pendingRedirectUrl = '';
+    appState.pendingShareFrom = false;
+
+    const tabBarPaths = ['/pages/feed/index', '/pages/column/index', '/pages/profile/index'];
+    if (tabBarPaths.includes(path)) {
+      if (path === '/pages/column/index' && (query.colId || query.columnId)) {
+        appState.selectedColumnId = query.colId || query.columnId;
+      }
+      uni.switchTab({
+        url: path,
+        fail: () => {
+          uni.reLaunch({ url: path });
+        }
+      });
+      return;
+    }
+
+    if (path === '/pages/auth/index') {
+      uni.switchTab({ url: '/pages/feed/index' });
+      return;
+    }
+
+    // 非 TabBar 页面（如分享的长文阅读页、动态详情页、活动详情页）
+    uni.reLaunch({
+      url: cleanUrl,
+      fail: () => {
+        uni.switchTab({ url: '/pages/feed/index' });
+      }
+    });
+  },
+
+  // 退出登录并跳转到移动端注册/登录页
+  logout(redirectUrl = '/pages/feed/index', fromShare = false) {
+    appState.isLoggedIn = false;
+    appState.pendingRedirectUrl = redirectUrl || '/pages/feed/index';
+    appState.pendingShareFrom = !!fromShare;
+    saveAuthSession();
+    const encoded = encodeURIComponent(appState.pendingRedirectUrl);
+    const shareParam = fromShare ? '&from=share' : '';
+    uni.reLaunch({
+      url: `/pages/auth/index?redirect=${encoded}${shareParam}`
+    });
+  },
+
+  // 模拟打开分享链接（触发未登录拦截 -> 登录页展示分享卡片 -> 登录后直达该分享内容）
+  openShareLinkWithAuthGate(targetUrl) {
+    const { cleanUrl } = parseUrlPathAndQuery(targetUrl);
+    actions.logout(cleanUrl, true);
+  },
+
+  // 全局路由登录守卫：进入星球或通过分享链接打开均需先登录
+  enforceAuthGuard(rawUrlHint = '') {
+    let currentHashUrl = rawUrlHint;
+    if (!currentHashUrl && typeof window !== 'undefined' && window.location) {
+      const hash = window.location.hash || '';
+      currentHashUrl = hash.startsWith('#') ? hash.slice(1) : hash;
+    }
+    if (!currentHashUrl || currentHashUrl === '/') {
+      currentHashUrl = '/pages/feed/index';
+    }
+
+    const { path, query, cleanUrl } = parseUrlPathAndQuery(currentHashUrl);
+
+    // 已经在登录页则放行
+    if (path === '/pages/auth/index') {
+      return true;
+    }
+
+    // 协议/隐私政策阅读页对未登录用户开放（登录页条款链接可直接查看）
+    if (path === '/pages/agreement/index') {
+      return true;
+    }
+
+    // 若 URL 带有 share=1 参数（表示从外部点击分享链接进入），要求先经过登录验证并在回跳地址中剥离 share=1
+    const isExplicitShareLink = query.share === '1' || query.from === 'share';
+    if (isExplicitShareLink) {
+      appState.isLoggedIn = false;
+      appState.pendingRedirectUrl = cleanUrl;
+      appState.pendingShareFrom = true;
+      saveAuthSession();
+      uni.reLaunch({
+        url: `/pages/auth/index?redirect=${encodeURIComponent(cleanUrl)}&from=share`
+      });
+      return false;
+    }
+
+    // 未登录状态下访问星球任何页面或分享深链，均拦截跳转至登录页
+    if (!appState.isLoggedIn) {
+      const isDeepContent =
+        path === '/pages/column/reader' ||
+        path === '/pages/feed/detail' ||
+        path === '/pages/activity/detail' ||
+        Boolean(query.colId || query.columnId || query.invite);
+      appState.pendingRedirectUrl = cleanUrl;
+      appState.pendingShareFrom = isDeepContent;
+      const shareFlag = isDeepContent ? '&from=share' : '';
+      uni.reLaunch({
+        url: `/pages/auth/index?redirect=${encodeURIComponent(cleanUrl)}${shareFlag}`
+      });
+      return false;
+    }
+
+    return true;
   },
 
   // 检查 VIP 权限，未通过则弹窗
@@ -1035,6 +1376,7 @@ export const actions = {
     appState.user.roleTitle = appState.selectedVipTier === 'lifetime' ? '终身创始合伙人' : '年度会员';
     appState.user.vipExpireAt = appState.selectedVipTier === 'lifetime' ? '终身有效' : '2027-10-16';
     appState.isVipModalVisible = false;
+    saveAuthSession();
     uni.showToast({ title: '🎉 恭喜开通成功！已解锁全站特权', icon: 'success' });
   }
 };

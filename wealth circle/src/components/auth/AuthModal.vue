@@ -66,7 +66,7 @@
       <div class="terms-row">
         <label class="terms-label">
           <input type="checkbox" v-model="agreeTerms" class="terms-checkbox" />
-          <span>我已阅读并同意 <a href="javascript:void(0)" @click.stop="actions.showToast('已查看《财不外露星球用户协议》')">《服务协议》</a> 与 <a href="javascript:void(0)" @click.stop="actions.showToast('已查看《隐私保护指引》')">《隐私政策》</a></span>
+          <span>我已阅读并同意 <a href="javascript:void(0)" @click.stop="actions.openLegal('terms')">《服务协议》</a> 与 <a href="javascript:void(0)" @click.stop="actions.openLegal('privacy')">《隐私政策》</a></span>
         </label>
       </div>
 

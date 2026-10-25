@@ -276,7 +276,9 @@ const handlePinnedItemClick = (item) => {
 };
 
 const handleSearchClick = () => {
-  uni.showToast({ title: '全站搜索：可检索研报、宏观策略与长文', icon: 'none' });
+  uni.navigateTo({
+    url: '/pages/feed/search'
+  });
 };
 
 const handleFilterMenuClick = () => {

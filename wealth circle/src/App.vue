@@ -56,6 +56,9 @@
     <!-- Auth Modal (Registration & Login) -->
     <AuthModal />
 
+    <!-- Legal Docs Modal (服务协议 / 隐私政策，内容与移动端一致) -->
+    <LegalModal />
+
     <!-- Floating Global Modals -->
     <PublishModal />
     <VipJoinModal />
@@ -82,6 +85,7 @@ import { appState } from '@/stores/community';
 import LandingView from './components/landing/LandingView.vue';
 import PaywallView from './components/landing/PaywallView.vue';
 import AuthModal from './components/auth/AuthModal.vue';
+import LegalModal from './components/auth/LegalModal.vue';
 import Sidebar from './components/layout/Sidebar.vue';
 import Rightbar from './components/layout/Rightbar.vue';
 import PostFeed from './components/community/PostFeed.vue';

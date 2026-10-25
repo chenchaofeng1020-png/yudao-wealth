@@ -82,6 +82,35 @@
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black"
       }
+    },
+    {
+      "path": "pages/feed/search",
+      "style": {
+        "navigationBarTitleText": "搜索",
+        "navigationStyle": "custom",
+        "backgroundColor": "#ffffff",
+        "backgroundColorTop": "#ffffff",
+        "backgroundColorBottom": "#ffffff"
+      }
+    },
+    {
+      "path": "pages/agreement/index",
+      "style": {
+        "navigationBarTitleText": "用户协议",
+        "navigationStyle": "custom",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/auth/index",
+      "style": {
+        "navigationBarTitleText": "登录 / 注册",
+        "navigationStyle": "custom",
+        "backgroundColor": "#f4faf7",
+        "backgroundColorTop": "#eef8f4",
+        "backgroundColorBottom": "#f8fafc"
+      }
     }
   ],
   "globalStyle": {

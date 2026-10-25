@@ -1,21 +1,7 @@
 <template>
   <view class="profile-page">
-    <!-- 1. 顶部安全区固定导航条（一级 Tab 原生规范：标题为「我的」+ 右上角设置齿轮） -->
-    <view class="nav-top-bar">
-      <view class="nav-left">
-        <text class="nav-title">我的</text>
-      </view>
-
-      <view class="nav-actions-right">
-        <!-- 设置中心入口（跳转二级设置页：账号安全、清理缓存、退出登录） -->
-        <view class="nav-icon-btn" @tap="handleSettings">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </view>
-      </view>
-    </view>
+    <!-- 1. 顶部状态栏透明占位（App 端 WebView 全屏需避让状态栏/灵动岛） -->
+    <view class="status-bar-spacer"></view>
 
     <!-- 2. 星球环形轨道视觉核心 (围绕财富星球与星友圈圈层) -->
     <view class="orbit-wheel-wrap">
@@ -141,8 +127,20 @@
       </view>
 
       <!-- 理财资讯 -->
-      <view class="menu-cell-row is-last" @tap="showNewsToast">
+      <view class="menu-cell-row" @tap="showNewsToast">
         <text class="cell-label">理财资讯</text>
+        <view class="cell-right-wrap">
+          <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </view>
+      </view>
+    </view>
+
+    <!-- 5. 设置入口（原顶部右上角齿轮移至此处，独立分组） -->
+    <view class="planet-menu-section settings-standalone">
+      <view class="menu-cell-row is-last" @tap="handleSettings">
+        <text class="cell-label">设置</text>
         <view class="cell-right-wrap">
           <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
@@ -420,53 +418,11 @@ const handleSettings = () => {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 1. 顶部安全区固定导航条 */
-.nav-top-bar {
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  background-color: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: calc(8px + constant(safe-area-inset-top)) 18px 10px 18px;
-  padding: calc(8px + env(safe-area-inset-top)) 18px 10px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-}
-
-.nav-title {
-  font-size: 19px;
-  font-weight: 800;
-  color: #1c1c1e;
-  letter-spacing: -0.3px;
-}
-
-.nav-actions-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.nav-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &:active {
-    background-color: #f1f5f9;
-  }
+/* 1. 顶部状态栏透明占位（App 端 WebView 全屏需避让状态栏/灵动岛） */
+.status-bar-spacer {
+  background: #ffffff;
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
 }
 
 /* 2. 星球环形轨道主视觉 */
@@ -645,6 +601,12 @@ const handleSettings = () => {
   background: #ffffff;
   border-top: 0.5px solid rgba(60, 60, 67, 0.06);
   border-bottom: 0.5px solid rgba(60, 60, 67, 0.06);
+}
+
+/* 设置入口独立分组：与上一组之间露出灰色间隔 */
+.settings-standalone {
+  margin-top: 10px;
+  border-top: 0.5px solid rgba(60, 60, 67, 0.06);
 }
 
 .menu-cell-row {

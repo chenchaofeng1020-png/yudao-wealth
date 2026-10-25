@@ -68,18 +68,17 @@
           v-for="(att, idx) in currentPost.attachments" 
           :key="idx" 
           class="file-attachment-card"
-          @tap="handleDownloadAttachment(att)"
+          @tap="handleOpenAttachment(att)"
         >
-          <view class="file-icon-badge">PDF</view>
+          <FileTypeIcon :name="att.name" :size="28" />
           <view class="file-meta-col">
             <text class="file-title-text ellipsis-1">{{ att.name }}</text>
             <text class="file-size-text">{{ formatFileSize(att.size) }}</text>
           </view>
           <view class="file-download-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c59b27" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
             </svg>
           </view>
         </view>
@@ -146,9 +145,6 @@
             <view class="comment-head-line">
               <view class="c-user-meta">
                 <text class="c-name">{{ c.author.name }}</text>
-                <text v-if="c.author.role === 'founder'" class="role-badge badge-founder">星主</text>
-                <text v-else-if="c.author.role === 'partner'" class="role-badge badge-partner">合伙人</text>
-                <text v-else-if="c.author.role === 'vip'" class="role-badge badge-vip">VIP</text>
               </view>
               <text class="c-time">{{ c.createdAt }}</text>
             </view>
@@ -287,6 +283,7 @@
 import { ref, computed } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 import { appState, actions, isVipOrAbove } from '../../store/community.js';
+import FileTypeIcon from '../../components/FileTypeIcon.vue';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 
 const postId = ref('post-1');
@@ -355,8 +352,22 @@ const previewImage = (images, current) => {
   });
 };
 
-const handleDownloadAttachment = (att) => {
-  uni.showToast({ title: `已开始下载: ${att.name}`, icon: 'none' });
+// 文档附件：点击在线打开（App 内调用系统能力，H5 新窗口预览）
+const handleOpenAttachment = (att) => {
+  const url = att.url || '';
+  if (!url) {
+    uni.showToast({ title: '暂无可预览的文件', icon: 'none' });
+    return;
+  }
+  // #ifdef H5
+  const win = window.open(url, '_blank');
+  if (!win) window.location.href = url;
+  // #endif
+  // #ifdef APP-PLUS
+  if (window.plus && window.plus.runtime) {
+    window.plus.runtime.openURL(url);
+  }
+  // #endif
 };
 
 const handleSubmitComment = () => {
@@ -440,8 +451,8 @@ const handleOpenVipModal = () => {
 .post-detail-card {
   background: #ffffff;
   padding: 16px 16px 14px 16px;
-  margin-bottom: 9px;
-  border-bottom: 1px solid #edf2f7;
+  margin-bottom: 0;
+  border-bottom: none;
   box-shadow: none !important;
 }
 
@@ -465,24 +476,6 @@ const handleOpenVipModal = () => {
   height: 44px;
   border-radius: 50%;
   border: 1px solid #edf2f7;
-}
-
-.role-badge {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  font-size: 8.5px;
-  font-weight: 800;
-  padding: 0 4px;
-  height: 14px;
-  line-height: 14px;
-  border-radius: 4px;
-  color: #ffffff;
-  border: 1px solid #ffffff;
-
-  &.badge-founder { background: #ef4444; }
-  &.badge-partner { background: #2563eb; }
-  &.badge-vip { background: #d97706; }
 }
 
 .author-meta-col {
@@ -619,16 +612,6 @@ const handleOpenVipModal = () => {
   padding: 8px 12px;
 }
 
-.file-icon-badge {
-  font-size: 10px;
-  font-weight: 900;
-  color: #ffffff;
-  background: #ef4444;
-  padding: 3px 5px;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
-}
-
 .file-meta-col {
   flex: 1;
   display: flex;
@@ -648,7 +631,7 @@ const handleOpenVipModal = () => {
 
 /* 7. 点赞与互动操作条 (对齐专栏详情页) */
 .social-interactive-wrap {
-  margin: 10px 0 16px 0;
+  margin: 10px 0 0 0;
   display: flex;
   flex-direction: column;
   gap: 12px;

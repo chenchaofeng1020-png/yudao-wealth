@@ -1,10 +1,35 @@
 <script>
+import { actions } from './store/community.js';
+
 export default {
   onLaunch: function () {
     console.log('财富星球移动端 App Launch');
+    // 注册路由跳转拦截器：未登录或携带 share=1 打开时先跳转登录页
+    const navMethods = ['navigateTo', 'redirectTo', 'switchTab', 'reLaunch'];
+    navMethods.forEach((method) => {
+      uni.addInterceptor(method, {
+        invoke(args) {
+          if (!args || !args.url) return true;
+          if (args.url.startsWith('/pages/auth/index')) return true;
+          return actions.enforceAuthGuard(args.url);
+        }
+      });
+    });
+
+    // H5 端监听地址栏 Hash 变更（如直接粘贴分享链接打开）
+    if (typeof window !== 'undefined') {
+      window.addEventListener('hashchange', () => {
+        actions.enforceAuthGuard();
+      });
+    }
+
+    setTimeout(() => {
+      actions.enforceAuthGuard();
+    }, 0);
   },
   onShow: function () {
     console.log('财富星球移动端 App Show');
+    actions.enforceAuthGuard();
   },
   onHide: function () {
     console.log('财富星球移动端 App Hide');
@@ -83,7 +108,7 @@ uni-app, #app {
   overflow-x: clip;
 }
 
-/* 确保移动端底部 TabBar 正常固定吸底显示 */
+/* 确保移动端底部 TabBar 正常固定吸底显示（非 TabBar 页隐藏时保持隐藏） */
 uni-tabbar {
   display: block;
   position: fixed;
@@ -92,6 +117,13 @@ uni-tabbar {
   bottom: 0;
   width: 100%;
   z-index: 998;
+}
+
+uni-tabbar[style*="display: none"],
+uni-tabbar[hidden],
+uni-tabbar .uni-tabbar[style*="display: none"],
+uni-tabbar .uni-tabbar[hidden] {
+  display: none !important;
 }
 
 /* Apple iOS 经典毛玻璃半透明 TabBar */

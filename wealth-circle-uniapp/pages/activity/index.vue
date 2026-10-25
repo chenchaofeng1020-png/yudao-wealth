@@ -315,9 +315,7 @@ const handleGoBack = () => {
   top: calc(48px + constant(safe-area-inset-top));
   top: calc(48px + env(safe-area-inset-top));
   z-index: 50;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #ffffff;
   padding: 10px 14px;
   border-bottom: 0.5px solid rgba(60, 60, 67, 0.06);
 }

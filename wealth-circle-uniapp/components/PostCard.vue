@@ -95,18 +95,17 @@
         v-for="(att, idx) in post.attachments" 
         :key="idx" 
         class="file-attachment-card"
-        @tap.stop="handleDownloadAttachment(att)"
+        @tap.stop="handleOpenAttachment(att)"
       >
-        <view class="file-icon-badge">PDF</view>
+        <FileTypeIcon :name="att.name" :size="28" />
         <view class="file-meta-col">
           <text class="file-title-text ellipsis-1">{{ att.name }}</text>
           <text class="file-size-text">{{ formatFileSize(att.size) }}</text>
         </view>
         <view class="file-download-btn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c59b27" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
           </svg>
         </view>
       </view>
@@ -187,6 +186,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { actions } from '../store/community.js';
+import FileTypeIcon from './FileTypeIcon.vue';
 
 const props = defineProps({
   post: {
@@ -274,8 +274,22 @@ const handlePreviewImage = (images, current) => {
   });
 };
 
-const handleDownloadAttachment = (att) => {
-  uni.showToast({ title: `下载文档: ${att.name}`, icon: 'none' });
+// 文档附件：点击在线打开（App 内调用系统能力，H5 新窗口预览）
+const handleOpenAttachment = (att) => {
+  const url = att.url || '';
+  if (!url) {
+    uni.showToast({ title: '暂无可预览的文件', icon: 'none' });
+    return;
+  }
+  // #ifdef H5
+  const win = window.open(url, '_blank');
+  if (!win) window.location.href = url;
+  // #endif
+  // #ifdef APP-PLUS
+  if (window.plus && window.plus.runtime) {
+    window.plus.runtime.openURL(url);
+  }
+  // #endif
 };
 </script>
 
@@ -558,17 +572,6 @@ const handleDownloadAttachment = (att) => {
   &:active {
     opacity: 0.75;
   }
-}
-
-.file-icon-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #dc2626;
-  background: rgba(220, 38, 38, 0.08);
-  border: 0.5px solid rgba(220, 38, 38, 0.2);
-  padding: 2.5px 6px;
-  border-radius: 5px;
-  letter-spacing: 0.5px;
 }
 
 .file-meta-col {
