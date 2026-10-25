@@ -94,6 +94,16 @@
       }
     },
     {
+      "path": "pages/feed/my-questions",
+      "style": {
+        "navigationBarTitleText": "会员提问",
+        "navigationStyle": "custom",
+        "backgroundColor": "#ffffff",
+        "backgroundColorTop": "#ffffff",
+        "backgroundColorBottom": "#ffffff"
+      }
+    },
+    {
       "path": "pages/agreement/index",
       "style": {
         "navigationBarTitleText": "用户协议",

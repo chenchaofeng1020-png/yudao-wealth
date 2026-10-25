@@ -661,6 +661,41 @@ export const initialPostsMock = [
     likers: ['老林说宏观'],
     likersCount: 29,
     comments: []
+  },
+  {
+    id: 'post-4',
+    author: {
+      id: 'u-vip-01',
+      name: '远山求道',
+      avatar: '/static/avatar_john.png',
+      role: 'vip',
+      roleTitle: '年度会员'
+    },
+    questionTarget: '老林说宏观',
+    title: '请教老林：高股息组合遇到利率上行期该如何应对',
+    content: `林总好！我目前的持仓以红利资产为主，近期利率环境有上行迹象，想请教一下：若利率持续上行，高股息策略的相对吸引力会不会被债券分流？是否需要预留一部分仓位做再平衡？`,
+    tags: ['配置思考'],
+    images: [],
+    likes: 18,
+    isLiked: false,
+    commentsCount: 2,
+    sharesCount: 0,
+    createdAt: '2小时前',
+    likers: ['Rich'],
+    likersCount: 18,
+    comments: [
+      {
+        id: 'c-5',
+        author: {
+          name: '老林说宏观',
+          avatar: '/static/avatar_mark.png',
+          role: 'founder'
+        },
+        content: '问得好！利率上行初期红利资产确实会有估值压力，但保险与公用事业这类长久期配置盘反而会加仓。建议保留 8 成红利底仓，2 成做利率敏感行业的轮动，周报里我会展开讲。',
+        createdAt: '1小时前',
+        likes: 9
+      }
+    ]
   }
 ];
 

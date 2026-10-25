@@ -127,7 +127,7 @@
       </view>
 
       <!-- 理财资讯 -->
-      <view class="menu-cell-row" @tap="showNewsToast">
+      <view class="menu-cell-row" @tap="goFeedPage">
         <text class="cell-label">理财资讯</text>
         <view class="cell-right-wrap">
           <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -397,11 +397,11 @@ const goColumnPage = () => {
 };
 
 const showQuestionsToast = () => {
-  uni.showToast({ title: '已同步最新 3 条向星主提问记录', icon: 'none' });
+  uni.navigateTo({ url: '/pages/feed/my-questions' });
 };
 
-const showNewsToast = () => {
-  uni.showToast({ title: '理财资讯已同步至资讯频道', icon: 'none' });
+const goFeedPage = () => {
+  uni.switchTab({ url: '/pages/feed/index' });
 };
 
 const handleSettings = () => {
