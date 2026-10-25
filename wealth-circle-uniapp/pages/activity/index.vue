@@ -135,7 +135,7 @@
             <line x1="9" y1="14" x2="15" y2="14"></line>
           </svg>
         </view>
-        <text class="empty-main-text">暂无符合条件的线下活动</text>
+        <text class="empty-main-text">暂无符合条件的活动</text>
         <text class="empty-sub-text">星主正在筹划下期闭门沙龙，敬请关注星球公告</text>
         <view class="btn-reset-filter" @tap="activeFilter = 'all'">
           <text class="btn-reset-text">查看全部活动</text>

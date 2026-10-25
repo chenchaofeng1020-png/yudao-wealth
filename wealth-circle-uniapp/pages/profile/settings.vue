@@ -112,7 +112,7 @@
         </view>
 
         <view class="compliance-footnote">
-          <text class="footnote-txt">财富星球 · 财不外露 · 买方视角全球投研社群</text>
+          <text class="footnote-txt">财富星球 · 财不外露</text>
           <text class="footnote-sub">市场有风险，投资需谨慎 · 本内容不构成直接投资建议</text>
         </view>
       </view>

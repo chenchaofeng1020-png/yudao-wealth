@@ -1016,20 +1016,20 @@ export const filteredPosts = computed(() => {
 // 全局交互方法
 export const actions = {
   // 切换演示角色
-  switchPerspective(role) {
+  switchPerspective(role, silent = false) {
     appState.currentPerspective = role;
     if (role === 'founder') {
       Object.assign(appState.user, currentUserMock);
       appState.isVipMember = true;
-      uni.showToast({ title: '已切换至：星主/管理员视角', icon: 'none' });
+      if (!silent) uni.showToast({ title: '已切换至：星主/管理员视角', icon: 'none' });
     } else if (role === 'vip') {
       Object.assign(appState.user, demoVipUserMock);
       appState.isVipMember = true;
-      uni.showToast({ title: '已切换至：年度VIP会员视角', icon: 'none' });
+      if (!silent) uni.showToast({ title: '已切换至：年度VIP会员视角', icon: 'none' });
     } else {
       Object.assign(appState.user, demoGuestUserMock);
       appState.isVipMember = false;
-      uni.showToast({ title: '已切换至：星友视角(未开通会员)', icon: 'none' });
+      if (!silent) uni.showToast({ title: '已切换至：星友视角(未开通会员)', icon: 'none' });
     }
     saveAuthSession();
   },
@@ -1161,6 +1161,14 @@ export const actions = {
 
     // 已经在登录页则放行
     if (path === '/pages/auth/index') {
+      return true;
+    }
+
+    if (query.preview === '1') {
+      appState.isLoggedIn = true;
+      if (query.role === 'guest' || query.role === 'vip' || query.role === 'founder') {
+        actions.switchPerspective(query.role, true);
+      }
       return true;
     }
 

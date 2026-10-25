@@ -56,7 +56,7 @@
     {
       "path": "pages/activity/index",
       "style": {
-        "navigationBarTitleText": "线下活动",
+        "navigationBarTitleText": "活动中心",
         "navigationStyle": "custom",
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black",

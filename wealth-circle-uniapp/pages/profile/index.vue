@@ -5,14 +5,87 @@
 
     <!-- 2. 星球环形轨道视觉核心 (围绕财富星球与星友圈圈层) -->
     <view class="orbit-wheel-wrap">
+      <!-- 顶部四角微星芒与大气环境装饰 -->
+      <view class="orbit-ambient-bg" aria-hidden="true">
+        <svg class="ambient-corner-svg" viewBox="0 0 390 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="topSkyGlow" cx="50%" cy="36%" r="56%">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.09" />
+              <stop offset="52%" stop-color="#f59e0b" stop-opacity="0.035" />
+              <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="390" height="420" fill="url(#topSkyGlow)" />
+          <!-- 四角星轨微标与星点 -->
+          <path d="M36 42V50M32 46H40" stroke="#10b981" stroke-opacity="0.32" stroke-width="1.1" stroke-linecap="round" />
+          <path d="M352 54V60M349 57H355" stroke="#d97706" stroke-opacity="0.32" stroke-width="1.1" stroke-linecap="round" />
+          <path d="M44 338V344M41 341H47" stroke="#d97706" stroke-opacity="0.25" stroke-width="1" stroke-linecap="round" />
+          <path d="M348 330V336M345 333H351" stroke="#10b981" stroke-opacity="0.28" stroke-width="1" stroke-linecap="round" />
+          <circle cx="64" cy="28" r="1.8" fill="#f59e0b" fill-opacity="0.35" />
+          <circle cx="328" cy="34" r="2" fill="#10b981" fill-opacity="0.35" />
+          <circle cx="28" cy="190" r="1.5" fill="#10b981" fill-opacity="0.25" />
+          <circle cx="362" cy="196" r="1.5" fill="#f59e0b" fill-opacity="0.28" />
+        </svg>
+      </view>
+
       <view class="orbit-wheel-box">
-        <!-- 环心核心信息：社群名称、星球号与个人当前会籍 -->
+        <!-- 精密同心星轨与中心星核底纹（中心 195,195，主头像轨 R=146，内核 R=76） -->
+        <svg class="orbit-astrolabe-svg" viewBox="0 0 390 390" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <!-- 12点钟星主(金) -> 6点钟当前用户(翠绿) 主轨道渐变 -->
+            <linearGradient id="mainOrbitGrad" x1="195" y1="49" x2="195" y2="341" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.4" />
+              <stop offset="50%" stop-color="#10b981" stop-opacity="0.22" />
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0.45" />
+            </linearGradient>
+
+            <!-- 环心星球核心球体柔和光晕 -->
+            <radialGradient id="planetCoreFill" cx="50%" cy="42%" r="55%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
+              <stop offset="70%" stop-color="#f2fcf8" stop-opacity="0.92" />
+              <stop offset="100%" stop-color="#dcfce7" stop-opacity="0.42" />
+            </radialGradient>
+
+            <!-- 环心球体描边渐变 -->
+            <linearGradient id="coreRingGrad" x1="119" y1="119" x2="271" y2="271" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.28" />
+              <stop offset="50%" stop-color="#10b981" stop-opacity="0.24" />
+              <stop offset="100%" stop-color="#059669" stop-opacity="0.32" />
+            </linearGradient>
+          </defs>
+
+          <!-- 1. 外围柔和星盘虚线轨 (R=179) -->
+          <circle cx="195" cy="195" r="179" stroke="#10b981" stroke-opacity="0.11" stroke-width="0.9" stroke-dasharray="3 6" />
+
+          <!-- 2. 12条极细星友径向引力线 -->
+          <g stroke="#10b981" stroke-opacity="0.09" stroke-width="0.8" stroke-dasharray="2 3">
+            <line x1="49" y1="195" x2="341" y2="195" />
+            <line x1="122" y1="68.6" x2="268" y2="321.4" />
+            <line x1="68.6" y1="122" x2="321.4" y2="268" />
+            <line x1="268" y1="68.6" x2="122" y2="321.4" />
+            <line x1="321.4" y1="122" x2="68.6" y2="268" />
+          </g>
+
+          <!-- 3. 12位星友主轨道环 (R=146，精准串联12个头像圆心) -->
+          <circle cx="195" cy="195" r="146" stroke="url(#mainOrbitGrad)" stroke-width="1.35" />
+          <circle cx="195" cy="195" r="152" stroke="#10b981" stroke-opacity="0.07" stroke-width="0.75" />
+
+          <!-- 4. 中层呼吸环 (R=106，位于头像内沿与中心球体之间) -->
+          <circle cx="195" cy="195" r="106" stroke="#10b981" stroke-opacity="0.13" stroke-width="0.85" stroke-dasharray="2 5" />
+          <circle cx="92.6" cy="167.6" r="2.2" fill="#f59e0b" fill-opacity="0.45" />
+          <circle cx="297.4" cy="222.4" r="2.2" fill="#10b981" fill-opacity="0.45" />
+
+          <!-- 5. 中心「财不外露」核心球体勋章 (R=76 + 内层刻度环 R=66) -->
+          <circle cx="195" cy="195" r="76" fill="url(#planetCoreFill)" stroke="url(#coreRingGrad)" stroke-width="1.2" />
+          <circle cx="195" cy="195" r="66" stroke="#10b981" stroke-opacity="0.15" stroke-width="0.8" stroke-dasharray="2 4" />
+          <circle cx="195" cy="129" r="1.8" fill="#f59e0b" fill-opacity="0.45" />
+          <circle cx="195" cy="261" r="1.8" fill="#10b981" fill-opacity="0.45" />
+        </svg>
+
+        <!-- 环心核心信息：社群名称与星球号 -->
         <view class="orbit-center-info">
           <text class="orbit-planet-name">财不外露</text>
           <text class="orbit-planet-id">星球号：97181206</text>
-          <text class="orbit-expire-date">
-            {{ isVipOrAbove ? `付费有效期至 ${appState.user.vipExpireAt || '2027/9/17'}` : '加入星球解锁专属特权' }}
-          </text>
         </view>
 
         <!-- 12个环形轨道头像（星主在顶部12点钟位，当前用户在底部6点钟高亮位） -->
@@ -26,7 +99,7 @@
         >
           <!-- 星主金色皇冠 (12点钟) -->
           <view v-if="m.isFounder" class="founder-crown-wrap">
-            <svg class="crown-svg" width="20" height="15" viewBox="0 0 24 16" fill="none">
+            <svg class="crown-svg" width="22" height="16" viewBox="0 0 24 16" fill="none">
               <path d="M2 13h20v3H2v-3zm1.2-9.5l4.3 5.5 4.5-5.5 4.5 5.5 4.3-5.5.7 8H2.5l.7-8z" fill="#d97706" stroke="#b45309" stroke-width="1.2"/>
             </svg>
           </view>
@@ -44,21 +117,44 @@
         </view>
       </view>
 
-      <!-- 底部用户专属信息：成员编号与加入天数 -->
+      <!-- 底部用户专属信息：成员编号、加入星球日期与会员有效期状态 -->
       <view class="orbit-member-meta">
         <text class="member-id-text">成员编号：1769</text>
-        <text class="member-joined-text">2026 年 9 月 17 日加入星球 · 已加入 {{ appState.user.joinedDays || '540 天' }}</text>
+        <text class="member-joined-text">2026 年 9 月 17 日加入星球</text>
+        <text class="member-expire-text" @tap="!isVipOrAbove && handleVipAction()">
+          {{ isVipOrAbove ? `付费有效期至 ${appState.user.vipExpireAt || '2027/9/17'}` : '加入星球解锁专属特权' }}
+        </text>
       </view>
 
-      <!-- 分享星球胶囊按钮 -->
-      <view class="btn-share-planet" @tap="handleSharePlanet">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-        </svg>
-        <text class="share-btn-text">分享星球</text>
+      <!-- 底部操作区：普通星友显示「开通会员 + 分享图标次按钮」，会员/星主显示「分享星球」 -->
+      <view class="orbit-action-row">
+        <template v-if="!isVipOrAbove">
+          <view class="btn-open-vip" @tap="handleVipAction">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 3h12l4 6-10 13L2 9z"></path>
+            </svg>
+            <text class="open-vip-btn-text">开通会员</text>
+          </view>
+          <view class="btn-share-icon-only" @tap="handleSharePlanet" aria-label="分享星球">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </view>
+        </template>
+
+        <view v-else class="btn-share-planet" @tap="handleSharePlanet">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <text class="share-btn-text">分享星球</text>
+        </view>
       </view>
     </view>
 
@@ -95,9 +191,9 @@
     <!-- 4. 核心投研业务 -->
     <view class="section-title">核心投研服务</view>
     <view class="planet-menu-section">
-      <!-- 线下闭门活动 -->
+      <!-- 活动中心 -->
       <view class="menu-cell-row" @tap="goActivities">
-        <text class="cell-label">线下活动</text>
+        <text class="cell-label">活动中心</text>
         <view class="cell-right-wrap">
           <view class="activity-chip">1场进行中</view>
           <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -192,7 +288,7 @@
     <!-- 7. 底部合规备案落款 -->
     <view class="profile-footer-section">
       <view class="compliance-footnote">
-        <text class="footnote-txt">财富星球 · 财不外露 · 买方视角全球投研社群</text>
+        <text class="footnote-txt">财富星球 · 财不外露</text>
         <text class="footnote-sub">市场有风险，投资需谨慎 · 本内容不构成直接投资建议</text>
       </view>
     </view>
@@ -248,8 +344,6 @@
               placeholder-class="edit-placeholder"
             />
           </view>
-
-          <text class="edit-note">注：本期暂不支持修改注册手机号</text>
         </scroll-view>
 
         <view class="edit-sheet-footer">
@@ -273,9 +367,9 @@ import { computed, ref, reactive } from 'vue';
 import { appState, actions, isVipOrAbove } from '../../store/community.js';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 
-// 12个环形轨道头像数据（基于数学三角函数精准计算，半径从 114 扩展至 126）
+// 12个环形轨道头像数据（基于数学三角函数精准计算，主轨道半径扩展至 146px）
 const orbitMembers = computed(() => {
-  const R = 126; // 半径 px
+  const R = 146; // 半径 px
   const list = [
     { id: 0, angle: -90, avatar: '/static/avatar_rich.png', name: 'Rich', isFounder: true },
     { id: 1, angle: -60, avatar: '/static/ziran.jpg' },
@@ -420,27 +514,56 @@ const handleSettings = () => {
 
 /* 1. 顶部状态栏透明占位（App 端 WebView 全屏需避让状态栏/灵动岛） */
 .status-bar-spacer {
-  background: #ffffff;
+  background: #f3fbf7;
   padding-top: constant(safe-area-inset-top);
   padding-top: env(safe-area-inset-top);
 }
 
 /* 2. 星球环形轨道主视觉 */
 .orbit-wheel-wrap {
-  background: #ffffff;
+  position: relative;
+  background: linear-gradient(180deg, #f3fbf7 0%, #f9fdfb 46%, #ffffff 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 12px 0 24px 0;
+  overflow: hidden;
+}
+
+.orbit-ambient-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 420px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient-corner-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .orbit-wheel-box {
-  width: 356px;
-  height: 356px;
+  width: 390px;
+  height: 390px;
+  max-width: 100%;
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.orbit-astrolabe-svg {
+  position: absolute;
+  inset: 0;
+  width: 390px;
+  height: 390px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .orbit-center-info {
@@ -452,38 +575,33 @@ const handleSettings = () => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  width: 170px;
+  width: 148px;
   z-index: 10;
   pointer-events: none;
 }
 
 .orbit-planet-name {
-  font-size: 19px;
-  font-weight: 700;
-  color: #1c1c1e;
+  font-size: 21px;
+  font-weight: 800;
+  color: #0f172a;
   letter-spacing: -0.2px;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .orbit-planet-id {
   font-size: 12px;
-  color: #8e8e93;
-  margin-bottom: 4px;
-}
-
-.orbit-expire-date {
-  font-size: 11px;
-  color: #8e8e93;
+  font-weight: 500;
+  color: #64748b;
 }
 
 .orbit-node {
   position: absolute;
   left: 50%;
   top: 50%;
-  margin-left: -23px;
-  margin-top: -23px;
-  width: 46px;
-  height: 46px;
+  margin-left: -26px;
+  margin-top: -26px;
+  width: 52px;
+  height: 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -492,48 +610,49 @@ const handleSettings = () => {
   cursor: pointer;
 
   &.is-founder {
-    margin-left: -29px;
-    margin-top: -29px;
-    width: 58px;
-    height: 58px;
+    margin-left: -33px;
+    margin-top: -33px;
+    width: 66px;
+    height: 66px;
   }
 
   &.is-me {
-    margin-left: -29px;
-    margin-top: -29px;
-    width: 58px;
-    height: 58px;
+    margin-left: -33px;
+    margin-top: -33px;
+    width: 66px;
+    height: 66px;
   }
 }
 
 .founder-crown-wrap {
   position: absolute;
-  top: -18px;
+  top: -19px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .orbit-avatar {
-  width: 46px;
-  height: 46px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   object-fit: cover;
+  background-color: #ffffff;
   border: 2px solid #ffffff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.1);
 
   &.founder-ring {
-    width: 58px;
-    height: 58px;
+    width: 66px;
+    height: 66px;
     border: 2.5px solid #f59e0b;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.38);
   }
 
   &.me-ring {
-    width: 58px;
-    height: 58px;
+    width: 66px;
+    height: 66px;
     border: 3px solid #10b981;
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.55);
+    box-shadow: 0 0 18px rgba(16, 185, 129, 0.52);
   }
 }
 
@@ -546,9 +665,9 @@ const handleSettings = () => {
   font-weight: 500;
 
   &.me-name {
-    bottom: -22px;
-    font-size: 12px;
-    color: #1e293b;
+    bottom: -23px;
+    font-size: 12.5px;
+    color: #0f172a;
     font-weight: 700;
   }
 }
@@ -557,7 +676,7 @@ const handleSettings = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 20px;
   gap: 3px;
 }
 
@@ -572,16 +691,76 @@ const handleSettings = () => {
   color: #8e8e93;
 }
 
+.member-expire-text {
+  font-size: 11.5px;
+  color: #059669;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.orbit-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btn-open-vip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.24);
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.92;
+  }
+}
+
+.open-vip-btn-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+}
+
+.btn-share-icon-only {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(16, 185, 129, 0.38);
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+
+  &:active {
+    transform: scale(0.94);
+    background: #f0fdf4;
+  }
+}
+
 .btn-share-planet {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 22px;
-  border-radius: 20px;
+  height: 38px;
+  padding: 0 22px;
+  border-radius: 999px;
   border: 1px solid #10b981;
   background: #ffffff;
   cursor: pointer;
-  margin-top: 14px;
   transition: transform 0.15s ease, background-color 0.15s ease;
 
   &:active {
@@ -924,13 +1103,6 @@ const handleSettings = () => {
   font-size: 13px;
   color: #1e293b;
   box-sizing: border-box;
-}
-
-.edit-note {
-  font-size: 11px;
-  color: #94a3b8;
-  display: block;
-  margin-top: 6px;
 }
 
 .edit-sheet-footer {

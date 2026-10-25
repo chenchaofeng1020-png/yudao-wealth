@@ -209,20 +209,8 @@
         </el-button>
       </div>
       <el-table :data="detailRecords" :stripe="true">
-        <el-table-column type="expand">
-          <template #default="scope">
-            <div class="signup-form-info">
-              <span class="sfi-title">报名信息</span>
-              <span v-for="(f, fi) in scope.row.formInfo" :key="fi" class="sfi-item">
-                <span class="sfi-label">{{ f.label }}</span>
-                <span class="sfi-value">{{ f.value }}</span>
-              </span>
-            </div>
-          </template>
-        </el-table-column>
         <el-table-column label="报名用户" prop="name" width="100px" />
-        <el-table-column label="手机号" prop="phone" width="120px" />
-        <el-table-column label="理财师" prop="advisor" width="90px" />
+        <el-table-column label="会员手机号" prop="phone" width="130px" />
         <el-table-column label="票种" prop="ticket" width="100px" />
         <el-table-column label="报名时间" prop="payTime" width="150px" />
         <el-table-column label="价格" width="90px">
@@ -243,6 +231,16 @@
           </template>
         </el-table-column>
         <el-table-column label="订单号" prop="orderNo" min-width="180px" />
+        <!-- 报名信息：按当前活动配置的报名组件动态生成列，列名即组件名称；理财师属于报名信息，紧跟手机号之后 -->
+        <template v-for="f in detailActivity?.regFields ?? []" :key="f.id">
+          <el-table-column :label="f.label" min-width="120px">
+            <template #default="scope">
+              {{ formValueOf(scope.row, f) }}
+            </template>
+          </el-table-column>
+          <el-table-column v-if="f.type === 'phone'" label="理财师" prop="advisor" width="90px" />
+        </template>
+        <el-table-column v-if="!hasPhoneField" label="理财师" prop="advisor" width="90px" />
         <el-table-column fixed="right" label="操作" width="110px">
           <template #default="scope">
             <el-button
@@ -818,6 +816,10 @@ type SignupSeed = {
   g?: number
 }
 
+// 演示数据：种子中的脱敏手机号还原为明文（中段用后四位倒序填充，保持 11 位号码形态）
+const plainPhone = (masked: string) =>
+  masked.replace('****', masked.slice(-4).split('').reverse().join(''))
+
 // 表单信息：按活动报名组件逐项生成该份票填写的内容（选项类按记录序号轮换，制造填写差异）
 const buildFormInfo = (regFields: RegField[], seed: SignupSeed, i: number) =>
   regFields.map((f) => {
@@ -864,11 +866,12 @@ const buildSignups = (
     const orderNo = payTime.replace(/[- :]/g, '') + String(1000 + gIdx * 3).padStart(4, '0')
     return group.map((seed) => {
       const status = seed.s || 'registered'
+      const phone = plainPhone(seed.p)
       const record: SignupRecord = {
         id: `sg-${activityId}-${++seq}`,
         activityId,
         name: seed.n,
-        phone: seed.p,
+        phone,
         advisor: seed.a,
         ticket: seed.t ?? defaultTicket,
         status,
@@ -877,7 +880,7 @@ const buildSignups = (
         orderNo,
         // 取消由后台直接操作：历史已取消记录均视为已原路退款
         refunded: status === 'cancelled',
-        formInfo: buildFormInfo(regFields, seed, i++)
+        formInfo: buildFormInfo(regFields, { ...seed, p: phone }, i++)
       }
       return record
     })
@@ -1477,6 +1480,15 @@ const detailCounts = computed(() => {
   }
 })
 
+// 该份票在指定报名组件下填写的内容（与导出 Excel 取值逻辑一致，按组件名称匹配）
+const formValueOf = (r: SignupRecord, f: RegField) =>
+  r.formInfo.find((x) => x.label === f.label)?.value ?? ''
+
+// 当前活动是否配置了手机号组件（决定理财师列的位置：有则紧跟手机号，无则排在报名信息末尾）
+const hasPhoneField = computed(
+  () => !!detailActivity.value?.regFields.some((f) => f.type === 'phone')
+)
+
 // ==================== 取消报名（后台直接操作） ====================
 // 取消后席位立即释放，实付费用原路退回
 const cancelSignup = (r: SignupRecord) => {
@@ -1816,37 +1828,6 @@ const exportSignupsCsv = () => {
 
 .op-dash {
   color: var(--el-text-color-placeholder);
-}
-
-/* 报名记录展开区：该份票填写的报名信息 */
-.signup-form-info {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 24px;
-  padding: 2px 12px 6px 46px;
-}
-
-.signup-form-info .sfi-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--el-text-color-secondary);
-}
-
-.signup-form-info .sfi-item {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.signup-form-info .sfi-label {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-}
-
-.signup-form-info .sfi-value {
-  font-size: 12px;
-  color: var(--el-text-color-primary);
 }
 
 /* 封面上传：750×480 比例单图卡片 */
