@@ -738,10 +738,10 @@ export const activitiesMock = [
       amount: 1396,
       refunded: 299,
       attendees: [
-        { name: '陈朝峰', phone: '138****6688', ticket: '标准票', price: 299, status: 'ok' },
-        { name: '林晓', phone: '139****8899', ticket: '标准票', price: 299, status: 'ok' },
-        { name: '周颖', phone: '136****2233', ticket: '嘉宾票', price: 499, status: 'ok' },
-        { name: '张同', phone: '158****5511', ticket: '标准票', price: 299, status: 'cancelled' }
+        { name: '陈朝峰', phone: '13800006688', ticket: '标准票', price: 299, status: 'ok' },
+        { name: '林晓', phone: '13900008899', ticket: '标准票', price: 299, status: 'ok' },
+        { name: '周颖', phone: '13600002233', ticket: '嘉宾票', price: 499, status: 'ok' },
+        { name: '张同', phone: '15800005511', ticket: '标准票', price: 299, status: 'cancelled' }
       ]
     },
     tickets: [
@@ -814,6 +814,7 @@ export const appState = reactive({
   isVipModalVisible: false,
   isPublishModalVisible: false,
   isMembersModalVisible: false,
+  isShareModalVisible: false,
   publishModalMode: 'post', // 'post' | 'question'
   publishTargetExpert: '老林说宏观',
   selectedColumnId: 'col-us-stock',
@@ -1229,6 +1230,14 @@ export const actions = {
 
   closeMembersModal() {
     appState.isMembersModalVisible = false;
+  },
+
+  openShareModal() {
+    appState.isShareModalVisible = true;
+  },
+
+  closeShareModal() {
+    appState.isShareModalVisible = false;
   },
 
   // 点赞/取消点赞

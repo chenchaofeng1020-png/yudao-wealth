@@ -13,7 +13,6 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" class="!w-160px" clearable placeholder="全部">
-          <el-option label="未发布" value="draft" />
           <el-option label="报名中" value="recruiting" />
           <el-option label="已结束" value="ended" />
           <el-option label="已下架" value="off" />
@@ -89,14 +88,6 @@
               分享
             </el-button>
             <el-button link type="primary" @click="openEdit(scope.row)">编辑</el-button>
-            <el-button
-              v-if="scope.row.status === 'draft'"
-              link
-              type="primary"
-              @click="handlePublish(scope.row)"
-            >
-              发布
-            </el-button>
             <el-button
               v-if="scope.row.status === 'recruiting'"
               link
@@ -203,7 +194,7 @@
           <el-tab-pane :label="`已报名(${detailCounts.registered})`" name="registered" />
           <el-tab-pane :label="`已取消(${detailCounts.cancelled})`" name="cancelled" />
         </el-tabs>
-        <el-button plain type="primary" @click="exportSignupsCsv">
+        <el-button class="signup-export-btn" plain type="primary" @click="exportSignupsExcel">
           <Icon class="mr-5px" icon="ep:download" />
           导出 Excel
         </el-button>
@@ -270,11 +261,9 @@
           <span class="form-title">{{ editingId ? '编辑活动' : '新建活动' }}</span>
         </div>
         <div class="form-toolbar-actions">
-          <template v-if="!editingLive">
-            <el-button @click="saveActivity('draft')">存草稿</el-button>
-            <el-button type="primary" @click="saveActivity('publish')">保存并发布</el-button>
-          </template>
-          <el-button v-else type="primary" @click="saveActivity('save')">保存修改</el-button>
+          <el-button type="primary" @click="saveActivity()">
+            {{ editingId ? '保存修改' : '保存并发布' }}
+          </el-button>
         </div>
       </div>
     </ContentWrap>
@@ -445,7 +434,12 @@
         <div class="field-hint section-hint">
           设置报名时客户需填写的信息，每张票需填写一份，购买多张票需填写多份；默认提供姓名、手机号组件，可添加自定义组件。
         </div>
-        <div v-for="f in activityForm.regFields" :key="f.id" class="reg-field-row">
+        <div
+          v-for="f in activityForm.regFields"
+          :key="f.id"
+          class="reg-field-row"
+          :class="{ 'is-column': isChoiceField(f) }"
+        >
           <el-tag class="reg-field-tag" size="small" type="info">
             {{ REG_FIELD_LABEL[f.type] }}
           </el-tag>
@@ -456,18 +450,41 @@
             maxlength="20"
             placeholder="组件名称"
           />
-          <el-input
-            v-if="isChoiceField(f)"
-            v-model="f.optionsText"
-            class="reg-field-options"
-            :disabled="isEditingEnded"
-            maxlength="200"
-            placeholder="选项内容，用逗号分隔，至少 2 项"
-          />
           <el-checkbox v-model="f.required" :disabled="isEditingEnded">必填</el-checkbox>
           <el-button link type="danger" :disabled="isEditingEnded" @click="removeRegField(f.id)">
             删除
           </el-button>
+          <!-- 选项类组件：逐项添加选项 -->
+          <div v-if="isChoiceField(f)" class="reg-options-box">
+            <div v-for="(opt, oi) in f.options" :key="oi" class="reg-option-row">
+              <span class="reg-option-index">{{ oi + 1 }}.</span>
+              <el-input
+                v-model="f.options[oi]"
+                class="reg-option-input"
+                :disabled="isEditingEnded"
+                maxlength="30"
+                placeholder="选项内容"
+              />
+              <el-button
+                link
+                type="danger"
+                :disabled="isEditingEnded || f.options.length <= 1"
+                @click="removeRegOption(f, oi)"
+              >
+                删除
+              </el-button>
+            </div>
+            <el-button
+              class="reg-option-add"
+              size="small"
+              plain
+              :disabled="isEditingEnded"
+              @click="addRegOption(f)"
+            >
+              <Icon class="mr-5px" icon="ep:plus" />
+              添加选项
+            </el-button>
+          </div>
         </div>
         <el-form-item>
           <el-dropdown :disabled="isEditingEnded" trigger="click" @command="addRegField">
@@ -520,6 +537,7 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import QRCode from 'qrcode'
+import * as XLSX from 'xlsx'
 import type { FormInstance, FormRules, UploadFile } from 'element-plus'
 import { useMessage } from '@/hooks/web/useMessage'
 
@@ -528,7 +546,7 @@ defineOptions({ name: 'CmsActivity' })
 const message = useMessage()
 
 // ==================== 类型与常量 ====================
-type ActivityStatus = 'draft' | 'recruiting' | 'ended' | 'off'
+type ActivityStatus = 'recruiting' | 'ended' | 'off'
 type SignupStatus = 'registered' | 'cancelled'
 type RegFieldType = 'name' | 'phone' | 'text' | 'textarea' | 'radio' | 'checkbox'
 
@@ -547,7 +565,7 @@ interface RegField {
   type: RegFieldType
   label: string // 组件名称（姓名/手机号为固定标签）
   required: boolean // 是否必填
-  optionsText: string // 选项内容（仅单选/多选），逗号分隔
+  options: string[] // 选项内容（仅单选/多选），逐项添加
   fixed?: boolean // 默认组件（姓名/手机号），名称不可编辑
 }
 
@@ -597,7 +615,6 @@ const STATUS_META: Record<
   ActivityStatus,
   { label: string; tag: 'info' | 'success' | 'warning' | 'danger' }
 > = {
-  draft: { label: '未发布', tag: 'info' },
   recruiting: { label: '报名中', tag: 'success' },
   ended: { label: '已结束', tag: 'warning' },
   off: { label: '已下架', tag: 'danger' }
@@ -670,8 +687,8 @@ const detailOf = (agenda: string, guest: string) => `
 
 // 报名信息默认组件：姓名、手机号（默认必填）
 const defaultRegFields = (): RegField[] => [
-  { id: uid('f'), type: 'name', label: '姓名', required: true, optionsText: '', fixed: true },
-  { id: uid('f'), type: 'phone', label: '手机号', required: true, optionsText: '', fixed: true }
+  { id: uid('f'), type: 'name', label: '姓名', required: true, options: [], fixed: true },
+  { id: uid('f'), type: 'phone', label: '手机号', required: true, options: [], fixed: true }
 ]
 
 const mkTicket = (name: string, price: number, count: number, desc = ''): TicketType => ({
@@ -684,7 +701,7 @@ const mkTicket = (name: string, price: number, count: number, desc = ''): Ticket
 
 const activitiesMockRaw: ActivityItem[] = [
   {
-    id: 'act-draft-01',
+    id: 'act-off-01',
     name: '十二月年度策略报告会',
     cover: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=750&h=480&fit=crop',
     startTime: '2026-12-18 14:00',
@@ -697,7 +714,7 @@ const activitiesMockRaw: ActivityItem[] = [
       '13:30 签到入场；14:00 2027 年大类资产展望与配置主线；15:10 权益、固收与黄金的组合再平衡实操；16:20 圆桌问答与一对一交流。',
       '主讲人：老林说宏观，20 年二级市场投研老兵，专注全天候大类资产配置。'
     ),
-    status: 'draft',
+    status: 'off',
     createdAt: '2026-10-14 10:26',
     shareUrl: ''
   },
@@ -737,7 +754,7 @@ const activitiesMockRaw: ActivityItem[] = [
         type: 'radio',
         label: '从事行业',
         required: true,
-        optionsText: '银行/证券,保险,基金/资管,其他'
+        options: ['银行/证券', '保险', '基金/资管', '其他']
       }
     ],
     signupDeadline: '2026-10-27 18:00',
@@ -823,10 +840,7 @@ const plainPhone = (masked: string) =>
 // 表单信息：按活动报名组件逐项生成该份票填写的内容（选项类按记录序号轮换，制造填写差异）
 const buildFormInfo = (regFields: RegField[], seed: SignupSeed, i: number) =>
   regFields.map((f) => {
-    const options = f.optionsText
-      .split(/[，,]/)
-      .map((o) => o.trim())
-      .filter(Boolean)
+    const options = f.options.map((o) => o.trim()).filter(Boolean)
     let value = ''
     if (f.type === 'name') value = seed.n
     else if (f.type === 'phone') value = seed.p
@@ -994,8 +1008,7 @@ const isFull = (a: ActivityItem) => validCountOf(a) >= totalQuotaOf(a)
 const isDeadlinePassed = (a: ActivityItem) => parseTime(a.signupDeadline) < Date.now()
 const hasSignupRecords = (a: ActivityItem) => signupRecords.value.some((r) => r.activityId === a.id)
 // 凡产生过报名记录（含已取消）的活动不允许删除
-const canDelete = (a: ActivityItem) =>
-  (a.status === 'draft' || a.status === 'off') && !hasSignupRecords(a)
+const canDelete = (a: ActivityItem) => a.status === 'off' && !hasSignupRecords(a)
 
 // ==================== 查询与筛选 ====================
 const queryParams = reactive({
@@ -1048,14 +1061,13 @@ const pagedList = computed(() =>
 // ==================== 新建 / 编辑活动 ====================
 const formRef = ref<FormInstance>()
 const editingId = ref<string | null>(null)
-const editingStatus = ref<ActivityStatus>('draft')
+const editingStatus = ref<ActivityStatus>('recruiting')
 
 const isEditingRecruiting = computed(
   () => editingId.value !== null && editingStatus.value === 'recruiting'
 )
 const isEditingEnded = computed(() => editingId.value !== null && editingStatus.value === 'ended')
 const isPriceLocked = isEditingRecruiting
-const editingLive = computed(() => isEditingRecruiting.value || isEditingEnded.value)
 
 const activityForm = reactive({
   name: '',
@@ -1196,7 +1208,7 @@ const addRegField = (type: RegFieldType) => {
     type,
     label: '',
     required: true,
-    optionsText: ''
+    options: []
   })
 }
 
@@ -1204,9 +1216,17 @@ const removeRegField = (id: string) => {
   activityForm.regFields = activityForm.regFields.filter((f) => f.id !== id)
 }
 
+const addRegOption = (f: RegField) => {
+  f.options.push('')
+}
+
+const removeRegOption = (f: RegField, index: number) => {
+  f.options.splice(index, 1)
+}
+
 const openCreate = () => {
   editingId.value = null
-  editingStatus.value = 'draft'
+  editingStatus.value = 'recruiting'
   activityForm.name = ''
   activityForm.cover = ''
   activityForm.startTime = ''
@@ -1251,7 +1271,7 @@ const validateTicketsAndFields = (): boolean => {
     return false
   }
   const badChoice = activityForm.regFields.find(
-    (f) => isChoiceField(f) && f.optionsText.split(/[,，、]/).filter((s) => s.trim()).length < 2
+    (f) => isChoiceField(f) && f.options.map((o) => o.trim()).filter(Boolean).length < 2
   )
   if (badChoice) {
     message.warning(`「${badChoice.label || REG_FIELD_LABEL[badChoice.type]}」的选项至少需要 2 项`)
@@ -1264,10 +1284,11 @@ const validateTicketsAndFields = (): boolean => {
   return true
 }
 
-const saveActivity = (mode: 'draft' | 'publish' | 'save') => {
+const saveActivity = () => {
   formRef.value?.validate((valid) => {
     if (!valid) return
-    if (mode === 'publish' && parseTime(activityForm.signupDeadline) <= Date.now()) {
+    // 新建：保存即发布
+    if (!editingId.value && parseTime(activityForm.signupDeadline) <= Date.now()) {
       message.warning('报名截止时间已过，无法发布，请先调整报名截止时间')
       return
     }
@@ -1301,7 +1322,7 @@ const saveActivity = (mode: 'draft' | 'publish' | 'save') => {
         type: f.type,
         label: f.label.trim(),
         required: f.required,
-        optionsText: f.optionsText,
+        options: [...f.options],
         fixed: f.fixed
       })),
       signupDeadline: activityForm.signupDeadline,
@@ -1317,68 +1338,31 @@ const saveActivity = (mode: 'draft' | 'publish' | 'save') => {
       return
     }
 
-    // 编辑「未发布 / 已下架」：全部字段可改
+    // 编辑「已下架」：全部字段可改，保存后保持已下架
     if (editingId.value) {
       const target = activities.value.find((a) => a.id === editingId.value)
       if (!target) return
       Object.assign(target, payload)
-      if (mode === 'publish') {
-        target.status = 'recruiting'
-        if (!target.shareUrl) target.shareUrl = SHARE_URL_PREFIX + target.id
-        message.success('活动已发布，报名通道已开启，分享链接已生成')
-      } else {
-        target.status = 'draft'
-        target.shareUrl = ''
-        message.success('已保存为草稿，C 端不可访问')
-      }
       viewMode.value = 'list'
+      message.success('修改已保存，重新上架后对 C 端生效')
       return
     }
 
-    // 新建
+    // 新建：保存即发布，生成分享链接
     const newId = 'act-' + Date.now()
-    const published = mode === 'publish'
     activities.value.unshift({
       id: newId,
       ...payload,
-      status: published ? 'recruiting' : 'draft',
+      status: 'recruiting',
       createdAt: nowText(),
-      shareUrl: published ? SHARE_URL_PREFIX + newId : ''
+      shareUrl: SHARE_URL_PREFIX + newId
     })
     viewMode.value = 'list'
-    message.success(published ? '活动已发布，报名通道已开启，分享链接已生成' : '活动已保存为草稿')
+    message.success('活动已发布，报名通道已开启，分享链接已生成')
   })
 }
 
 // ==================== 列表状态操作 ====================
-// 发布：原型中 mock 编辑数据齐全即通过校验，发布后生成分享链接
-const handlePublish = (a: ActivityItem) => {
-  const ticketsBad =
-    !a.tickets.length ||
-    a.tickets.some((t) => !t.name.trim() || !(Number(t.price) > 0) || !(Number(t.count) > 0))
-  const incomplete =
-    !a.name.trim() ||
-    !a.startTime ||
-    !a.endTime ||
-    !a.location.trim() ||
-    ticketsBad ||
-    !a.signupDeadline ||
-    !plainText(a.detailHtml) ||
-    a.endTime <= a.startTime ||
-    a.signupDeadline >= a.endTime
-  if (incomplete) {
-    message.warning('活动信息不完整，请先在编辑中完善必填项')
-    return
-  }
-  if (isDeadlinePassed(a)) {
-    message.warning('报名截止时间已过，无法发布，请先调整报名截止时间')
-    return
-  }
-  a.status = 'recruiting'
-  if (!a.shareUrl) a.shareUrl = SHARE_URL_PREFIX + a.id
-  message.success('活动已发布，报名通道已开启，分享链接已生成')
-}
-
 // 下架免确认
 const handleOffline = (a: ActivityItem) => {
   a.status = 'off'
@@ -1505,35 +1489,42 @@ const cancelSignup = (r: SignupRecord) => {
     .catch(() => {})
 }
 
-// 前端原型导出：生成 CSV（带 BOM 保证 Excel 中文不乱码）
-// 表头前部按活动报名组件动态展开（每份票填写的表单信息各占一列），后部为固定信息列
-const exportSignupsCsv = () => {
+// 前端原型导出：生成 xlsx，表头与报名名单列表完全一致（固定信息列在前，报名组件动态列在后）
+const exportSignupsExcel = () => {
   const a = detailActivity.value
   if (!a) return
-  const fieldLabels = a.regFields.map((f) => f.label)
-  const header = [...fieldLabels, '理财师', '票种', '报名时间', '价格', '状态', '订单号']
-  const rows = detailRecords.value.map((r) => [
-    ...fieldLabels.map((label) => r.formInfo.find((x) => x.label === label)?.value ?? ''),
-    r.advisor,
-    r.ticket,
-    r.payTime,
-    String(r.amount),
-    r.status === 'registered' ? '已报名' : r.refunded ? '已取消（已退款）' : '已取消',
-    r.orderNo
-  ])
-  const csv =
-    '\ufeff' +
-    [header, ...rows]
-      .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
-      .join('\r\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${a.name}-报名名单-${todayText()}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
-  message.warning('原型演示：当前导出为 CSV 格式')
+  const hasPhone = a.regFields.some((f) => f.type === 'phone')
+  // 表头与报名名单列表一致：固定列在前，报名信息动态列在后；理财师紧跟手机号组件后，无手机号组件则排末尾
+  const dynamicLabels: string[] = []
+  a.regFields.forEach((f) => {
+    dynamicLabels.push(f.label)
+    if (f.type === 'phone') dynamicLabels.push('理财师')
+  })
+  if (!hasPhone) dynamicLabels.push('理财师')
+  const header = ['报名用户', '会员手机号', '票种', '报名时间', '价格', '状态', '订单号', ...dynamicLabels]
+  const rows = detailRecords.value.map((r) => {
+    const dynamicCells: string[] = []
+    a.regFields.forEach((f) => {
+      dynamicCells.push(r.formInfo.find((x) => x.label === f.label)?.value ?? '')
+      if (f.type === 'phone') dynamicCells.push(r.advisor)
+    })
+    if (!hasPhone) dynamicCells.push(r.advisor)
+    return [
+      r.name,
+      r.phone,
+      r.ticket,
+      r.payTime,
+      String(r.amount),
+      r.status === 'registered' ? '已报名' : r.refunded ? '已取消（已退款）' : '已取消',
+      r.orderNo,
+      ...dynamicCells
+    ]
+  })
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows])
+  ws['!cols'] = header.map((h) => ({ wch: Math.max(10, String(h).length * 2 + 4) }))
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, '报名名单')
+  XLSX.writeFile(wb, `${a.name}-报名名单-${todayText()}.xlsx`)
 }
 </script>
 
@@ -1685,9 +1676,41 @@ const exportSignupsCsv = () => {
   width: 220px;
 }
 
-.reg-field-options {
-  flex: 1;
-  max-width: 480px;
+/* 选项类组件：选项逐项添加 */
+.reg-field-row.is-column {
+  flex-wrap: wrap;
+}
+
+.reg-options-box {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 78px;
+  padding: 10px 12px;
+  background: var(--el-fill-color-lighter);
+  border-radius: 6px;
+}
+
+.reg-option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reg-option-index {
+  flex-shrink: 0;
+  width: 20px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+
+.reg-option-input {
+  max-width: 360px;
+}
+
+.reg-option-add {
+  align-self: flex-start;
 }
 
 /* 分享弹窗二维码 */
@@ -1771,7 +1794,7 @@ const exportSignupsCsv = () => {
 /* 报名名单：计数页签 + 导出 */
 .signup-toolbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
 }
@@ -1782,6 +1805,11 @@ const exportSignupsCsv = () => {
 
 .signup-tabs :deep(.el-tabs__header) {
   margin-bottom: 12px;
+}
+
+/* 导出按钮与 tabs 文字行居中对齐，整体位于 tabs 分割线上方 */
+.signup-export-btn {
+  margin-top: 4px;
 }
 
 /* 报名状态：色点 + 文字 */

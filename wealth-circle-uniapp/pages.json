@@ -29,8 +29,11 @@
       "style": {
         "navigationBarTitleText": "我的",
         "navigationStyle": "custom",
-        "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "black",
+        "navigationBarBackgroundColor": "#07152b",
+        "navigationBarTextStyle": "white",
+        "backgroundColor": "#f2f4f8",
+        "backgroundColorTop": "#07152b",
+        "backgroundColorBottom": "#f2f4f8",
         "enablePullDownRefresh": true
       }
     },

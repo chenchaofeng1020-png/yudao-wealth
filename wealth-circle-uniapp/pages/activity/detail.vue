@@ -406,8 +406,7 @@
         </view>
 
         <view class="pay-header">
-          <text class="pay-title">安全收银台</text>
-          <text class="pay-subtitle">财不外露 · 财富成长星球</text>
+          <text class="pay-title">订单确认</text>
         </view>
 
         <!-- 订单详情卡片 -->
@@ -744,7 +743,7 @@ const confirmPay = () => {
       refunded: 0,
       attendees: formList.value.map((item) => ({
         name: valByType(item, 'name'),
-        phone: valByType(item, 'phone').replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2'),
+        phone: valByType(item, 'phone'),
         ticket: t ? t.name : '',
         price: t ? t.price : 0,
         status: 'ok'
