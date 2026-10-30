@@ -82,15 +82,22 @@
           <text class="members-joined-label">12,840 位星友</text>
         </view>
 
-        <!-- 右侧立即加入金钮 (香槟浅金微光质感) -->
+        <!-- 右侧身份特权/加入金钮 (香槟浅金微光质感) -->
         <view class="btn-golden-join" @tap="handleHeroAction">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#271700" class="crown-icon-svg">
             <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"/>
           </svg>
-          <text class="join-label">立即加入</text>
+          <text class="join-label">{{ heroJoinLabel }}</text>
         </view>
       </view>
     </view>
+
+    <!-- 身份特权卡弹窗（星主/合伙人/嘉宾） -->
+    <RolePrivilegeModal
+      :visible="rolePrivilegeVisible"
+      :role="appState.user.role"
+      @close="rolePrivilegeVisible = false"
+    />
 
     <!-- 2. 胶囊式分类 Tabs 栏 (单行整齐排列 + 触控反馈 + 筛选菜单钮) -->
     <view class="category-capsules-bar">
@@ -205,6 +212,7 @@ import PostCard from '../../components/PostCard.vue';
 import CommunityMembersModal from '../../components/CommunityMembersModal.vue';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 import PublishModal from '../../components/PublishModal.vue';
+import RolePrivilegeModal from '../../components/RolePrivilegeModal.vue';
 
 // 页面滚动位置监听 (Apple 原生 Large Title 收缩机制)
 const scrollTop = ref(0);
@@ -313,11 +321,25 @@ const handleFilterSelect = (key) => {
   filterSheetVisible.value = false;
 };
 
+// 顶部金钮文案：星主/合伙人/嘉宾显示身份特权，年度会员显示我的特权，星友显示立即加入
+const heroJoinLabel = computed(() => {
+  const role = appState.user.role;
+  if (role === 'founder') return '星主特权';
+  if (role === 'partner') return '合伙人特权';
+  if (role === 'guest_expert') return '嘉宾特权';
+  if (isVipOrAbove.value) return '我的特权';
+  return '立即加入';
+});
+
+// 身份特权卡弹窗（星主/合伙人/嘉宾免费享会员特权）
+const rolePrivilegeVisible = ref(false);
+
 const handleHeroAction = () => {
-  if (!isVipOrAbove.value) {
-    appState.isVipModalVisible = true;
+  const role = appState.user.role;
+  if (role === 'founder' || role === 'partner' || role === 'guest_expert') {
+    rolePrivilegeVisible.value = true;
   } else {
-    openPerspectiveSheet();
+    appState.isVipModalVisible = true;
   }
 };
 
@@ -327,26 +349,6 @@ const handleFabPublish = () => {
   appState.publishModalMode = 'post';
   appState.publishTargetExpert = '';
   appState.isPublishModalVisible = true;
-};
-
-// 视角切换与会员弹窗
-const openPerspectiveSheet = () => {
-  uni.showActionSheet({
-    itemList: [
-      '👑 星主/管理员视角 (全特权+管理)',
-      '💎 年度VIP会员视角 (已解锁全文与评论)',
-      '👤 普通星友视角 (未开通会员，体验付费墙)',
-      '💳 会员专区 / 开通与续费'
-    ],
-    success: (res) => {
-      if (res.tapIndex === 3) {
-        appState.isVipModalVisible = true;
-      } else {
-        const roles = ['founder', 'vip', 'guest'];
-        actions.switchPerspective(roles[res.tapIndex]);
-      }
-    }
-  });
 };
 
 onPullDownRefresh(() => {
@@ -775,7 +777,7 @@ onPullDownRefresh(() => {
 .pinned-tag-badge {
   background: rgba(16, 185, 129, 0.1);
   border: 0.5px solid rgba(16, 185, 129, 0.25);
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 2px 7.5px;
   flex-shrink: 0;
   display: inline-flex;
