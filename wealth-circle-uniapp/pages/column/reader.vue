@@ -688,7 +688,7 @@ const handleShare = () => {
   display: flex;
   align-items: center;
   gap: 3px;
-  background: #f2f2f7;
+  background: #f6f6f6;
   padding: 4px 8px;
   border-radius: 8px;
   cursor: pointer;
@@ -759,7 +759,7 @@ const handleShare = () => {
   display: flex;
   align-items: center;
   gap: 11px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 14px;
@@ -823,7 +823,7 @@ const handleShare = () => {
 
 /* 核心摘要 */
 .article-summary-box {
-  background: #fafafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(217, 119, 6, 0.2);
   padding: 12px 14px;
   margin-bottom: 20px;
@@ -977,7 +977,7 @@ const handleShare = () => {
   gap: 6px;
   padding: 8px 18px;
   border-radius: 20px;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border: 0.5px solid #e2e8f0;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1008,7 +1008,7 @@ const handleShare = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f8fafc;
+  background: #f6f6f6;
   border-radius: 8px;
   padding: 8px 12px;
   border: 1px solid #edf2f7;
@@ -1123,7 +1123,7 @@ const handleShare = () => {
 .reply-list {
   margin-top: 10px;
   padding: 10px 12px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -1207,7 +1207,7 @@ const handleShare = () => {
 .reply-text-input {
   flex: 1;
   height: 38px;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border-radius: 19px;
   padding: 0 14px;
   font-size: 13px;
@@ -1481,7 +1481,7 @@ const handleShare = () => {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: #f6f6f6;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -1512,7 +1512,7 @@ const handleShare = () => {
   }
 
   &:active {
-    background-color: #f8fafc;
+    background-color: #f6f6f6;
   }
 }
 

@@ -191,7 +191,7 @@ const handleLogout = () => {
 .settings-page {
   padding-bottom: calc(40px + constant(safe-area-inset-bottom));
   padding-bottom: calc(40px + env(safe-area-inset-bottom));
-  background-color: #f2f2f7;
+  background-color: #f6f6f6;
   min-height: 100vh;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -284,7 +284,7 @@ const handleLogout = () => {
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #f8fafc;
+    background-color: #f6f6f6;
   }
 
   &.is-last {

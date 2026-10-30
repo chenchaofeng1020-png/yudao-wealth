@@ -160,7 +160,7 @@ const goBack = () => {
   gap: 7px;
   height: 36px;
   padding: 0 10px;
-  background: #f2f2f7;
+  background: #f6f6f6;
   border-radius: 10px;
 }
 
@@ -217,7 +217,7 @@ const goBack = () => {
   width: 62px;
   height: 62px;
   border-radius: 50%;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(15, 23, 42, 0.06);
   display: flex;
   align-items: center;
@@ -255,7 +255,7 @@ const goBack = () => {
 .search-empty-card {
   margin: 14px 14px 0 14px;
   padding: 44px 20px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border-radius: 12px;
   border: 0.5px solid rgba(15, 23, 42, 0.05);
   display: flex;

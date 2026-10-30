@@ -59,7 +59,7 @@ const handleOpenPublish = (mode = 'post') => {
 
 .placeholder-input-box {
   flex: 1;
-  background: #f8fafc;
+  background: #f6f6f6;
   height: 34px;
   border-radius: 17px;
   display: flex;

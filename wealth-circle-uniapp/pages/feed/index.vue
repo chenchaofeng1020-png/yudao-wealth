@@ -77,7 +77,7 @@
             <image src="/static/avatar_mark.png" class="stack-avatar-item" mode="aspectFill" />
             <image src="/static/avatar_rich.png" class="stack-avatar-item" mode="aspectFill" />
             <image src="/static/avatar_john.png" class="stack-avatar-item" mode="aspectFill" />
-            <view class="stack-avatar-item stack-more-badge">+</view>
+            <view class="stack-avatar-item stack-more-badge"><view class="stack-more-dot"></view><view class="stack-more-dot"></view><view class="stack-more-dot"></view></view>
           </view>
           <text class="members-joined-label">12,840 位星友</text>
         </view>
@@ -164,6 +164,26 @@
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
       </svg>
+    </view>
+
+    <!-- 筛选底部抽屉 -->
+    <view v-if="filterSheetVisible" class="publish-drawer-mask" @tap="filterSheetVisible = false">
+      <view class="publish-drawer-panel" @tap.stop>
+        <view class="publish-drawer-handle"></view>
+        <view class="publish-drawer-title">选择分类</view>
+        <view
+          v-for="tab in categoryTabs"
+          :key="tab.key"
+          class="filter-drawer-item"
+          @tap="handleFilterSelect(tab.key)"
+        >
+          <text class="filter-drawer-label">{{ tab.label }}</text>
+          <svg v-if="appState.activeFeedFilter === tab.key" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </view>
+        <view class="publish-drawer-cancel" @tap="filterSheetVisible = false">取消</view>
+      </view>
     </view>
 
     <!-- 星友名录与向TA提问抽屉 -->
@@ -281,14 +301,16 @@ const handleSearchClick = () => {
   });
 };
 
+// 分类筛选底部抽屉
+const filterSheetVisible = ref(false);
+
 const handleFilterMenuClick = () => {
-  uni.showActionSheet({
-    itemList: ['🔥 全部高热动态', '📈 仅看实盘交易追踪', '🏛️ 机构顶级研报观点', '🌐 宏观流动性研究'],
-    success: (res) => {
-      const keys = ['latest', 'trade_track', 'market_news', 'wealth_news'];
-      actions.setFeedFilter(keys[res.tapIndex]);
-    }
-  });
+  filterSheetVisible.value = true;
+};
+
+const handleFilterSelect = (key) => {
+  actions.setFeedFilter(key);
+  filterSheetVisible.value = false;
 };
 
 const handleHeroAction = () => {
@@ -299,23 +321,12 @@ const handleHeroAction = () => {
   }
 };
 
-// 右下角发表悬浮按钮
+// 右下角发表悬浮按钮：直接打开发布资讯弹窗（提问入口仅在星友名单）
 const handleFabPublish = () => {
-  if (!actions.checkVipPermission('发帖与提问为会员专享，开通会员立即与星友交流')) return;
-  uni.showActionSheet({
-    itemList: ['✍️ 发布动态（思考 / 复盘 / 观点）', '❓ 向嘉宾提问（公开提问星主 / 专家）'],
-    success: (res) => {
-      if (res.tapIndex === 0) {
-        appState.publishModalMode = 'post';
-        appState.publishTargetExpert = '';
-        appState.isPublishModalVisible = true;
-      } else if (res.tapIndex === 1) {
-        appState.publishModalMode = 'question';
-        appState.publishTargetExpert = '老林说宏观';
-        appState.isPublishModalVisible = true;
-      }
-    }
-  });
+  if (!actions.checkVipPermission('发帖为会员专享，开通会员立即与星友交流')) return;
+  appState.publishModalMode = 'post';
+  appState.publishTargetExpert = '';
+  appState.isPublishModalVisible = true;
 };
 
 // 视角切换与会员弹窗
@@ -677,10 +688,15 @@ onPullDownRefresh(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  font-weight: 800;
-  color: #f59e0b;
+  gap: 2px;
   border-color: rgba(245, 158, 11, 0.6);
+}
+
+.stack-more-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f59e0b;
 }
 
 .members-joined-label {
@@ -757,9 +773,9 @@ onPullDownRefresh(() => {
 }
 
 .pinned-tag-badge {
-  background: rgba(217, 119, 6, 0.08);
-  border: 0.5px solid rgba(217, 119, 6, 0.18);
-  border-radius: 99px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 0.5px solid rgba(16, 185, 129, 0.25);
+  border-radius: 8px;
   padding: 2px 7.5px;
   flex-shrink: 0;
   display: inline-flex;
@@ -770,7 +786,7 @@ onPullDownRefresh(() => {
 .pinned-tag-text {
   font-size: 11px;
   font-weight: 600;
-  color: #b45309;
+  color: #059669;
   line-height: 1.2;
 }
 
@@ -1012,7 +1028,6 @@ onPullDownRefresh(() => {
   align-items: center;
   justify-content: center;
   z-index: 999;
-  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.4), 0 6px 20px -2px rgba(16, 185, 129, 0.42);
   border: 0.5px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.32, 0.86, 0.28, 1), box-shadow 0.2s ease;
@@ -1020,7 +1035,6 @@ onPullDownRefresh(() => {
 
   &:active {
     transform: scale(0.92);
-    box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.2), 0 2px 8px rgba(16, 185, 129, 0.3);
   }
 }
 
@@ -1032,5 +1046,80 @@ onPullDownRefresh(() => {
 
 .fab-pen-svg {
   display: block;
+}
+
+/* 发布方式底部抽屉 */
+.publish-drawer-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  animation: publishDrawerFadeIn 0.2s ease;
+}
+
+.publish-drawer-panel {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  animation: publishDrawerSlideUp 0.25s ease;
+}
+
+.publish-drawer-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #e2e8f0;
+  margin: 0 auto 10px;
+}
+
+.publish-drawer-title {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  padding-bottom: 8px;
+}
+
+.filter-drawer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.filter-drawer-item:active {
+  background: #f6f6f6;
+}
+
+.filter-drawer-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.publish-drawer-cancel {
+  margin-top: 8px;
+  border-top: 0.5px solid #f1f5f9;
+  text-align: center;
+  font-size: 15px;
+  color: #64748b;
+  padding: 13px 0;
+  cursor: pointer;
+}
+
+@keyframes publishDrawerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes publishDrawerSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 </style>

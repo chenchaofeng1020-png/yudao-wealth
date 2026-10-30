@@ -625,7 +625,7 @@ page {
   align-items: center;
   gap: 4px;
   padding: 5px 9px;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border-radius: 8px !important;
 }
 
@@ -817,7 +817,7 @@ page {
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #f8fafc;
+    background-color: #f6f6f6;
   }
 
   &.is-last {

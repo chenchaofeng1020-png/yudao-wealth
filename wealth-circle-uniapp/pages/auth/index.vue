@@ -457,7 +457,7 @@ const handleSubmit = () => {
   display: flex;
   align-items: center;
   height: 44px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   overflow: hidden;
@@ -473,7 +473,7 @@ const handleSubmit = () => {
 .phone-prefix {
   padding: 0 12px;
   height: 100%;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border-right: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
@@ -519,7 +519,7 @@ const handleSubmit = () => {
   margin-top: 1.5px;
   border-radius: 4.5px;
   border: 1px solid #cbd5e1;
-  background: #f8fafc;
+  background: #f6f6f6;
   display: flex;
   align-items: center;
   justify-content: center;

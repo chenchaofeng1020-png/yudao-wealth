@@ -559,7 +559,7 @@ const handleConfirmPay = () => {
 }
 
 .benefit-card {
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 1px solid #edf2f7;
   border-radius: 12px;
   padding: 11px 12px;
@@ -690,7 +690,7 @@ const handleConfirmPay = () => {
   gap: 6px;
   padding: 5px 12px;
   border-radius: 8px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 1px solid #e2e8f0;
 }
 

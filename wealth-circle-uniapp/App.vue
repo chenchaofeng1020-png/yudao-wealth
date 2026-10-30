@@ -40,7 +40,7 @@ export default {
 <style lang="scss">
 /* 全局页面样式重置 (Apple iOS HIG 原生规范) */
 page {
-  background-color: #f2f2f7;
+  background-color: #f6f6f6;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'PingFang SC', sans-serif;
   color: #000000;
   -webkit-font-smoothing: antialiased;
@@ -91,7 +91,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f2f2f7;
+  background-color: #f6f6f6;
   -webkit-overflow-scrolling: touch;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
@@ -102,7 +102,7 @@ uni-app, #app {
   width: 100%;
   max-width: 100vw;
   min-height: 100%;
-  background-color: #f2f2f7;
+  background-color: #f6f6f6;
   margin: 0;
   padding: 0;
   overflow-x: clip;

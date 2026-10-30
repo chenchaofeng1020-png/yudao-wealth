@@ -794,7 +794,7 @@ const handleShareActivity = () => {
 
 <style lang="scss" scoped>
 .act-page {
-  background: #f2f2f7;
+  background: #f6f6f6;
   min-height: 100vh;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -970,7 +970,7 @@ const handleShareActivity = () => {
 
 /* 结构化元数据 Bento 盒子 */
 .meta-bento-card {
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(15, 23, 42, 0.08);
   border-radius: 14px;
   padding: 12px 14px;
@@ -1048,7 +1048,7 @@ const handleShareActivity = () => {
   align-self: center;
 
   &:active {
-    background: #f1f5f9;
+    background: #f6f6f6;
   }
 }
 
@@ -1120,7 +1120,7 @@ const handleShareActivity = () => {
 
   &.selected {
     border-color: #0f172a;
-    background: #f8fafc;
+    background: #f6f6f6;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
   }
 
@@ -1199,7 +1199,7 @@ const handleShareActivity = () => {
   }
 
   &.soldout {
-    background: #f1f5f9;
+    background: #f6f6f6;
     .remain-chip-text {
       color: #94a3b8;
     }
@@ -1279,7 +1279,7 @@ const handleShareActivity = () => {
   align-items: center;
   justify-content: center;
   color: #0f172a;
-  background: #f8fafc;
+  background: #f6f6f6;
   cursor: pointer;
   transition: background 0.15s ease;
 
@@ -1371,7 +1371,7 @@ const handleShareActivity = () => {
   font-size: 11px;
   font-weight: 600;
   color: #64748b;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border-radius: 99px;
   padding: 1px 7px;
 }
@@ -1478,7 +1478,7 @@ const handleShareActivity = () => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: #f6f6f6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1500,7 +1500,7 @@ const handleShareActivity = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(15, 23, 42, 0.08);
   border-radius: 12px;
   padding: 12px 14px;
@@ -1596,7 +1596,7 @@ const handleShareActivity = () => {
   width: 100%;
   box-sizing: border-box;
   height: 42px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(60, 60, 67, 0.12);
   border-radius: 9px;
   padding: 0 12px;
@@ -1613,7 +1613,7 @@ const handleShareActivity = () => {
 .f-textarea {
   width: 100%;
   box-sizing: border-box;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(60, 60, 67, 0.12);
   border-radius: 9px;
   padding: 10px 12px;
@@ -1645,7 +1645,7 @@ const handleShareActivity = () => {
   border: 0.5px solid rgba(60, 60, 67, 0.14);
   border-radius: 99px;
   padding: 6px 14px;
-  background: #f8fafc;
+  background: #f6f6f6;
   transition: all 0.15s ease;
 
   &.on {
@@ -1786,7 +1786,7 @@ const handleShareActivity = () => {
 
 .pay-order-dossier {
   width: 100%;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(15, 23, 42, 0.06);
   border-radius: 10px;
   padding: 10px 12px;
@@ -1916,7 +1916,7 @@ const handleShareActivity = () => {
 
 /* ==================== 9. 报名结果抽屉 ==================== */
 .result-order-card {
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(60, 60, 67, 0.06);
   border-radius: 10px;
   padding: 12px 14px;
@@ -2058,7 +2058,7 @@ const handleShareActivity = () => {
   width: 100%;
   height: 42px;
   border-radius: 8px;
-  background: #f1f5f9;
+  background: #f6f6f6;
   display: flex;
   align-items: center;
   justify-content: center;

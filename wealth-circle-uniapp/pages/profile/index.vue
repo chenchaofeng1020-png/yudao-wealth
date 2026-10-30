@@ -246,7 +246,7 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
           </svg>
-          <text class="ps-item-name">星主管理员</text>
+          <text class="ps-item-name">星主/合伙人/嘉宾</text>
         </view>
 
         <view 
@@ -453,7 +453,7 @@ const handleSettings = () => {
 <style lang="scss" scoped>
 .profile-page {
   padding-bottom: 85px;
-  background-color: #f2f4f8;
+  background-color: #f6f6f6;
   min-height: 100vh;
   width: 100%;
   max-width: 100vw;
@@ -467,7 +467,6 @@ const handleSettings = () => {
   position: relative;
   background: linear-gradient(180deg, #07152b 0%, #0a1f3c 55%, #0e274a 100%);
   padding: 0 16px 20px 16px;
-  border-radius: 0 0 24px 24px;
   box-shadow: 0 8px 24px rgba(7, 21, 43, 0.12);
   overflow: hidden;
   box-sizing: border-box;
@@ -755,9 +754,7 @@ const handleSettings = () => {
   background: #ffffff;
   border-radius: 16px;
   margin: 0 16px 12px 16px;
-  /* 弱化卡片阴影，采用超轻边框 + 微投影，干净高级 */
   border: 0.5px solid rgba(0, 0, 0, 0.03);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -778,7 +775,7 @@ const handleSettings = () => {
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #f8fafc;
+    background-color: #f6f6f6;
   }
 
   &.is-last {
@@ -821,7 +818,7 @@ const handleSettings = () => {
   }
 
   &.is-slate {
-    background: #f1f5f9;
+    background: #f6f6f6;
   }
 }
 
@@ -884,7 +881,7 @@ const handleSettings = () => {
   justify-content: center;
   gap: 4px;
   padding: 8px 0;
-  background: #f8fafc;
+  background: #f6f6f6;
   border-radius: 8px;
   color: #64748b;
   cursor: pointer;
@@ -1040,7 +1037,7 @@ const handleSettings = () => {
 .edit-input {
   width: 100%;
   height: 42px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid #e2e8f0;
   border-radius: 8px;
   padding: 0 12px;
@@ -1051,7 +1048,7 @@ const handleSettings = () => {
 .edit-textarea {
   width: 100%;
   height: 72px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid #e2e8f0;
   border-radius: 8px;
   padding: 8px 12px;
@@ -1071,7 +1068,7 @@ const handleSettings = () => {
   flex: 1;
   height: 44px;
   border-radius: 10px;
-  background: #f1f5f9;
+  background: #f6f6f6;
   display: flex;
   align-items: center;
   justify-content: center;

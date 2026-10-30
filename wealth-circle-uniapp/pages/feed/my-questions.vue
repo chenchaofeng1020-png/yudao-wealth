@@ -118,7 +118,7 @@ const goFeed = () => {
   align-items: center;
   margin: 110px 16px 0 16px;
   padding: 36px 20px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(15, 23, 42, 0.06);
   border-radius: 8px;
 }

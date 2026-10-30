@@ -564,13 +564,29 @@ export const initialPostsMock = [
 
 真正的组合配置，永远不是押注单一方向，而是用红利现金流做底仓，用核心成长博取超额收益。`,
     tags: ['宏观策略', '大类资产配置', '红利低波'],
-    images: ['/static/feed_chart.png'],
+    images: [
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=750&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=750&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=750&auto=format&fit=crop&q=80'
+    ],
     attachments: [
       {
         type: 'file',
         name: '2026Q4全球宏观流动性与资产配置研报.pdf',
         url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
         size: 3420000
+      },
+      {
+        type: 'file',
+        name: '全球降息周期下的红利资产名单.docx',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 856000
+      },
+      {
+        type: 'file',
+        name: '红利低波指数历史回测数据.xlsx',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 1240000
       }
     ],
     likes: 328,
@@ -578,7 +594,7 @@ export const initialPostsMock = [
     commentsCount: 46,
     sharesCount: 15,
     createdAt: '10分钟前',
-    likers: ['老林说宏观', 'Rich', '志诚', '远山求道'],
+    likers: ['老林说宏观', 'Rich', '志诚', '远山求道', '若琪', 'Jerry', 'John', '新晋星友_8888', '价值守望者', 'wendy', 'Charlie', 'Stocks', 'Leo', 'Nana', 'Ken', '阿伟', '静水流深', '老白', 'Mia', 'Tina', 'Jason', 'Yuki', '大鹏展翅', '向阳', '句号', 'Charming', '蜜课斯', '盒儿云'],
     likersCount: 328,
     comments: [
       {
@@ -1258,6 +1274,14 @@ export const actions = {
     }
   },
 
+  // 删除动态（星主或作者本人可操作，操作项由调用方控制）
+  deletePost(postId) {
+    const idx = appState.posts.findIndex(p => p.id === postId);
+    if (idx === -1) return;
+    appState.posts.splice(idx, 1);
+    uni.showToast({ title: '动态已删除', icon: 'none' });
+  },
+
   // 新增评论（支持回复指定评论：挂到父评论的 replies 楼中楼列表）
   addComment(postId, content, replyTarget, images) {
     if (!actions.checkVipPermission('评论功能为会员专享，开通会员立即参与讨论')) return false;
@@ -1311,7 +1335,7 @@ export const actions = {
       content: postData.content,
       tags: postData.tags || ['话题研究'],
       images: postData.images || [],
-      attachments: [],
+      attachments: postData.attachments || [],
       likes: 1,
       isLiked: true,
       commentsCount: 0,

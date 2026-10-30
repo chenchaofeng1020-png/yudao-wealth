@@ -4,25 +4,15 @@
     <view class="post-detail-card">
       <!-- 1. 作者信息行 -->
       <view class="detail-author-row">
-        <view class="avatar-wrap">
+        <view class="avatar-wrap" @tap="goMemberProfile(currentPost.author.name)">
           <image :src="currentPost.author.avatar" class="author-avatar" mode="aspectFill" />
         </view>
 
-        <view class="author-meta-col">
+        <view class="author-meta-col" @tap="goMemberProfile(currentPost.author.name)">
           <view class="name-line">
             <text class="author-name">{{ currentPost.author.name }}</text>
           </view>
           <text class="post-time">{{ currentPost.createdAt }}</text>
-        </view>
-
-        <view class="share-icon-btn" @tap="handleShare">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
         </view>
       </view>
 
@@ -50,16 +40,18 @@
         </view>
       </view>
 
-      <!-- 5. 研报大图预览 -->
+      <!-- 5. 图片缩略图宫格（3 列方形，点击进入大图左右切换） -->
       <view v-if="currentPost.images && currentPost.images.length" class="detail-images-wrap">
-        <image 
-          v-for="(img, idx) in currentPost.images" 
-          :key="idx" 
-          :src="img" 
-          class="detail-post-img" 
-          mode="widthFix"
-          @tap="previewImage(currentPost.images, idx)"
-        />
+        <view class="detail-grid-images">
+          <image 
+            v-for="(img, idx) in currentPost.images" 
+            :key="idx" 
+            :src="img" 
+            class="detail-grid-img" 
+            mode="aspectFill"
+            @tap="previewImage(currentPost.images, idx)"
+          />
+        </view>
       </view>
 
       <!-- 6. 研报附件 -->
@@ -74,12 +66,6 @@
           <view class="file-meta-col">
             <text class="file-title-text ellipsis-1">{{ att.name }}</text>
             <text class="file-size-text">{{ formatFileSize(att.size) }}</text>
-          </view>
-          <view class="file-download-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c59b27" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
           </view>
         </view>
       </view>
@@ -119,13 +105,29 @@
           </view>
         </view>
 
-        <!-- 点赞人文字条 (对齐专栏详情页) -->
+        <!-- 点赞人文字条（对齐截图样式：全部名字可点，超 8 行折叠可展开） -->
         <view v-if="postLikers.length > 0" class="social-feedback-bar">
           <view class="feedback-left">
-            <svg class="feedback-heart-icon" width="14" height="14" viewBox="0 0 24 24" fill="#d97706" stroke="#d97706" stroke-width="1.5">
+            <svg class="feedback-thumb-icon" width="15" height="15" viewBox="0 0 24 24" fill="#64748b" stroke="#64748b" stroke-width="1.5">
               <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
             </svg>
-            <text class="feedback-count">{{ likersSummaryText }}</text>
+            <view class="feedback-body">
+              <view :class="['feedback-names-wrap', { 'collapsed': !likersExpanded }]">
+                <text
+                  v-for="(liker, idx) in postLikers"
+                  :key="liker"
+                  class="liker-name"
+                  @tap.stop="goMemberProfile(liker)"
+                >{{ liker }}{{ idx < postLikers.length - 1 ? '、' : '' }}</text>
+                <text class="liker-suffix"> 等 {{ postLikes }}人觉得很赞</text>
+              </view>
+              <view v-if="likersOverflow" class="likers-toggle" @tap="likersExpanded = !likersExpanded">
+                <text class="likers-toggle-txt">{{ likersExpanded ? '收起' : '展开' }}</text>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" :class="['likers-toggle-arrow', { 'is-expanded': likersExpanded }]">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -276,17 +278,26 @@
 
     <!-- 会员开通弹窗 -->
     <VipJoinModal />
+
+    <!-- 动态分享弹窗（海报 + 复制文案与链接） -->
+    <PostShareModal
+      v-if="isPostShareVisible"
+      :post="currentPost"
+      @close="isPostShareVisible = false"
+    />
   </view>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { onLoad } from '@dcloudio/uni-app';
+import { ref, computed, nextTick } from 'vue';
+import { onLoad, onReady } from '@dcloudio/uni-app';
 import { appState, actions, isVipOrAbove } from '../../store/community.js';
 import FileTypeIcon from '../../components/FileTypeIcon.vue';
 import VipJoinModal from '../../components/VipJoinModal.vue';
+import PostShareModal from '../../components/PostShareModal.vue';
 
 const postId = ref('post-1');
+const isPostShareVisible = ref(false);
 const commentInput = ref('');
 const replyTarget = ref(null); // { parentId, name }
 const replyDrawerVisible = ref(false);
@@ -318,11 +329,29 @@ const postLikers = computed(() => {
   return (currentPost.value && currentPost.value.likers) || ['Rich', '远山求道', 'Mark', 'Jerry'];
 });
 
-const likersSummaryText = computed(() => {
-  const likers = postLikers.value;
-  if (!likers || likers.length === 0) return '暂无点赞';
-  return `${likers.join('、')} 等 ${postLikes.value}人觉得很赞`;
+const likersExpanded = ref(false);
+const likersOverflow = ref(false);
+
+// 检测点赞名单是否超过 8 行折叠高度（184px = 8 行 × 23px 行高）
+const measureLikersOverflow = () => {
+  nextTick(() => {
+    uni.createSelectorQuery()
+      .select('.feedback-names-wrap')
+      .boundingClientRect((rect) => {
+        if (rect) likersOverflow.value = rect.height > 180;
+      })
+      .exec();
+  });
+};
+
+onReady(() => {
+  measureLikersOverflow();
+  setTimeout(measureLikersOverflow, 400);
 });
+
+const goMemberProfile = (name) => {
+  uni.navigateTo({ url: `/pages/member/profile?name=${encodeURIComponent(name)}` });
+};
 
 const rootComments = computed(() => {
   if (!currentPost.value || !currentPost.value.comments) return [];
@@ -342,7 +371,7 @@ const formatFileSize = (bytes) => {
 };
 
 const handleShare = () => {
-  uni.showToast({ title: '已生成长图分享卡片', icon: 'none' });
+  isPostShareVisible.value = true;
 };
 
 const previewImage = (images, current) => {
@@ -444,7 +473,7 @@ const handleOpenVipModal = () => {
 <style lang="scss" scoped>
 .detail-page-root {
   min-height: 100vh;
-  background-color: #f4f6f8;
+  background-color: #f6f6f6;
   padding-bottom: 80px;
 }
 
@@ -469,6 +498,7 @@ const handleOpenVipModal = () => {
   width: 44px;
   height: 44px;
   margin-right: 10px;
+  cursor: pointer;
 }
 
 .author-avatar {
@@ -483,6 +513,7 @@ const handleOpenVipModal = () => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  cursor: pointer;
 }
 
 .name-line {
@@ -500,7 +531,7 @@ const handleOpenVipModal = () => {
 .author-role-chip {
   font-size: 10.5px;
   color: #64748b;
-  background: #f1f5f9;
+  background: #f6f6f6;
   padding: 1px 6px;
   border-radius: 4px;
 }
@@ -508,10 +539,6 @@ const handleOpenVipModal = () => {
 .post-time {
   font-size: 11.5px;
   color: #94a3b8;
-}
-
-.share-icon-btn {
-  padding: 6px;
 }
 
 /* 2. 问答横条 */
@@ -586,28 +613,37 @@ const handleOpenVipModal = () => {
   word-break: break-word;
 }
 
-/* 5. 大图 */
+/* 5. 图片缩略图宫格（3 列方形） */
 .detail-images-wrap {
   margin-bottom: 14px;
 }
 
-.detail-post-img {
-  width: 100%;
+.detail-grid-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.detail-grid-img {
+  width: 80px;
+  height: 80px;
   border-radius: 8px;
-  border: 1px solid #f1f5f9;
+  background: #f6f6f6;
 }
 
 /* 6. 文档卡片 */
 .detail-files-wrap {
   margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .file-attachment-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #f6f6f6;
   border-radius: 8px;
   padding: 8px 12px;
 }
@@ -631,7 +667,7 @@ const handleOpenVipModal = () => {
 
 /* 7. 点赞与互动操作条 (对齐专栏详情页) */
 .social-interactive-wrap {
-  margin: 10px 0 0 0;
+  margin: 20px 0 0 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -651,7 +687,7 @@ const handleOpenVipModal = () => {
   gap: 6px;
   padding: 8px 18px;
   border-radius: 20px;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border: 0.5px solid #e2e8f0;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -677,36 +713,73 @@ const handleOpenVipModal = () => {
   color: #475569;
 }
 
-/* 点赞人文字条 */
+/* 点赞人文字条（扁平样式，对齐截图） */
 .social-feedback-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 8px 12px;
-  border: 1px solid #edf2f7;
-  gap: 8px;
+  align-items: flex-start;
+  padding: 4px 0 0;
 }
 
 .feedback-left {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 7px;
   flex: 1;
   min-width: 0;
 }
 
-.feedback-heart-icon {
+.feedback-thumb-icon {
   flex-shrink: 0;
+  margin-top: 3px;
 }
 
-.feedback-count {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #475569;
-  line-height: 1.4;
+.feedback-names-wrap {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 1.7;
   word-break: break-word;
+}
+
+/* 折叠态：最多 8 行（8 × 23px） */
+.feedback-names-wrap.collapsed {
+  max-height: 184px;
+  overflow: hidden;
+}
+
+.feedback-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.likers-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.likers-toggle-txt {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #0284c7;
+}
+
+.likers-toggle-arrow {
+  transition: transform 0.2s ease;
+}
+
+.likers-toggle-arrow.is-expanded {
+  transform: rotate(180deg);
+}
+
+.liker-name {
+  color: #0284c7;
+  font-weight: 500;
+}
+
+.liker-suffix {
+  color: #475569;
 }
 
 /* 评论讨论楼层 */
@@ -809,7 +882,7 @@ const handleOpenVipModal = () => {
 .reply-list {
   margin-top: 10px;
   padding: 10px 12px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -893,7 +966,7 @@ const handleOpenVipModal = () => {
 .reply-text-input {
   flex: 1;
   height: 38px;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border-radius: 19px;
   padding: 0 14px;
   font-size: 13px;
@@ -901,8 +974,8 @@ const handleOpenVipModal = () => {
 }
 
 .btn-send-reply {
-  background: linear-gradient(135deg, #dfb76c 0%, #c59b27 100%);
-  color: #121214;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
   font-size: 12.5px;
   font-weight: 800;
   padding: 0 16px;

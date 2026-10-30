@@ -367,7 +367,7 @@ const handleGoBack = () => {
   font-size: 10.5px;
   font-weight: 600;
   color: #64748b;
-  background: #f1f5f9;
+  background: #f6f6f6;
   border-radius: 99px;
   padding: 1px 6px;
   line-height: 1.2;
@@ -486,7 +486,7 @@ const handleGoBack = () => {
 }
 
 .meta-dossier-box {
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(60, 60, 67, 0.06);
   border-radius: 10px;
   padding: 9px 12px;
@@ -596,7 +596,7 @@ const handleGoBack = () => {
   }
 
   &.cta-ended {
-    background: #f1f5f9;
+    background: #f6f6f6;
     color: #64748b;
     border: 0.5px solid rgba(60, 60, 67, 0.08);
 
@@ -629,7 +629,7 @@ const handleGoBack = () => {
   width: 60px;
   height: 60px;
   border-radius: 30px;
-  background: #f8fafc;
+  background: #f6f6f6;
   border: 0.5px solid rgba(60, 60, 67, 0.08);
   display: flex;
   align-items: center;
@@ -652,7 +652,7 @@ const handleGoBack = () => {
 }
 
 .btn-reset-filter {
-  background: #f1f5f9;
+  background: #f6f6f6;
   border-radius: 99px;
   padding: 8px 20px;
   cursor: pointer;

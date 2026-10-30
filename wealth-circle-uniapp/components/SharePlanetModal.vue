@@ -378,7 +378,7 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: #f6f6f6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -455,7 +455,7 @@ onMounted(() => {
 .share-link-footer {
   padding: 10px 20px 24px 20px;
   border-top: 0.5px solid rgba(0, 0, 0, 0.06);
-  background: #f8fafc;
+  background: #f6f6f6;
 }
 
 .link-bar-container {

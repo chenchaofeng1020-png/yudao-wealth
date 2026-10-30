@@ -16,7 +16,7 @@
       </view>
 
       <!-- 右侧更多操作（···） -->
-      <view class="more-menu-btn" @tap.stop="handleMoreMenu">
+      <view class="more-menu-btn" @tap.stop="moreMenuVisible = true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="#94a3b8">
           <circle cx="5" cy="12" r="2"></circle>
           <circle cx="12" cy="12" r="2"></circle>
@@ -68,16 +68,9 @@
       </view>
     </view>
 
-    <!-- 5. 图片与研报图表展示 -->
+    <!-- 5. 图片与研报图表展示（3 列缩略图宫格，点击进入大图左右切换） -->
     <view v-if="post.images && post.images.length" class="post-media-area">
-      <view 
-        v-if="post.images.length === 1" 
-        class="single-image-wrap" 
-        @tap.stop="handlePreviewImage(post.images, 0)"
-      >
-        <image :src="post.images[0]" class="single-post-img" mode="widthFix" />
-      </view>
-      <view v-else class="grid-images-wrap">
+      <view class="grid-images-wrap">
         <image 
           v-for="(img, idx) in post.images" 
           :key="idx" 
@@ -102,25 +95,31 @@
           <text class="file-title-text ellipsis-1">{{ att.name }}</text>
           <text class="file-size-text">{{ formatFileSize(att.size) }}</text>
         </view>
-        <view class="file-download-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c59b27" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </view>
       </view>
     </view>
 
-    <!-- 7. 点赞人社交证明条 (知识星球标志性灰底条) -->
+    <!-- 7. 点赞人条（扁平样式，对齐详情页；全部名字可点，超 6 行折叠可展开） -->
     <view v-if="post.likers && post.likers.length" class="social-feedback-strip" @tap.stop="handleCardClick">
-      <svg class="heart-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="#d97706" stroke="#d97706" stroke-width="1.5">
+      <svg class="thumb-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="#64748b" stroke="#64748b" stroke-width="1.5">
         <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
       </svg>
-      <text class="likers-summary-text ellipsis-1">
-        <text class="liker-strong">{{ post.likers.slice(0, 3).join('、') }}</text>
-        <text v-if="post.likers.length > 3"> 等 {{ post.likersCount || post.likes }} 人觉得很赞</text>
-        <text v-else> 觉得很赞</text>
-      </text>
+      <view class="feedback-body">
+        <view :class="['likers-names-wrap', { 'collapsed': !likersExpanded }]">
+          <text
+            v-for="(liker, idx) in post.likers"
+            :key="liker"
+            class="liker-name"
+            @tap.stop="goMemberProfile(liker)"
+          >{{ liker }}{{ idx < post.likers.length - 1 ? '、' : '' }}</text>
+          <text class="liker-suffix"> 等 {{ post.likersCount || post.likes }}人觉得很赞</text>
+        </view>
+        <view v-if="likersOverflow" class="likers-toggle" @tap.stop="likersExpanded = !likersExpanded">
+          <text class="likers-toggle-txt">{{ likersExpanded ? '收起' : '展开' }}</text>
+          <svg class="likers-toggle-arrow" :class="{ 'is-expanded': likersExpanded }" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </view>
+      </view>
     </view>
 
     <!-- 8. 精选热门评论预览 (知识星球经典直接露出1~2条高价值讨论) -->
@@ -180,12 +179,24 @@
         </svg>
       </view>
     </view>
+
+    <!-- 更多操作底部抽屉（按身份展示操作项） -->
+    <view v-if="moreMenuVisible" class="more-drawer-mask" @tap="moreMenuVisible = false">
+      <view class="more-drawer-panel" @tap.stop>
+        <view class="drawer-handle"></view>
+        <view class="drawer-title">更多操作</view>
+        <view class="drawer-item" @tap="handleCopyLink">复制链接</view>
+        <view v-if="canEditDelete" class="drawer-item" @tap="handleEditPost">编辑</view>
+        <view v-if="canEditDelete" class="drawer-item drawer-item-danger" @tap="handleDeletePost">删除</view>
+        <view class="drawer-item drawer-cancel" @tap="moreMenuVisible = false">取消</view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { actions } from '../store/community.js';
+import { ref, computed, nextTick, getCurrentInstance, onMounted } from 'vue';
+import { appState, actions } from '../store/community.js';
 import FileTypeIcon from './FileTypeIcon.vue';
 
 const props = defineProps({
@@ -222,11 +233,39 @@ const formatFileSize = (bytes) => {
 };
 
 const handleAuthorClick = () => {
-  uni.showToast({ title: `查看 ${props.post.author.name} 的主页`, icon: 'none' });
+  uni.navigateTo({ url: `/pages/member/profile?name=${encodeURIComponent(props.post.author.name)}` });
+};
+
+const likersExpanded = ref(false);
+const likersOverflow = ref(false);
+
+// 检测点赞名单是否超过 6 行折叠高度（约 115px = 6 行 × 19.2px 行高）
+const instance = getCurrentInstance();
+const measureLikersOverflow = () => {
+  nextTick(() => {
+    uni.createSelectorQuery()
+      .in(instance?.proxy)
+      .select('.likers-names-wrap')
+      .boundingClientRect((rect) => {
+        if (rect) likersOverflow.value = rect.height > 110;
+      })
+      .exec();
+  });
+};
+
+onMounted(() => {
+  measureLikersOverflow();
+  setTimeout(measureLikersOverflow, 400);
+});
+
+const goMemberProfile = (name) => {
+  uni.navigateTo({ url: `/pages/member/profile?name=${encodeURIComponent(name)}` });
 };
 
 const handleTagClick = (tag) => {
-  uni.showToast({ title: `筛选 #${tag} 相关资讯`, icon: 'none' });
+  uni.navigateTo({
+    url: `/pages/feed/tag?tag=${encodeURIComponent(tag)}`
+  });
 };
 
 const handleCardClick = () => {
@@ -251,20 +290,27 @@ const handleShareClick = () => {
   uni.showToast({ title: '已生成长图分享卡片', icon: 'none' });
 };
 
-const handleMoreMenu = () => {
-  uni.showActionSheet({
-    itemList: ['复制链接', '生成海报', '收藏该动态'],
-    success: (res) => {
-      if (res.tapIndex === 0) {
-        uni.setClipboardData({
-          data: `https://planet.yudao.com/post/${props.post.id}`,
-          success: () => uni.showToast({ title: '已复制链接', icon: 'none' })
-        });
-      } else {
-        uni.showToast({ title: '操作完成', icon: 'none' });
-      }
-    }
+// 更多操作底部抽屉（对齐 PC 端：复制链接所有人可见；编辑/删除仅星主或作者本人可见）
+const moreMenuVisible = ref(false);
+const isCreator = computed(() => appState.user.id === props.post.author.id);
+const canEditDelete = computed(() => appState.user.role === 'founder' || isCreator.value);
+
+const handleCopyLink = () => {
+  moreMenuVisible.value = false;
+  uni.setClipboardData({
+    data: `https://planet.yudao.com/post/${props.post.id}`,
+    success: () => uni.showToast({ title: '已复制链接', icon: 'none' })
   });
+};
+
+const handleEditPost = () => {
+  moreMenuVisible.value = false;
+  uni.showToast({ title: '编辑功能开发中，敬请期待', icon: 'none' });
+};
+
+const handleDeletePost = () => {
+  moreMenuVisible.value = false;
+  actions.deletePost(props.post.id);
 };
 
 const handlePreviewImage = (images, current) => {
@@ -310,7 +356,7 @@ const handleOpenAttachment = (att) => {
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #fafafc;
+    background-color: #f6f6f6;
   }
 }
 
@@ -386,7 +432,7 @@ const handleOpenAttachment = (att) => {
 .author-role-chip {
   font-size: 10px;
   color: #8e8e93;
-  background: #f2f2f7;
+  background: #f6f6f6;
   padding: 1px 6px;
   border-radius: 4px;
   font-weight: 500;
@@ -406,8 +452,78 @@ const handleOpenAttachment = (att) => {
   border-radius: 6px;
 
   &:active {
-    background-color: #f2f2f7;
+    background-color: #f6f6f6;
   }
+}
+
+/* 更多操作底部抽屉 */
+.more-drawer-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  animation: drawerFadeIn 0.2s ease;
+}
+
+.more-drawer-panel {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  animation: drawerSlideUp 0.25s ease;
+}
+
+.drawer-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #e2e8f0;
+  margin: 0 auto 10px;
+}
+
+.drawer-title {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  padding-bottom: 8px;
+}
+
+.drawer-item {
+  text-align: center;
+  font-size: 15px;
+  color: #0f172a;
+  padding: 13px 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.drawer-item:active {
+  background: #f6f6f6;
+}
+
+.drawer-item-danger {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.drawer-cancel {
+  margin-top: 8px;
+  border-top: 0.5px solid #f1f5f9;
+  color: #64748b;
+}
+
+@keyframes drawerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes drawerSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 /* 2. 问答卡片 (彻底斩除 3px 侧边条，改用 Apple 风格精致微框) */
@@ -523,20 +639,9 @@ const handleOpenAttachment = (att) => {
   color: #10b981;
 }
 
-/* 5. 图片媒体 */
+/* 5. 图片媒体（3 列方形缩略图宫格） */
 .post-media-area {
   margin-bottom: 11px;
-}
-
-.single-image-wrap {
-  width: 100%;
-  max-width: 320px;
-}
-
-.single-post-img {
-  width: 100%;
-  border-radius: 10px;
-  border: 0.5px solid rgba(0, 0, 0, 0.05);
 }
 
 .grid-images-wrap {
@@ -546,24 +651,25 @@ const handleOpenAttachment = (att) => {
 }
 
 .grid-img-item {
-  width: calc(33.33% - 4px);
-  height: 95px;
+  width: 80px;
+  height: 80px;
   border-radius: 8px;
-  background: #f2f2f7;
+  background: #f6f6f6;
 }
 
 /* 6. 文档附件 */
-/* 6. 文档附件 (Sage 浅调中性面板与内敛红标) */
 .post-files-area {
   margin-bottom: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .file-attachment-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f4f6f4;
-  border: 0.5px solid rgba(40, 60, 45, 0.06);
+  background: #f6f6f6;
   border-radius: 11px;
   padding: 9px 13px;
   cursor: pointer;
@@ -591,40 +697,72 @@ const handleOpenAttachment = (att) => {
   color: #8e8e93;
 }
 
-.file-download-btn {
-  padding: 4px;
-}
-
-/* 7. 点赞人条 (Sage 浅面板) */
+/* 7. 点赞人条（扁平样式，对齐详情页） */
 .social-feedback-strip {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #f4f6f4;
-  border: 0.5px solid rgba(40, 60, 45, 0.04);
-  border-radius: 10px;
-  padding: 7px 11px;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 4px 0 0;
   margin-bottom: 9px;
-  cursor: pointer;
 }
 
-.heart-icon-svg {
+.thumb-icon-svg {
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.likers-summary-text {
-  font-size: 11.5px;
-  color: #8e8e93;
+.likers-names-wrap {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  word-break: break-word;
 }
 
-.liker-strong {
-  font-weight: 600;
-  color: #3a3a3c;
+/* 折叠态：最多 6 行（6 × 19.2px） */
+.likers-names-wrap.collapsed {
+  max-height: 116px;
+  overflow: hidden;
+}
+
+.feedback-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.likers-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.likers-toggle-txt {
+  font-size: 12px;
+  font-weight: 500;
+  color: #0284c7;
+}
+
+.likers-toggle-arrow {
+  transition: transform 0.2s ease;
+}
+
+.likers-toggle-arrow.is-expanded {
+  transform: rotate(180deg);
+}
+
+.liker-name {
+  color: #0284c7;
+  font-weight: 500;
+}
+
+.liker-suffix {
+  color: #475569;
 }
 
 /* 8. 精选讨论预览 (Sage 浅面板) */
 .featured-comments-box {
-  background: #f4f6f4;
+  background: #f6f6f6;
   border: 0.5px solid rgba(40, 60, 45, 0.04);
   border-radius: 11px;
   padding: 9px 13px;
