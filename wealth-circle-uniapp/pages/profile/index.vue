@@ -1,283 +1,207 @@
 <template>
   <view class="profile-page">
-    <!-- 1. 顶部深海沉浸式深蓝头部背景（参考截图整体UI风格与层次结构） -->
-    <view class="hero-navy-header">
-      <!-- 顶部大气水印与微星芒暗纹 -->
-      <view class="hero-bg-watermark" aria-hidden="true">
-        <svg class="watermark-svg" viewBox="0 0 390 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="340" cy="80" rx="150" ry="150" stroke="rgba(255,255,255,0.03)" stroke-width="1.2" stroke-dasharray="4 6"/>
-          <ellipse cx="340" cy="80" rx="100" ry="100" stroke="rgba(245,158,11,0.035)" stroke-width="1"/>
-          <!-- 汉字「財」意向暗纹水印 (呼应截图右上角极淡暗纹) -->
-          <text x="320" y="130" font-size="110" font-weight="900" fill="rgba(255,255,255,0.025)" text-anchor="middle" font-family="sans-serif">財</text>
-          <circle cx="50" cy="50" r="1.5" fill="rgba(255,255,255,0.25)" />
-          <circle cx="280" cy="30" r="1.8" fill="rgba(245,158,11,0.3)" />
-          <circle cx="150" cy="90" r="1.2" fill="rgba(255,255,255,0.18)" />
-        </svg>
-      </view>
-
-      <!-- 1.1 状态栏安全占位 -->
-      <view class="status-bar-spacer"></view>
-
-      <!-- 1.2 用户个人信息排版（头像微光圈、昵称、格言、编号+同行天数徽章） -->
-      <view class="user-profile-row" @tap="openEditProfile">
-        <!-- 头像区（带典雅琥珀金微光圈） -->
-        <view class="avatar-box">
-          <image :src="appState.user.avatar || '/static/avatar_user.jpg'" class="user-avatar-img" mode="aspectFill" />
-        </view>
-
-        <!-- 信息区 -->
-        <view class="user-meta-col">
-          <!-- 第一行：昵称 -->
-          <view class="user-name-line">
-            <text class="user-name-text">{{ appState.user.name }}</text>
-          </view>
-
-          <!-- 第二行：成员微胶囊（编号 + 同行天数，身份属性紧随姓名） -->
-          <view class="user-badges-line">
-            <view class="member-meta-pill">
-              <text class="pill-no-txt">NO. 1769</text>
-              <text class="pill-dot">·</text>
-              <text class="pill-days-txt">{{ memberDaysText }}</text>
-            </view>
-          </view>
-
-          <!-- 第三行：投资格言/个性简介 + 指示小箭头 -->
-          <view class="user-bio-line">
-            <text class="user-bio-text">{{ appState.user.bio || '在流动性周期与产业基本面中寻找确定性增长。' }}</text>
-            <view class="bio-arrow-wrap">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 1.3 星球尊享会员黑金卡片 (参考截图黑金质感) -->
-      <view class="vip-banner-card" @tap="handleVipAction">
-        <!-- 卡片右侧微暗皇冠底纹 (极弱微透，不干扰文字阅读) -->
-        <view class="vip-card-watermark" aria-hidden="true">
-          <svg width="120" height="120" viewBox="0 0 24 16" fill="none">
-            <path d="M2 13h20v3H2v-3zm1.2-9.5l4.3 5.5 4.5-5.5 4.5 5.5 4.3-5.5.7 8H2.5l.7-8z" fill="#f59e0b" fill-opacity="0.06"/>
+    <!-- 顶部导航栏与右侧快捷操作（对齐截图：极简白底、右上角分享与设置） -->
+    <view class="top-nav-bar">
+      <view class="top-nav-left"></view>
+      <view class="top-nav-right">
+        <!-- 分享星球 -->
+        <view class="nav-icon-btn" @tap="handleSharePlanet">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
           </svg>
         </view>
-
-        <!-- 卡片头部：皇冠图标 + 会员名称 + 特权中心胶囊按钮 -->
-        <view class="vip-card-top-row">
-          <view class="vip-card-title-group">
-            <svg class="vip-crown-icon" width="18" height="18" viewBox="0 0 24 16" fill="none">
-              <path d="M2 13h20v3H2v-3zm1.2-9.5l4.3 5.5 4.5-5.5 4.5 5.5 4.3-5.5.7 8H2.5l.7-8z" fill="#fde68a" stroke="#d97706" stroke-width="1.3"/>
-            </svg>
-            <text class="vip-card-name">{{ isVipOrAbove ? '星球尊享年会员' : '加入星球解锁专属特权' }}</text>
-          </view>
-
-          <view class="vip-btn-pill">
-            <text class="vip-btn-text">{{ isVipOrAbove ? '特权中心' : '开通会员' }}</text>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#78350f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </view>
-        </view>
-
-        <!-- 卡片底部：核心权益展示 + 有效期状态 (加大垂直高度与间距，内容更舒展通透) -->
-        <view class="vip-card-bottom-row">
-          <view class="vip-privilege-list">
-            <view class="vip-privilege-item">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-              </svg>
-              <text class="privilege-text">专栏畅读</text>
-            </view>
-
-            <view class="vip-privilege-item">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              <text class="privilege-text">活动回看</text>
-            </view>
-
-            <view class="vip-privilege-item">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <text class="privilege-text">星主提问</text>
-            </view>
-          </view>
-
-          <!-- 到期时间 -->
-          <text class="vip-expire-date">{{ vipExpireText }}</text>
+        <!-- 系统设置（标准完整 360 度全齿轮矢量路径） -->
+        <view class="nav-icon-btn" @tap="handleSettings">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
         </view>
       </view>
     </view>
 
-    <!-- 2. 核心投研业务 -->
-    <view class="section-title">核心投研服务</view>
-    <view class="planet-menu-section">
-      <!-- 活动中心 -->
-      <view class="menu-cell-row" @tap="goActivities">
-        <view class="cell-left-wrap">
-          <view class="squircle-icon is-emerald">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 用户名片区（对齐截图：大圆头像 + 昵称 + 统计指标 + 编辑胶囊 + 简介） -->
+    <view class="user-header-section">
+      <view class="user-info-row">
+        <!-- 大圆头像 (68px) -->
+        <view class="user-avatar-wrap" @tap="openEditProfile">
+          <image :src="userAvatarUrl" class="user-avatar" mode="aspectFill" />
+        </view>
+
+        <!-- 姓名与数据 -->
+        <view class="user-meta-block">
+          <view class="user-name-line">
+            <text class="user-nickname">{{ appState.user.name }}</text>
+            <!-- 编辑胶囊按钮（移入姓名行，与姓名绝对齐平） -->
+            <view class="edit-pill-btn" @tap="openEditProfile">
+              <svg class="edit-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <text class="edit-pill-text">编辑</text>
+            </view>
+          </view>
+          <view class="user-stats-row">
+            <text class="stats-item">NO. 1769</text>
+            <text class="stats-divider">|</text>
+            <text class="stats-item">{{ memberDaysText }}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 简介文案 -->
+      <view class="user-bio-text">
+        {{ appState.user.bio || '在流动性周期与产业基本面中寻找确定性增长。' }}
+      </view>
+    </view>
+
+    <!-- 中间会员卡片（用户要求：中间那几个小卡片就换成会员卡片。简洁大方） -->
+    <view class="vip-member-card" @tap="handleVipAction">
+      <view class="vip-card-header">
+        <view class="vip-title-wrap">
+          <svg class="vip-crown-svg" width="16" height="16" viewBox="0 0 24 24" fill="#b45309">
+            <path d="M2 13h20v2.5H2V13zm1.2-9l4.3 5.2L12 4l4.5 5.2 4.3-5.2.7 7.5H2.5L3.2 4z"/>
+          </svg>
+          <text class="vip-title-text">{{ isVipOrAbove ? '星球尊享年会员' : '加入星球解锁专属特权' }}</text>
+        </view>
+        <view class="vip-badge-btn">
+          <text class="vip-badge-text">{{ isVipOrAbove ? '特权中心' : '开通会员' }}</text>
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </view>
+      </view>
+
+      <view class="vip-card-divider"></view>
+
+      <view class="vip-card-footer">
+        <view class="vip-benefits-row">
+          <text class="benefit-item">✦ 专栏畅读</text>
+          <text class="benefit-item">✦ 活动回看</text>
+          <text class="benefit-item">✦ 星主提问</text>
+        </view>
+        <text class="vip-expire-hint">{{ vipExpireText }}</text>
+      </view>
+    </view>
+
+    <!-- 列表卡片组（对齐截图：纯白圆角卡片、单色线框图标、内嵌发丝分割线） -->
+    <view class="list-cards-wrapper">
+      <!-- 独立单卡：深度专栏（对齐截图「已购订单」独立卡位） -->
+      <view class="card-group single-cell-group" @tap="goColumnPage">
+        <view class="cell-left">
+          <svg class="cell-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <text class="cell-title">深度专栏</text>
+        </view>
+        <view class="cell-right">
+          <svg class="cell-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4c9d1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </view>
+      </view>
+
+      <!-- 组合卡片 1（活动中心、会员提问、理财资讯） -->
+      <view class="card-group multi-cell-group">
+        <!-- 活动中心 -->
+        <view class="cell-item" @tap="goActivities">
+          <view class="cell-left">
+            <svg class="cell-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
+            <text class="cell-title">活动中心</text>
           </view>
-          <text class="cell-label">活动中心</text>
-        </view>
-        <view class="cell-right-wrap">
-          <view class="activity-chip">1场进行中</view>
-          <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </view>
-      </view>
-
-      <!-- 深度专栏 -->
-      <view class="menu-cell-row" @tap="goColumnPage">
-        <view class="cell-left-wrap">
-          <view class="squircle-icon is-sky">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          <view class="cell-right">
+            <view class="activity-status-tag">1场进行中</view>
+            <svg class="cell-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4c9d1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </view>
-          <text class="cell-label">深度专栏</text>
         </view>
-        <view class="cell-right-wrap">
-          <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </view>
-      </view>
 
-      <!-- 会员提问 -->
-      <view class="menu-cell-row" @tap="showQuestionsToast">
-        <view class="cell-left-wrap">
-          <view class="squircle-icon is-purple">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <view class="cell-divider"></view>
+
+        <!-- 会员提问 -->
+        <view class="cell-item" @tap="showQuestionsToast">
+          <view class="cell-left">
+            <svg class="cell-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
             </svg>
+            <text class="cell-title">会员提问</text>
           </view>
-          <text class="cell-label">会员提问</text>
+          <view class="cell-right">
+            <svg class="cell-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4c9d1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </view>
         </view>
-        <view class="cell-right-wrap">
-          <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </view>
-      </view>
 
-      <!-- 理财资讯 -->
-      <view class="menu-cell-row is-last" @tap="goFeedPage">
-        <view class="cell-left-wrap">
-          <view class="squircle-icon is-amber">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <view class="cell-divider"></view>
+
+        <!-- 理财资讯 -->
+        <view class="cell-item" @tap="goFeedPage">
+          <view class="cell-left">
+            <svg class="cell-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f2329" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
             </svg>
+            <text class="cell-title">理财资讯</text>
           </view>
-          <text class="cell-label">理财资讯</text>
-        </view>
-        <view class="cell-right-wrap">
-          <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </view>
-      </view>
-    </view>
-
-    <!-- 3. 分享星球（独立卡片行，置于设置上方） -->
-    <view class="planet-menu-section share-standalone">
-      <view class="menu-cell-row is-last" @tap="handleSharePlanet">
-        <view class="cell-left-wrap">
-          <view class="squircle-icon is-emerald">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="18" cy="5" r="3"></circle>
-              <circle cx="6" cy="12" r="3"></circle>
-              <circle cx="18" cy="19" r="3"></circle>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          <view class="cell-right">
+            <svg class="cell-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4c9d1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </view>
-          <text class="cell-label">分享星球</text>
-        </view>
-        <view class="cell-right-wrap">
-          <text class="share-hint-txt">邀请好友同频研学</text>
-          <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
         </view>
       </view>
-    </view>
 
-    <!-- 4. 设置入口（独立分组） -->
-    <view class="planet-menu-section settings-standalone">
-      <view class="menu-cell-row is-last" @tap="handleSettings">
-        <view class="cell-left-wrap">
-          <view class="squircle-icon is-slate">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
+
+
+      <!-- 体验演示视角切换（验收控制台） -->
+      <view class="card-group console-card-group">
+        <view class="console-title">体验演示视角切换（验收控制台）</view>
+        <view class="ps-segmented-grid">
+          <view 
+            class="ps-seg-item" 
+            :class="{ 'is-active': appState.currentPerspective === 'founder' }"
+            @tap="actions.switchPerspective('founder')"
+          >
+            <text class="ps-item-name">星主/合伙人/嘉宾</text>
           </view>
-          <text class="cell-label">设置</text>
-        </view>
-        <view class="cell-right-wrap">
-          <svg class="cell-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+
+          <view 
+            class="ps-seg-item" 
+            :class="{ 'is-active': appState.currentPerspective === 'vip' }"
+            @tap="actions.switchPerspective('vip')"
+          >
+            <text class="ps-item-name">年度会员</text>
+          </view>
+
+          <view 
+            class="ps-seg-item" 
+            :class="{ 'is-active': appState.currentPerspective === 'guest' }"
+            @tap="actions.switchPerspective('guest')"
+          >
+            <text class="ps-item-name">星友</text>
+          </view>
         </view>
       </view>
-    </view>
 
-    <!-- 4. 验收控制台（体验演示视角切换，参考截图黑金高级质感） -->
-    <view class="section-title">体验演示视角切换（验收控制台）</view>
-    <view class="demo-perspective-card">
-      <view class="ps-segmented-grid">
-        <view 
-          class="ps-seg-item" 
-          :class="{ 'is-active': appState.currentPerspective === 'founder' }"
-          @tap="actions.switchPerspective('founder')"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <text class="ps-item-name">星主/合伙人/嘉宾</text>
+      <!-- 底部合规备案落款 -->
+      <view class="profile-footnote">
+        <view class="footnote-brand-row">
+          <view class="footnote-logo-box">
+            <image src="/static/brand_logo.jpg" class="footnote-logo-img" mode="aspectFill" />
+          </view>
+          <text class="footnote-txt">财不外露</text>
         </view>
-
-        <view 
-          class="ps-seg-item" 
-          :class="{ 'is-active': appState.currentPerspective === 'vip' }"
-          @tap="actions.switchPerspective('vip')"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 3h12l4 6-10 13L2 9z"></path>
-          </svg>
-          <text class="ps-item-name">年度会员</text>
-        </view>
-
-        <view 
-          class="ps-seg-item" 
-          :class="{ 'is-active': appState.currentPerspective === 'guest' }"
-          @tap="actions.switchPerspective('guest')"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          <text class="ps-item-name">星友</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 5. 底部合规备案落款 -->
-    <view class="profile-footer-section">
-      <view class="compliance-footnote">
-        <text class="footnote-txt">财富星球 · 财不外露</text>
         <text class="footnote-sub">市场有风险，投资需谨慎 · 本内容不构成直接投资建议</text>
       </view>
     </view>
@@ -285,9 +209,15 @@
     <!-- 编辑个人资料抽屉 -->
     <view v-if="isEditProfileVisible" class="edit-overlay" @tap="closeEditProfile">
       <view class="edit-sheet" @tap.stop>
+        <view class="edit-sheet-handle"></view>
         <view class="edit-sheet-header">
           <text class="edit-sheet-title">编辑个人名片</text>
-          <text class="edit-sheet-close" @tap="closeEditProfile">✕</text>
+          <view class="edit-sheet-close" @tap="closeEditProfile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </view>
         </view>
 
         <scroll-view scroll-y class="edit-sheet-body">
@@ -349,7 +279,7 @@
     <!-- 会员开通弹窗抽屉 -->
     <VipJoinModal />
 
-    <!-- 分享星球弹窗抽屉（支持海报分享与复制链接分享） -->
+    <!-- 分享星球弹窗抽屉 -->
     <SharePlanetModal />
   </view>
 </template>
@@ -378,30 +308,31 @@ const handleVipAction = () => {
   appState.isVipModalVisible = true;
 };
 
-// 分享星球弹窗抽屉（支持海报分享与复制链接分享）
+// 分享星球弹窗抽屉
 const handleSharePlanet = () => {
   actions.openShareModal();
 };
 
-// 星球官方资料认证弹窗
-const handlePlanetInfo = () => {
-  uni.showModal({
-    title: '财不外露 · 官方社群资料',
-    content: '星球名称：财不外露\n星球号：97181206\n官方认证：企业认证专业投研社群\n定位：专注于全球大类资产配置、买方深度研报与实盘信号追踪。',
-    showCancel: false,
-    confirmText: '我知道了'
-  });
+// 消息入口（点击直达我的提问/互动）
+const handleNotifications = () => {
+  uni.navigateTo({ url: '/pages/feed/my-questions' });
 };
+
+// 用户头像计算属性（确保始终加载超清头像，防止缓存旧低清图）
+const userAvatarUrl = computed(() => {
+  const a = appState.user.avatar;
+  if (!a || a.includes('avatar_mark') || a.includes('avatar_john') || a.includes('avatar_jerry')) {
+    return '/static/avatar_user_hd.jpg';
+  }
+  return a;
+});
 
 // ===== 编辑个人资料抽屉 =====
 const isEditProfileVisible = ref(false);
 const presetAvatars = [
+  '/static/avatar_user_hd.jpg',
   '/static/avatar_user.jpg',
-  '/static/avatar_profile.jpg',
-  '/static/avatar_mark.png',
-  '/static/avatar_rich.png',
-  '/static/avatar_john.png',
-  '/static/avatar_jerry.png'
+  '/static/avatar_profile.jpg'
 ];
 const editForm = reactive({ name: '', avatar: '', bio: '' });
 
@@ -452,524 +383,503 @@ const handleSettings = () => {
 
 <style lang="scss" scoped>
 .profile-page {
-  padding-bottom: 85px;
-  background-color: #f6f6f6;
+  padding-bottom: calc(75px + constant(safe-area-inset-bottom));
+  padding-bottom: calc(75px + env(safe-area-inset-bottom));
+  background-color: #f6f7f9;
   min-height: 100vh;
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
-/* ================= 1. 顶部深海沉浸头部 ================= */
-.hero-navy-header {
-  position: relative;
-  background: linear-gradient(180deg, #07152b 0%, #0a1f3c 55%, #0e274a 100%);
-  padding: 0 16px 20px 16px;
-  box-shadow: 0 8px 24px rgba(7, 21, 43, 0.12);
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.hero-bg-watermark {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 240px;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.watermark-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* 状态栏安全边距占位：无大标题时给顶部柔和适中的留白 */
-.status-bar-spacer {
-  height: 14px;
-  height: max(14px, constant(safe-area-inset-top));
-  height: max(14px, env(safe-area-inset-top));
-}
-
-/* 用户信息卡片行 */
-.user-profile-row {
-  position: relative;
-  z-index: 1;
+/* ================= 1. 顶部操作栏（对齐截图：右上角通知铃铛 + 分享箭头） ================= */
+.top-nav-bar {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 0 16px 0;
-  cursor: pointer;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+  justify-content: space-between;
+  padding: calc(10px + constant(safe-area-inset-top)) 20px 8px 20px;
+  padding: calc(10px + env(safe-area-inset-top)) 20px 8px 20px;
+  background-color: #f6f7f9;
 }
 
-.avatar-box {
-  position: relative;
-  width: 66px;
-  height: 66px;
+.top-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.nav-icon-btn {
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.user-avatar-img {
-  width: 66px;
-  height: 66px;
+  cursor: pointer;
   border-radius: 50%;
-  background-color: #f97316;
-  border: 2px solid rgba(251, 191, 36, 0.45);
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.22), 0 4px 14px rgba(0, 0, 0, 0.38);
-  object-fit: cover;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+
+  &:active {
+    opacity: 0.65;
+    background-color: rgba(0, 0, 0, 0.04);
+  }
 }
 
-.user-meta-col {
+/* ================= 2. 用户个人名片区（对齐截图结构） ================= */
+.user-header-section {
+  padding: 6px 20px 16px 20px;
+}
+
+.user-info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-avatar-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: #f1f5f9;
+  cursor: pointer;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-meta-block {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   min-width: 0;
-  overflow: hidden;
 }
 
 .user-name-line {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 5px;
-  min-width: 0;
-}
-
-.user-name-text {
-  font-size: 19px;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-}
-
-.user-badges-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  min-width: 0;
-}
-
-.member-meta-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(245, 158, 11, 0.12);
-  border: 0.5px solid rgba(245, 158, 11, 0.38);
-  border-radius: 6px;
-  padding: 2px 8px;
-  line-height: 1.35;
-}
-
-.pill-no-txt {
-  font-size: 11px;
-  font-weight: 800;
-  color: #fbbf24;
-  letter-spacing: 0.4px;
-}
-
-.pill-dot {
-  font-size: 10px;
-  color: rgba(251, 191, 36, 0.55);
-}
-
-.pill-days-txt {
-  font-size: 11px;
-  font-weight: 600;
-  color: #fde68a;
-  letter-spacing: 0.2px;
-}
-
-.user-bio-line {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 8px;
   width: 100%;
-  min-width: 0;
 }
 
-.user-bio-text {
-  flex: 1;
-  min-width: 0;
-  font-size: 11.5px;
-  color: #94a3b8;
-  line-height: 1.35;
-  white-space: nowrap;
+.user-nickname {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
+  white-space: nowrap;
 }
 
-.bio-arrow-wrap {
-  flex-shrink: 0;
+.user-stats-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 1px 0;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #8a919f;
+  line-height: 1;
 }
 
-/* ================= 1.3 星球尊享会员黑金卡 ================= */
-.vip-banner-card {
-  position: relative;
-  z-index: 1;
-  background: linear-gradient(135deg, #281f15 0%, #1c150e 55%, #140f0a 100%);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  border-radius: 18px;
-  padding: 20px 18px 18px 18px;
-  min-height: 104px;
+.stats-divider {
+  color: #d1d5db;
+  font-size: 11px;
+}
+
+.stats-item {
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* 编辑按钮（浅灰全圆角胶囊） */
+.edit-pill-btn {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: inset 0 1px 0 rgba(254, 240, 138, 0.16), 0 4px 18px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background-color: #eeeff3;
+  border-radius: 999px;
   cursor: pointer;
-  box-sizing: border-box;
-  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 
   &:active {
-    transform: scale(0.99);
+    background-color: #e2e4ea;
+    transform: scale(0.97);
   }
 }
 
-.vip-card-watermark {
-  position: absolute;
-  right: -10px;
-  bottom: -15px;
-  pointer-events: none;
-  opacity: 0.35;
-}
-
-.vip-card-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 22px;
-}
-
-.vip-card-title-group {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-}
-
-.vip-crown-icon {
+.edit-icon {
   flex-shrink: 0;
 }
 
-.vip-card-name {
-  font-size: 16.5px;
-  font-weight: 800;
-  color: #fef3c7;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-}
-
-.vip-btn-pill {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
-  padding: 5px 13px;
-  border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.28);
-  flex-shrink: 0;
-}
-
-.vip-btn-text {
-  font-size: 12px;
-  font-weight: 800;
-  color: #78350f;
-  white-space: nowrap;
-}
-
-.vip-card-bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.vip-privilege-list {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.vip-privilege-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-.privilege-text {
-  font-size: 11.5px;
-  color: #fef3c7;
-  font-weight: 500;
-  opacity: 0.92;
-  white-space: nowrap;
-}
-
-.vip-expire-date {
-  font-size: 11.5px;
-  color: #fbbf24;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ================= 2. 菜单列表区（参考截图纯白圆角卡片流与彩色微标） ================= */
-.section-title {
+.edit-pill-text {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
+  color: #1f2329;
+}
+
+/* 简介文字（对齐截图副标） */
+.user-bio-text {
+  margin-top: 14px;
+  font-size: 13px;
   color: #64748b;
-  letter-spacing: 0.2px;
-  padding: 16px 16px 8px 16px;
+  line-height: 1.5;
+  word-break: break-all;
 }
 
-.planet-menu-section {
-  background: #ffffff;
-  border-radius: 16px;
-  margin: 0 16px 12px 16px;
-  border: 0.5px solid rgba(0, 0, 0, 0.03);
+/* ================= 3. 中间会员卡片（方案 A：暖象牙浅金缎面，温润高级、零突兀感，统一 8px 圆角） ================= */
+.vip-member-card {
+  margin: 0 16px 14px 16px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #fdfaf3 0%, #f7f1e5 50%, #f1e6d0 100%);
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  border-radius: 8px;
+  position: relative;
   overflow: hidden;
-  box-sizing: border-box;
+  cursor: pointer;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 16px -2px rgba(180, 83, 9, 0.06);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:active {
+    transform: scale(0.985);
+    opacity: 0.94;
+  }
 }
 
-/* 独立单行卡片微调 */
-.share-standalone,
-.settings-standalone {
-  margin-bottom: 12px;
-}
-
-.menu-cell-row {
+.vip-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.04);
+}
+
+.vip-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.vip-crown-svg {
+  flex-shrink: 0;
+}
+
+.vip-title-text {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #78350f;
+  letter-spacing: 0.2px;
+}
+
+.vip-badge-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 11px;
+  background-color: #854d0e;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(133, 77, 14, 0.2);
+}
+
+.vip-badge-text {
+  line-height: 1;
+}
+
+.vip-card-divider {
+  height: 0.5px;
+  background-color: rgba(180, 83, 9, 0.12);
+  margin: 12px 0 10px 0;
+}
+
+.vip-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vip-benefits-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.benefit-item {
+  font-size: 11px;
+  color: #854d0e;
+  font-weight: 500;
+}
+
+.vip-expire-hint {
+  font-size: 11px;
+  color: #a16207;
+  opacity: 0.85;
+  font-family: -apple-system, BlinkMacSystemFont, monospace;
+}
+
+/* ================= 4. 列表卡片组（对齐截图：纯白圆角、单色线框图标、内嵌分割线） ================= */
+.list-cards-wrapper {
+  margin: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-group {
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.single-cell-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
   cursor: pointer;
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #f6f6f6;
-  }
-
-  &.is-last {
-    border-bottom: none;
+    background-color: #f9fafb;
   }
 }
 
-.cell-left-wrap {
+.cell-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
+  justify-content: space-between;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:active {
+    background-color: #f9fafb;
+  }
 }
 
-/* 左侧彩色圆角方块图标（参考截图蓝/金/绿彩色方标体系） */
-.squircle-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+.cell-left {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 14px;
+}
+
+.cell-icon {
   flex-shrink: 0;
-
-  &.is-amber {
-    background: #fef3c7;
-  }
-
-  &.is-sky {
-    background: #e0f2fe;
-  }
-
-  &.is-emerald {
-    background: #ecfdf5;
-  }
-
-  &.is-purple {
-    background: #f5f3ff;
-  }
-
-  &.is-slate {
-    background: #f6f6f6;
-  }
 }
 
-.cell-label {
+.cell-title {
   font-size: 15px;
-  font-weight: 600;
-  color: #1e293b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #1f2329;
+  letter-spacing: -0.1px;
 }
 
-.cell-right-wrap {
+.cell-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+}
+
+.cell-subtext {
+  font-size: 13px;
+  color: #8a919f;
+}
+
+.cell-chevron {
   flex-shrink: 0;
 }
 
-.share-hint-txt {
-  font-size: 12.5px;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.activity-chip {
-  background: #ecfdf5;
-  color: #059669;
+.activity-status-tag {
   font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 12px;
-  line-height: 1.3;
+  font-weight: 500;
+  color: #059669;
+  background-color: #ecfdf5;
+  border-radius: 4px;
+  padding: 2px 7px;
+  line-height: 1.2;
 }
 
-.cell-arrow {
-  margin-left: 2px;
+.cell-divider {
+  height: 0.5px;
+  background-color: #f2f3f5;
+  margin-left: 52px;
 }
 
-/* ================= 3. 验收控制台（轻量卡片） ================= */
-.demo-perspective-card {
-  margin: 0 16px 12px 16px;
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 8px;
-  border: 0.5px solid rgba(0, 0, 0, 0.03);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  box-sizing: border-box;
+/* ================= 5. 体验演示视角切换（验收控制台） ================= */
+.console-card-group {
+  padding: 14px 16px;
+}
+
+.console-title {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-bottom: 10px;
 }
 
 .ps-segmented-grid {
   display: flex;
   gap: 6px;
+  background-color: #f4f5f7;
+  padding: 3.5px;
+  border-radius: 6px;
 }
 
 .ps-seg-item {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 0;
-  background: #f6f6f6;
-  border-radius: 8px;
-  color: #64748b;
+  text-align: center;
+  padding: 7px 0;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &.is-active {
-    background: #1c1c1e;
-    color: #f59e0b;
-    font-weight: 700;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    .ps-item-name {
+      color: #111827;
+      font-weight: 600;
+    }
   }
 }
 
 .ps-item-name {
   font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
 }
 
-/* ================= 4. 备案落款 ================= */
-.profile-footer-section {
-  padding: 20px 16px 12px 16px;
-}
-
-.compliance-footnote {
+/* ================= 6. 底部合规落款 ================= */
+.profile-footnote {
+  padding: 22px 0 32px 0;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+}
+
+.footnote-brand-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.footnote-logo-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #faf6ed;
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.footnote-logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .footnote-txt {
-  font-size: 11px;
+  font-size: 12px;
+  color: #64748b;
   font-weight: 600;
-  color: #94a3b8;
+  letter-spacing: 0.3px;
 }
 
 .footnote-sub {
   font-size: 10px;
-  color: #cbd5e1;
+  color: #94a3b8;
+  letter-spacing: 0.2px;
 }
 
-/* ================= 5. 编辑个人资料抽屉 ================= */
+/* ================= 7. 编辑个人资料抽屉 ================= */
 .edit-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 999;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease;
 }
 
 .edit-sheet {
-  background: #ffffff;
-  border-radius: 20px 20px 0 0;
-  max-height: 82vh;
+  width: 100%;
+  max-height: 80vh;
+  background-color: #ffffff;
+  border-radius: 16px 16px 0 0;
+  padding: 10px 18px calc(18px + constant(safe-area-inset-bottom)) 18px;
+  padding: 10px 18px calc(18px + env(safe-area-inset-bottom)) 18px;
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(12px + constant(safe-area-inset-bottom));
-  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.edit-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background-color: #cbd5e1;
+  border-radius: 99px;
+  margin: 0 auto 12px auto;
 }
 
 .edit-sheet-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.08);
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid #f1f5f9;
 }
 
 .edit-sheet-title {
   font-size: 16px;
-  font-weight: 800;
-  color: #1e293b;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .edit-sheet-close {
-  font-size: 18px;
-  color: #8e8e93;
+  padding: 4px;
   cursor: pointer;
-  padding: 4px 8px;
 }
 
 .edit-sheet-body {
-  padding: 18px 20px;
-  overflow-y: auto;
+  flex: 1;
+  max-height: 50vh;
+  padding: 14px 0;
 }
 
 .edit-field {
@@ -977,10 +887,10 @@ const handleSettings = () => {
 }
 
 .edit-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #475569;
-  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
   display: block;
 }
 
@@ -988,7 +898,7 @@ const handleSettings = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .edit-count {
@@ -999,28 +909,31 @@ const handleSettings = () => {
 .edit-avatar-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .edit-avatar-preview {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  border: 2px solid #059669;
+  border: 2px solid #e2e8f0;
+  flex-shrink: 0;
 }
 
 .edit-avatar-list {
   display: flex;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding: 2px 0;
 }
 
 .edit-avatar-item {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  padding: 2px;
-  border: 1.5px solid transparent;
+  border: 2px solid transparent;
+  flex-shrink: 0;
   cursor: pointer;
 
   &.on {
@@ -1035,40 +948,44 @@ const handleSettings = () => {
 }
 
 .edit-input {
-  width: 100%;
-  height: 42px;
-  background: #f6f6f6;
-  border: 0.5px solid #e2e8f0;
+  height: 40px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 0 12px;
-  font-size: 14px;
-  color: #1e293b;
+  font-size: 13.5px;
+  color: #0f172a;
+  box-sizing: border-box;
 }
 
 .edit-textarea {
   width: 100%;
   height: 72px;
-  background: #f6f6f6;
-  border: 0.5px solid #e2e8f0;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   font-size: 13px;
-  color: #1e293b;
+  color: #0f172a;
   box-sizing: border-box;
+}
+
+.edit-placeholder {
+  color: #94a3b8;
+  font-size: 13px;
 }
 
 .edit-sheet-footer {
   display: flex;
   gap: 10px;
-  padding: 12px 20px;
-  border-top: 0.5px solid rgba(60, 60, 67, 0.08);
+  padding-top: 10px;
 }
 
 .edit-btn-cancel {
   flex: 1;
-  height: 44px;
-  border-radius: 10px;
-  background: #f6f6f6;
+  height: 42px;
+  border-radius: 8px;
+  background-color: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1076,16 +993,16 @@ const handleSettings = () => {
 }
 
 .edit-btn-cancel-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #475569;
 }
 
 .edit-btn-save {
-  flex: 1;
-  height: 44px;
-  border-radius: 10px;
-  background: #0f172a;
+  flex: 2;
+  height: 42px;
+  border-radius: 8px;
+  background-color: #059669;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1093,17 +1010,18 @@ const handleSettings = () => {
 }
 
 .edit-btn-save-text {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
   color: #ffffff;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 </style>

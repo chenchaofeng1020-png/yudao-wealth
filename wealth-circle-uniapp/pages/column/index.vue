@@ -782,7 +782,12 @@ page {
 }
 
 .col-share-pill {
-  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  padding: 0 8px;
+  box-sizing: border-box;
   background: #ecfdf5;
   border-radius: 4px;
   border: 0.5px solid rgba(16, 185, 129, 0.3);
@@ -790,6 +795,7 @@ page {
 
 .col-share-label {
   font-size: 11px;
+  line-height: 1;
   font-weight: 500;
   color: #10b981;
 }

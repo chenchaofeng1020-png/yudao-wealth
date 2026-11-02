@@ -16,7 +16,7 @@
 
         <view class="top-nav-right-slot">
           <view class="top-nav-search-btn" :style="pinnedSearchStyle" @tap="handleSearchClick">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -49,7 +49,7 @@
             <view class="title-verified-wrap">
               <text class="brand-name-text">财不外露</text>
               <!-- 官方认证金星徽章 (Apple 风格 12 角高精微标) -->
-              <svg class="verified-starburst-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg class="verified-starburst-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <polygon points="12.0,2.0 14.23,3.69 17.0,3.34 18.08,5.92 20.66,7.0 20.31,9.77 22.0,12.0 20.31,14.23 20.66,17.0 18.08,18.08 17.0,20.66 14.23,20.31 12.0,22.0 9.77,20.31 7.0,20.66 5.92,18.08 3.34,17.0 3.69,14.23 2.0,12.0 3.69,9.77 3.34,7.0 5.92,5.92 7.0,3.34 9.77,3.69" fill="#f59e0b"/>
                 <path d="M8 12.2l2.6 2.6 5.4-5.4" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -58,10 +58,10 @@
           </view>
         </view>
 
-        <!-- 右侧毛玻璃圆形搜索按键 -->
+        <!-- 右侧毛玻璃搜索按键 -->
         <view class="header-actions-group" :style="{ opacity: (1 - Math.min(1, Math.max(0, (scrollTop - 10) / 35))).toFixed(2) }">
           <view class="btn-glass-icon" @tap="handleSearchClick">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -69,35 +69,49 @@
         </view>
       </view>
 
-      <!-- 第二行：成员叠层 + 立即加入金钮 -->
+      <!-- 第二行：成员头像与快捷辅助操作 (去提问、分享/开通会员) -->
       <view class="members-join-row">
-        <!-- 左侧成员叠层 (真实头像替换生硬字母圆圈，去除原型味) -->
-        <view class="members-info-left" @tap="actions.openMembersModal">
-          <view class="avatar-stack-bubbles">
+        <!-- 左侧：星友头像叠层 (点击查看星友名录) + 去提问胶囊 -->
+        <view class="hero-left-group">
+          <view class="avatar-stack-bubbles" @tap="actions.openMembersModal">
             <image src="/static/avatar_mark.png" class="stack-avatar-item" mode="aspectFill" />
             <image src="/static/avatar_rich.png" class="stack-avatar-item" mode="aspectFill" />
             <image src="/static/avatar_john.png" class="stack-avatar-item" mode="aspectFill" />
-            <view class="stack-avatar-item stack-more-badge"><view class="stack-more-dot"></view><view class="stack-more-dot"></view><view class="stack-more-dot"></view></view>
+            <view class="stack-avatar-item stack-more-badge">
+              <view class="stack-more-dot"></view>
+              <view class="stack-more-dot"></view>
+              <view class="stack-more-dot"></view>
+            </view>
           </view>
-          <text class="members-joined-label">12,840 位星友</text>
+          <view class="btn-hero-capsule" @tap="actions.openMembersModal">
+            <text class="hero-capsule-text">去提问</text>
+            <svg class="hero-capsule-arrow" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </view>
         </view>
 
-        <!-- 右侧身份特权/加入金钮 (香槟浅金微光质感) -->
-        <view class="btn-golden-join" @tap="handleHeroAction">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#271700" class="crown-icon-svg">
+        <!-- 右侧：分享/开通会员毛玻璃胶囊 (低调内敛，契合暗蓝主调) -->
+        <view class="btn-hero-capsule" @tap="handleHeroAction">
+          <!-- 分享态：星主/合伙人/嘉宾/年度会员 -->
+          <svg v-if="heroCanShare" class="hero-capsule-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <!-- 星友态：开通会员 -->
+          <svg v-else class="hero-capsule-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
             <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"/>
           </svg>
-          <text class="join-label">{{ heroJoinLabel }}</text>
+          <text class="hero-capsule-text">{{ heroJoinLabel }}</text>
         </view>
       </view>
     </view>
 
-    <!-- 身份特权卡弹窗（星主/合伙人/嘉宾） -->
-    <RolePrivilegeModal
-      :visible="rolePrivilegeVisible"
-      :role="appState.user.role"
-      @close="rolePrivilegeVisible = false"
-    />
+    <!-- 分享星球弹窗抽屉 (与"我的"页面底部分享一致：海报 + 复制链接) -->
+    <SharePlanetModal />
 
     <!-- 2. 胶囊式分类 Tabs 栏 (单行整齐排列 + 触控反馈 + 筛选菜单钮) -->
     <view class="category-capsules-bar">
@@ -120,7 +134,7 @@
 
       <!-- 最右侧三道杠菜单筛选按钮 -->
       <view class="btn-menu-filter" @tap="handleFilterMenuClick">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -167,9 +181,11 @@
 
     <!-- 5. 右下角发表悬浮按钮 (FAB - 自动规避 TabBar 遮挡) -->
     <view class="fab-publish-btn" @tap="handleFabPublish">
-      <svg class="fab-pen-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      <!-- 实心钢笔 + 灵感星光（发布/创作隐喻） -->
+      <svg class="fab-pen-svg" width="22" height="22" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"></path>
+        <path d="M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+        <path d="M20.9 12.6l.62 1.52 1.52.62-1.52.62-.62 1.52-.62-1.52-1.52-.62 1.52-.62.62-1.52z"></path>
       </svg>
     </view>
 
@@ -212,7 +228,7 @@ import PostCard from '../../components/PostCard.vue';
 import CommunityMembersModal from '../../components/CommunityMembersModal.vue';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 import PublishModal from '../../components/PublishModal.vue';
-import RolePrivilegeModal from '../../components/RolePrivilegeModal.vue';
+import SharePlanetModal from '../../components/SharePlanetModal.vue';
 
 // 页面滚动位置监听 (Apple 原生 Large Title 收缩机制)
 const scrollTop = ref(0);
@@ -321,23 +337,18 @@ const handleFilterSelect = (key) => {
   filterSheetVisible.value = false;
 };
 
-// 顶部金钮文案：星主/合伙人/嘉宾显示身份特权，年度会员显示我的特权，星友显示立即加入
-const heroJoinLabel = computed(() => {
+// 顶部金钮随身份动态切换：星主/合伙人/嘉宾/年度会员显示分享星球，星友显示开通会员
+const heroCanShare = computed(() => {
   const role = appState.user.role;
-  if (role === 'founder') return '星主特权';
-  if (role === 'partner') return '合伙人特权';
-  if (role === 'guest_expert') return '嘉宾特权';
-  if (isVipOrAbove.value) return '我的特权';
-  return '立即加入';
+  return role === 'founder' || role === 'partner' || role === 'guest_expert' || isVipOrAbove.value;
 });
 
-// 身份特权卡弹窗（星主/合伙人/嘉宾免费享会员特权）
-const rolePrivilegeVisible = ref(false);
+const heroJoinLabel = computed(() => (heroCanShare.value ? '分享' : '开通会员'));
 
 const handleHeroAction = () => {
-  const role = appState.user.role;
-  if (role === 'founder' || role === 'partner' || role === 'guest_expert') {
-    rolePrivilegeVisible.value = true;
+  if (heroCanShare.value) {
+    // 与"我的"页面底部"分享星球"一致：打开邀请函海报抽屉
+    actions.openShareModal();
   } else {
     appState.isVipModalVisible = true;
   }
@@ -414,11 +425,11 @@ onPullDownRefresh(() => {
 }
 
 .top-nav-content-row {
-  height: 50px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px 7px 16px;
+  padding: 0 16px;
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -429,7 +440,7 @@ onPullDownRefresh(() => {
 .top-nav-left-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
   transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1), transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
   -webkit-tap-highlight-color: transparent;
@@ -440,11 +451,11 @@ onPullDownRefresh(() => {
 }
 
 .pinned-brand-title {
-  font-size: 16.5px;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.2px;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .pinned-starburst-svg {
@@ -459,11 +470,11 @@ onPullDownRefresh(() => {
 }
 
 .top-nav-search-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 17px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -478,9 +489,12 @@ onPullDownRefresh(() => {
 
 /* 1. 顶部深海蓝黑沉浸头图 (Apple 风格平滑安全区与弹性拉伸) */
 .hero-header-section {
-  background: linear-gradient(180deg, #07152b 0%, #0a1e3d 50%, #0d2346 100%);
-  padding: calc(14px + constant(safe-area-inset-top)) 16px 20px 16px;
-  padding: calc(14px + env(safe-area-inset-top)) 16px 20px 16px;
+  background: 
+    radial-gradient(circle at 86% 18%, rgba(245, 158, 11, 0.08) 0%, transparent 42%),
+    radial-gradient(circle at 20% 75%, rgba(30, 58, 138, 0.22) 0%, transparent 48%),
+    linear-gradient(180deg, #07152b 0%, #0a1e3d 50%, #0d2346 100%);
+  padding: calc(12px + constant(safe-area-inset-top)) 16px 14px 16px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 14px 16px;
   position: relative;
   overflow-x: clip; /* 解决页面左右滚动摇晃问题 */
   width: 100%;
@@ -506,17 +520,17 @@ onPullDownRefresh(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    height: 40px;
-    background: linear-gradient(180deg, transparent 0%, rgba(7, 21, 43, 0.45) 100%);
+    height: 36px;
+    background: linear-gradient(180deg, transparent 0%, rgba(7, 21, 43, 0.55) 70%, rgba(7, 21, 43, 0.88) 100%);
     pointer-events: none;
     z-index: 1;
   }
 }
 
-/* 精密天体星轨微质感发丝暗纹 */
+/* 精密天体星轨微质感发丝暗纹 (带极慢自转微动效) */
 .hero-orbital-backdrop {
   position: absolute;
-  right: 0; /* 修复-20px导致撑开页面产生左右横滑的问题 */
+  right: 0;
   top: -10px;
   width: 280px;
   max-width: 100%;
@@ -529,6 +543,17 @@ onPullDownRefresh(() => {
   .orbital-svg {
     width: 100%;
     height: 100%;
+    transform-origin: 280px 50px;
+    animation: celestialSlowSpin 90s linear infinite;
+  }
+}
+
+@keyframes celestialSlowSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -544,20 +569,20 @@ onPullDownRefresh(() => {
 .brand-left-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
 
 /* 官方品牌 Logo 容器 (财不外露 Fortune in Reserve) */
 .brand-logo-box {
-  width: 48px;
-  height: 48px;
-  border-radius: 13px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   overflow: hidden;
   background-color: #faf6ed;
-  border: 1.5px solid rgba(217, 119, 6, 0.45);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.36);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -579,7 +604,7 @@ onPullDownRefresh(() => {
 .brand-text-col {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   flex: 1;
   min-width: 0;
 }
@@ -587,15 +612,15 @@ onPullDownRefresh(() => {
 .title-verified-wrap {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .brand-name-text {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.2px;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .verified-starburst-svg {
@@ -605,15 +630,16 @@ onPullDownRefresh(() => {
 }
 
 .brand-slogan-text {
-  font-size: 11.5px;
-  color: #94a3b8;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0.1px;
 }
 
-/* 右侧毛玻璃圆形按钮 */
+/* 右侧毛玻璃搜索按钮 */
 .header-actions-group {
   display: flex;
   align-items: center;
@@ -624,131 +650,159 @@ onPullDownRefresh(() => {
 }
 
 .btn-glass-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 19px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 0.5px 0.5px rgba(255, 255, 255, 0.22), 0 2px 6px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   transition: all 0.18s cubic-bezier(0.25, 1, 0.5, 1);
+  -webkit-tap-highlight-color: transparent;
 
   &:active {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.18);
     transform: scale(0.94);
   }
 }
 
-/* 第二行：星友加入行 */
+/* 第二行：星友叠层与快捷辅助操作行 */
 .members-join-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 15px;
+  margin-top: 12px;
   position: relative;
   z-index: 2;
 }
 
-.members-info-left {
+.hero-left-group {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-
-  &:active {
-    opacity: 0.82;
-  }
 }
 
 .avatar-stack-bubbles {
   display: flex;
   align-items: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    opacity: 0.78;
+  }
 }
 
 .stack-avatar-item {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  margin-left: -7px;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  margin-left: -6px;
   display: block;
   background-color: #1e293b;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  position: relative;
+  transition: transform 0.15s ease;
 
   &:first-child {
     margin-left: 0;
+    border-color: rgba(245, 158, 11, 0.75);
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.28), 0 1px 3px rgba(0, 0, 0, 0.25);
+    z-index: 4;
+  }
+
+  &:nth-child(2) {
+    z-index: 3;
+  }
+
+  &:nth-child(3) {
+    z-index: 2;
   }
 }
 
 .stack-more-badge {
-  background: #1e293b;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border-color: rgba(245, 158, 11, 0.6);
+  border-color: rgba(255, 255, 255, 0.25);
+  z-index: 1;
 }
 
 .stack-more-dot {
-  width: 3px;
-  height: 3px;
+  width: 2.5px;
+  height: 2.5px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: rgba(255, 255, 255, 0.75);
 }
 
-.members-joined-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.2px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 立即加入金钮 (香槟浅金微光质感) */
-.btn-golden-join {
-  display: flex;
+/* 头部辅助操作按钮 (8px 圆角规范，与分类胶囊一致) */
+.btn-hero-capsule {
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 45%, #d97706 100%);
-  color: #271700;
-  padding: 7px 18px;
-  border-radius: 99px;
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 3px 12px -2px rgba(217, 119, 6, 0.35);
-  border: 0.5px solid rgba(253, 230, 138, 0.6);
+  justify-content: center;
+  gap: 4px;
+  height: 26px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.88);
   cursor: pointer;
-  transition: transform 0.18s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: inset 0 0.5px 0.5px rgba(255, 255, 255, 0.22), 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.18s cubic-bezier(0.25, 1, 0.5, 1);
+  -webkit-tap-highlight-color: transparent;
 
   &:active {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.1);
     transform: scale(0.95);
   }
 }
 
-.crown-icon-svg {
+.hero-capsule-icon {
   flex-shrink: 0;
+  opacity: 0.88;
 }
 
-.join-label {
+.hero-capsule-arrow {
+  flex-shrink: 0;
+  opacity: 0.72;
+  margin-left: -0.5px;
+}
+
+.hero-capsule-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1;
+  letter-spacing: 0.1px;
 }
 
-/* 3. 浅灰卡片置顶条 (不通栏，左右留缝、8px 圆角，背景与 tab 胶囊一致) */
+/* 3. 白底置顶条 (左右 16px 严格对齐全局网格，8px 圆角规范) */
 .floating-pinned-card {
-  margin: 8px 12px;
+  margin: 2px 16px 6px 16px;
   box-sizing: border-box;
   width: auto;
   max-width: 100%;
-  background: rgb(246, 246, 246);
+  background: #ffffff;
   border-radius: 8px;
-  padding: 2px 12px;
-  border: none;
-  box-shadow: none !important;
+  padding: 0 12px;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
   position: relative;
   z-index: 10;
   display: flex;
@@ -759,9 +813,9 @@ onPullDownRefresh(() => {
 .pinned-notice-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 0;
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.06);
+  gap: 8px;
+  padding: 9px 0;
+  border-bottom: 0.5px solid #f1f5f9;
   cursor: pointer;
   transition: opacity 0.15s ease;
 
@@ -775,10 +829,10 @@ onPullDownRefresh(() => {
 }
 
 .pinned-tag-badge {
-  background: rgba(16, 185, 129, 0.1);
-  border: 0.5px solid rgba(16, 185, 129, 0.25);
-  border-radius: 2px;
-  padding: 2px 7.5px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 0.5px solid rgba(16, 185, 129, 0.22);
+  border-radius: 4px;
+  padding: 2px 6px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -794,14 +848,14 @@ onPullDownRefresh(() => {
 
 .pinned-content-text {
   flex: 1;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
-  color: #1c1c1e;
-  line-height: 1.35;
+  color: #1e293b;
+  line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.15px;
+  letter-spacing: -0.1px;
 }
 
 .pinned-arrow-svg {
@@ -815,10 +869,10 @@ onPullDownRefresh(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px 10px 16px;
+  padding: 10px 16px 8px 16px;
   position: sticky;
-  top: calc(constant(safe-area-inset-top) + 50px);
-  top: calc(env(safe-area-inset-top) + 50px);
+  top: calc(constant(safe-area-inset-top) + 46px);
+  top: calc(env(safe-area-inset-top) + 46px);
   z-index: 40;
   width: 100%;
   max-width: 100%;
@@ -826,7 +880,6 @@ onPullDownRefresh(() => {
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.08);
 }
 
 .capsules-scroll-wrapper {
@@ -903,11 +956,11 @@ onPullDownRefresh(() => {
 }
 
 .capsule-item {
-  height: 32px;
-  padding: 0 14px !important;
+  height: 30px;
+  padding: 0 12px !important;
   border-radius: 8px;
-  background: rgb(246, 246, 246);
-  border: none;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   box-shadow: none;
   display: inline-flex !important;
   align-items: center;
@@ -921,7 +974,7 @@ onPullDownRefresh(() => {
   -webkit-tap-highlight-color: transparent;
 
   .capsule-text {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #64748b;
     line-height: 1;
@@ -931,28 +984,27 @@ onPullDownRefresh(() => {
 
   &:active {
     transform: scale(0.95);
-    opacity: 0.85;
+    background: #f8fafc;
   }
 
   &.active {
-    background: #4e4e4e;
-    border-color: #4e4e4e;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
     box-shadow: none;
-    padding: 0 16px !important;
 
     .capsule-text {
-      color: #ffffff;
+      color: #059669;
       font-weight: 600;
     }
   }
 }
 
 .btn-menu-filter {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
-  background: rgb(246, 246, 246);
-  border: none;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   box-shadow: none;
   display: flex;
   align-items: center;
@@ -964,6 +1016,7 @@ onPullDownRefresh(() => {
 
   &:active {
     transform: scale(0.92);
+    background: #f8fafc;
   }
 }
 
@@ -977,7 +1030,7 @@ onPullDownRefresh(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
+  padding: 56px 20px;
   background: #ffffff;
   border-radius: 0;
   margin: 0;
@@ -987,13 +1040,13 @@ onPullDownRefresh(() => {
 }
 
 .empty-icon-text {
-  font-size: 38px;
+  font-size: 36px;
   margin-bottom: 10px;
 }
 
 .empty-main-hint {
-  font-size: 14.5px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: #0f172a;
   margin-bottom: 6px;
 }
@@ -1008,9 +1061,9 @@ onPullDownRefresh(() => {
 .btn-empty-reset {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #ffffff;
-  font-size: 12.5px;
-  font-weight: 700;
-  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 18px;
   border-radius: 8px;
   border: none;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
@@ -1019,18 +1072,19 @@ onPullDownRefresh(() => {
 /* 5. 右下角发表悬浮按钮 (用户要求保留绿色，与 PC 端统一，增加微发丝微光) */
 .fab-publish-btn {
   position: fixed;
-  right: 18px;
-  bottom: calc(56px + constant(safe-area-inset-bottom) + 20px);
-  bottom: calc(56px + env(safe-area-inset-bottom) + 20px);
-  width: 52px;
-  height: 52px;
-  border-radius: 26px;
+  right: 16px;
+  bottom: calc(56px + constant(safe-area-inset-bottom) + 18px);
+  bottom: calc(56px + env(safe-area-inset-bottom) + 18px);
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
   border: 0.5px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.32, 0.86, 0.28, 1), box-shadow 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -1042,7 +1096,7 @@ onPullDownRefresh(() => {
 
 @media screen and (min-width: 641px) {
   .fab-publish-btn {
-    right: calc(50% - 210px + 18px) !important;
+    right: calc(50% - 210px + 16px) !important;
   }
 }
 
@@ -1064,8 +1118,8 @@ onPullDownRefresh(() => {
 .publish-drawer-panel {
   width: 100%;
   background: #ffffff;
-  border-radius: 16px 16px 0 0;
-  padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  border-radius: 12px 12px 0 0;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   animation: publishDrawerSlideUp 0.25s ease;
 }
@@ -1080,38 +1134,38 @@ onPullDownRefresh(() => {
 
 .publish-drawer-title {
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #94a3b8;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 .filter-drawer-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 12px;
-  border-radius: 12px;
+  padding: 12px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .filter-drawer-item:active {
-  background: #f6f6f6;
+  background: #f8fafc;
 }
 
 .filter-drawer-label {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: #0f172a;
 }
 
 .publish-drawer-cancel {
-  margin-top: 8px;
+  margin-top: 6px;
   border-top: 0.5px solid #f1f5f9;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   color: #64748b;
-  padding: 13px 0;
+  padding: 12px 0;
   cursor: pointer;
 }
 

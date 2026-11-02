@@ -31,9 +31,9 @@
         "navigationStyle": "custom",
         "navigationBarBackgroundColor": "#07152b",
         "navigationBarTextStyle": "white",
-        "backgroundColor": "#f6f6f6",
+        "backgroundColor": "#ffffff",
         "backgroundColorTop": "#07152b",
-        "backgroundColorBottom": "#f6f6f6",
+        "backgroundColorBottom": "#ffffff",
         "enablePullDownRefresh": true
       }
     },
@@ -63,9 +63,9 @@
         "navigationStyle": "custom",
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black",
-        "backgroundColor": "#f6f6f6",
+        "backgroundColor": "#ffffff",
         "backgroundColorTop": "#07152b",
-        "backgroundColorBottom": "#f6f6f6",
+        "backgroundColorBottom": "#ffffff",
         "enablePullDownRefresh": true
       }
     },
@@ -92,9 +92,9 @@
         "navigationBarTitleText": "标签",
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black",
-        "backgroundColor": "#f6f6f6",
+        "backgroundColor": "#ffffff",
         "backgroundColorTop": "#ffffff",
-        "backgroundColorBottom": "#f6f6f6"
+        "backgroundColorBottom": "#ffffff"
       }
     },
     {
@@ -123,9 +123,9 @@
         "navigationBarTitleText": "星友主页",
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black",
-        "backgroundColor": "#f6f6f6",
-        "backgroundColorTop": "#f6f6f6",
-        "backgroundColorBottom": "#f6f6f6"
+        "backgroundColor": "#ffffff",
+        "backgroundColorTop": "#ffffff",
+        "backgroundColorBottom": "#ffffff"
       }
     },
     {
@@ -142,9 +142,9 @@
       "style": {
         "navigationBarTitleText": "登录 / 注册",
         "navigationStyle": "custom",
-        "backgroundColor": "#f6f6f6",
-        "backgroundColorTop": "#f6f6f6",
-        "backgroundColorBottom": "#f6f6f6"
+        "backgroundColor": "#ffffff",
+        "backgroundColorTop": "#ffffff",
+        "backgroundColorBottom": "#ffffff"
       }
     }
   ],
@@ -152,9 +152,9 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "财不外露",
     "navigationBarBackgroundColor": "#ffffff",
-    "backgroundColor": "#f6f6f6",
+    "backgroundColor": "#ffffff",
     "app-plus": {
-      "background": "#f6f6f6"
+      "background": "#ffffff"
     }
   },
   "tabBar": {

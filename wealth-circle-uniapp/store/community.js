@@ -4,7 +4,7 @@ import { reactive, computed } from 'vue';
 export const currentUserMock = {
   id: 'u-founder',
   name: '老林说宏观',
-  avatar: '/static/avatar_mark.png',
+  avatar: '/static/avatar_user_hd.jpg',
   role: 'founder',
   roleTitle: '星主',
   bio: '20年二级市场投研老兵，专注全天候大类资产配置与高安全边际投资。财不外露，静水流深。',
@@ -19,7 +19,7 @@ export const currentUserMock = {
 export const demoVipUserMock = {
   id: 'u-vip-01',
   name: '远山求道',
-  avatar: '/static/avatar_john.png',
+  avatar: '/static/avatar_user_hd.jpg',
   role: 'vip',
   roleTitle: '年度会员',
   bio: '实体创业者，长期价值定投践行者，在不确定性中寻找确定性复利。',
@@ -34,7 +34,7 @@ export const demoVipUserMock = {
 export const demoGuestUserMock = {
   id: 'u-guest-01',
   name: '新晋星友_8888',
-  avatar: '/static/avatar_jerry.png',
+  avatar: '/static/avatar_user_hd.jpg',
   role: 'guest',
   roleTitle: '已注册 (未开通VIP)',
   bio: '新加入「财不外露」星球，正在开启资产配置进阶之旅。',
@@ -541,7 +541,7 @@ export const columnsMock = [
   }
 ];
 
-// 初始帖子列表
+// 初始帖子列表（无独立标题，统一正文 14px 呈现）
 export const initialPostsMock = [
   {
     id: 'post-1',
@@ -553,8 +553,8 @@ export const initialPostsMock = [
       roleTitle: '星主'
     },
     isPinned: true,
-    title: '全球降息大周期启动：为什么防御性红利资产仍然是压舱石？',
-    content: `随着美联储与主要经济体进入货币政策转向窗口期，近期许多星友都在问：降息来了，是不是应该一把梭哈弹性最大的进攻品种？
+    title: '',
+    content: `**【全球降息大周期启动：为什么防御性红利资产仍然是压舱石？】**随着美联储与主要经济体进入货币政策转向窗口期，近期许多星友都在问：降息来了，是不是应该一把梭哈弹性最大的进攻品种？
 
 我的建议依然是：财不外露，静水流深。
 
@@ -618,6 +618,17 @@ export const initialPostsMock = [
         content: '林总讲透了本质，红利资产就是投资组合里的压舱石！',
         createdAt: '5分钟前',
         likes: 6
+      },
+      {
+        id: 'c-2b',
+        author: {
+          name: 'Jerry',
+          avatar: '/static/avatar_jerry.png',
+          role: 'guest'
+        },
+        content: '附件里的回测表格非常详实，建议每位星友都下载对照一下自己的持仓结构。',
+        createdAt: '3分钟前',
+        likes: 4
       }
     ]
   },
@@ -631,16 +642,16 @@ export const initialPostsMock = [
       roleTitle: '美股资深合伙人'
     },
     questionTarget: '若琪',
-    title: '请教若琪：关于大模型端侧部署对芯片封装的长期影响',
-    content: `看到你最新的研报中提到手机与PC端侧运行百亿参数模型，想请教一下：在能耗与散热受限的情况下，端侧 NPU 架构升级是否会倒逼先进封装方案加速向消费级渗透？`,
+    title: '',
+    content: `看到你最新的研报中提到手机与PC端侧运行百亿参数模型，想请教一下：在能耗与散热受限的情况下，端侧 NPU 架构升级是否会倒逼先进封装方案（如 Fan-Out / SoIC）加速向消费级终端渗透？目前供应链上哪几家封测厂的良率提升最快？`,
     tags: ['话题研究', 'AI产业'],
     images: [],
     likes: 45,
     isLiked: false,
     commentsCount: 8,
     sharesCount: 3,
-    createdAt: '1小时前',
-    likers: ['老林说宏观', '志诚'],
+    createdAt: '35分钟前',
+    likers: ['老林说宏观', '志诚', '远山求道', 'John', 'Jerry', '阿伟', 'Leo'],
     likersCount: 45,
     comments: [
       {
@@ -651,32 +662,92 @@ export const initialPostsMock = [
           role: 'guest'
         },
         content: 'Rich 好！确实会加速！目前主流厂商正在测试更小尺寸的扇出型封装（Fan-Out），以兼顾散热和低成本。下周直播我重点拆解这部分。',
-        createdAt: '40分钟前',
+        createdAt: '25分钟前',
         likes: 15
+      },
+      {
+        id: 'c-3b',
+        author: {
+          name: '老林说宏观',
+          avatar: '/static/avatar_mark.png',
+          role: 'founder'
+        },
+        content: '端侧算力与先进封装的交叉验证非常关键，期待若琪下周的深度拆解。',
+        createdAt: '18分钟前',
+        likes: 9
       }
     ]
   },
   {
     id: 'post-3',
     author: {
-      id: 'u-vip-01',
-      name: '远山求道',
+      id: 'u-john',
+      name: 'John',
       avatar: '/static/avatar_john.png',
-      role: 'vip',
-      roleTitle: '年度会员'
+      role: 'guest',
+      roleTitle: '特邀专家'
     },
-    title: '今日实盘交易追踪与建仓思考',
-    content: `根据老林在周报中提示的估值性价比分位数，今天分批买入了港股某高分红公共事业龙头。股息率已经达到 7.2%，且现金流非常充沛，打算按三年周期长期持有吃息。`,
-    tags: ['交易追踪', '自由现金流'],
-    images: [],
-    likes: 29,
-    isLiked: false,
-    commentsCount: 12,
-    sharesCount: 2,
-    createdAt: '3小时前',
-    likers: ['老林说宏观'],
-    likersCount: 29,
-    comments: []
+    title: '',
+    content: `**【华尔街最新 13F 机构持仓速递】**刚刚汇总完桥水、伯克希尔与文艺复兴本季度的 13F 调仓明细，有三个非常值得关注的共识信号：
+
+1. **头部长线资金在科技股内部做高低切换**：小幅减持估值处于历史 90% 分位数的纯硬件算力标的，增配具备稳定现金流和企业级订阅收入的软件与数据服务龙头；
+2. **能源与公用事业获逆势增持**：AI 数据中心带来的北美电力缺口逻辑正在从概念走向业绩兑现，独立发电运营商（IPP）连续两个季度获对冲基金净买入；
+3. **新兴市场高息ETF仓位创近两年新高**：随着美元指数阶段性见顶，跨境配置资金正在回流估值洼地。`,
+    tags: ['机构观点', '宏观市场'],
+    images: [
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=750&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=750&auto=format&fit=crop&q=80'
+    ],
+    attachments: [
+      {
+        type: 'file',
+        name: '2026Q3华尔街Top20对冲基金13F持仓全景对比.xlsx',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 2180000
+      }
+    ],
+    likes: 112,
+    isLiked: true,
+    commentsCount: 19,
+    sharesCount: 11,
+    createdAt: '1小时前',
+    likers: ['老林说宏观', 'Rich', '远山求道', '若琪', 'Jerry', '价值守望者', 'Charlie', 'Stocks', '静水流深', '向阳'],
+    likersCount: 112,
+    comments: [
+      {
+        id: 'c-301',
+        author: {
+          name: 'Rich',
+          avatar: '/static/avatar_rich.png',
+          role: 'partner'
+        },
+        content: '北美独立发电商（VST、CEG）这波机构抱团非常紧，长协电价重签之后 ROE 上了一个台阶。',
+        createdAt: '48分钟前',
+        likes: 14
+      },
+      {
+        id: 'c-302',
+        author: {
+          name: '远山求道',
+          avatar: '/static/avatar_john.png',
+          role: 'vip'
+        },
+        content: '已下载表格！每次季度 13F 更新都是干货最密集的时候，感谢 John 老师整理。',
+        createdAt: '32分钟前',
+        likes: 7
+      },
+      {
+        id: 'c-303',
+        author: {
+          name: 'Jerry',
+          avatar: '/static/avatar_jerry.png',
+          role: 'guest'
+        },
+        content: '软件与硬件的剪刀差确实在收敛，赔率正在向应用端倾斜。',
+        createdAt: '20分钟前',
+        likes: 5
+      }
+    ]
   },
   {
     id: 'post-4',
@@ -687,18 +758,65 @@ export const initialPostsMock = [
       role: 'vip',
       roleTitle: '年度会员'
     },
-    questionTarget: '老林说宏观',
-    title: '请教老林：高股息组合遇到利率上行期该如何应对',
-    content: `林总好！我目前的持仓以红利资产为主，近期利率环境有上行迹象，想请教一下：若利率持续上行，高股息策略的相对吸引力会不会被债券分流？是否需要预留一部分仓位做再平衡？`,
-    tags: ['配置思考'],
-    images: [],
-    likes: 18,
+    title: '',
+    content: `**【今日实盘交易追踪与建仓思考】**根据老林在周报中提示的估值性价比分位数，今天在港股市场分批买入了某高分红公用事业与通信运营商龙头。目前扣除红利税后的到手股息率依然达到 **6.8%**，且资本开支高峰期已过，自由现金流非常充沛，打算按三年周期作为底仓长期持有吃息。`,
+    tags: ['交易追踪', '自由现金流'],
+    images: [
+      '/static/feed_chart.png'
+    ],
+    likes: 64,
     isLiked: false,
-    commentsCount: 2,
-    sharesCount: 0,
+    commentsCount: 12,
+    sharesCount: 4,
     createdAt: '2小时前',
-    likers: ['Rich'],
-    likersCount: 18,
+    likers: ['老林说宏观', 'Rich', 'Jerry', '价值守望者', '阿伟', '老白', 'Mia'],
+    likersCount: 64,
+    comments: [
+      {
+        id: 'c-401',
+        author: {
+          name: '老林说宏观',
+          avatar: '/static/avatar_mark.png',
+          role: 'founder'
+        },
+        content: '知行合一！资本开支下行+分红率提升是自由现金流折现模型里最舒服的阶段，拿住底仓。',
+        createdAt: '1小时前',
+        likes: 18
+      },
+      {
+        id: 'c-402',
+        author: {
+          name: 'Jerry',
+          avatar: '/static/avatar_jerry.png',
+          role: 'guest'
+        },
+        content: '港股通红利税如果后续有进一步优化政策，这批高息龙头还有一层估值修复期权。',
+        createdAt: '50分钟前',
+        likes: 8
+      }
+    ]
+  },
+  {
+    id: 'post-5',
+    author: {
+      id: 'u-vip-01',
+      name: '远山求道',
+      avatar: '/static/avatar_john.png',
+      role: 'vip',
+      roleTitle: '年度会员'
+    },
+    questionTarget: '老林说宏观',
+    title: '',
+    content: `林总好！我目前的持仓以红利资产为主，近期十年期美债与国内长端利率均有阶段性企稳反弹迹象，想请教一下：若无风险利率出现阶段性反弹，高股息策略的相对吸引力会不会被债券分流？是否需要预留 15%~20% 的仓位做再平衡？`,
+    tags: ['宏观策略', '大类资产配置'],
+    images: [],
+    likes: 38,
+    isLiked: false,
+    commentsCount: 5,
+    sharesCount: 2,
+    createdAt: '3小时前',
+    likers: ['Rich', 'Jerry', 'John', '静水流深', '向阳'],
+    likersCount: 38,
     comments: [
       {
         id: 'c-5',
@@ -707,9 +825,408 @@ export const initialPostsMock = [
           avatar: '/static/avatar_mark.png',
           role: 'founder'
         },
-        content: '问得好！利率上行初期红利资产确实会有估值压力，但保险与公用事业这类长久期配置盘反而会加仓。建议保留 8 成红利底仓，2 成做利率敏感行业的轮动，周报里我会展开讲。',
-        createdAt: '1小时前',
+        content: '问得好！利率反弹初期红利资产确实会有短线估值波动，但险资与长久期配置盘往往逢回调加仓。建议保留 8 成红利底仓，2 成机动仓位做网格再平衡，周报里我会展开讲。',
+        createdAt: '2小时前',
+        likes: 16
+      }
+    ]
+  },
+  {
+    id: 'post-6',
+    author: {
+      id: 'u-ruoqi',
+      name: '若琪',
+      avatar: '/static/avatar_jerry.png',
+      role: 'guest',
+      roleTitle: '特邀专家'
+    },
+    title: '',
+    content: `**【AI 算力产业链调研手记：光模块从 800G 向 1.6T 演进的良率拐点】**本周密集走访了长三角三家光通信核心供应链企业，分享几个一线最真实的体感：
+
+1. **1.6T 样品验证进度超预期**：海外云厂商对明年 Q2 批量交付的排产指引非常明确，硅光方案（SiPh）在 1.6T 世代的渗透率预计将从目前的 25% 提升至 45% 以上；
+2. **上游 CW 光源芯片依然紧缺**：磷化铟（InP）外延片扩产周期长达 14 个月，具备自研光芯片能力的头部模块厂毛利率显著跑赢纯组装厂；
+3. **铜连接（AEC）与光模块并非零和博弈**：机柜内短距用铜、机柜间长距用光已成为标准范式。`,
+    tags: ['话题研究', 'AI产业', '深度研报'],
+    images: [
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=750&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=750&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=750&auto=format&fit=crop&q=80'
+    ],
+    attachments: [
+      {
+        type: 'file',
+        name: '2026光通信1.6T硅光技术路线与产业链调研纪要.pdf',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 4150000
+      }
+    ],
+    likes: 186,
+    isLiked: false,
+    commentsCount: 27,
+    sharesCount: 19,
+    createdAt: '4小时前',
+    likers: ['老林说宏观', 'Rich', 'John', 'Jerry', '远山求道', '价值守望者', 'wendy', 'Charlie', 'Stocks', 'Leo', 'Nana', 'Ken', '阿伟', '静水流深'],
+    likersCount: 186,
+    comments: [
+      {
+        id: 'c-601',
+        author: {
+          name: 'Rich',
+          avatar: '/static/avatar_rich.png',
+          role: 'partner'
+        },
+        content: '一线调研含金量极高！北美 CSP 大厂资本开支电话会里刚确认了 1.6T 的提速节奏，和若琪调研结论完全印证。',
+        createdAt: '3小时前',
+        likes: 21
+      },
+      {
+        id: 'c-602',
+        author: {
+          name: '远山求道',
+          avatar: '/static/avatar_john.png',
+          role: 'vip'
+        },
+        content: '请问若琪老师，硅光方案渗透率提升后，传统分立器件厂商的份额会受到明显挤压吗？',
+        createdAt: '2小时前',
         likes: 9
+      },
+      {
+        id: 'c-603',
+        author: {
+          name: '若琪',
+          avatar: '/static/avatar_jerry.png',
+          role: 'guest'
+        },
+        content: '分立器件在 800G 仍有庞大存量需求，但在 1.6T 增量市场里，掌握硅光设计能力的厂商会拿走大头利润。',
+        createdAt: '2小时前',
+        likes: 13
+      }
+    ]
+  },
+  {
+    id: 'post-7',
+    author: {
+      id: 'u-rich',
+      name: 'Rich',
+      avatar: '/static/avatar_rich.png',
+      role: 'partner',
+      roleTitle: '美股资深合伙人'
+    },
+    title: '',
+    content: `**【美股期权现金流策略周度复盘】**本周标普 500 隐含波动率（VIX）回落至 15.2 附近，我们在周二利用英伟达与微软财报前的 IV 溢价，执行了 **Cash-Secured Put（现金担保看跌期权）** 卖出策略，行权价设置在距离现价 12% 的安全边际位置。
+
+对于长期想建仓核心科技龙头的资金而言，在安全边际价位卖 Put 只有两种结果：要么白赚年化 9%~12% 的权利金增强现金流，要么以心仪的折价买到优质股权。记住一条铁律：**绝不裸卖空杠杆期权，每一张合约背后必须有足额现金准备接货**。`,
+    tags: ['交易追踪', '实盘复盘', '自由现金流'],
+    images: [],
+    likes: 143,
+    isLiked: true,
+    commentsCount: 23,
+    sharesCount: 9,
+    createdAt: '5小时前',
+    likers: ['老林说宏观', 'John', 'Jerry', '若琪', '远山求道', '价值守望者', 'Charlie', 'Stocks', 'Leo', '阿伟', '老白'],
+    likersCount: 143,
+    comments: [
+      {
+        id: 'c-701',
+        author: {
+          name: '老林说宏观',
+          avatar: '/static/avatar_mark.png',
+          role: 'founder'
+        },
+        content: '把期权当成折价买股票和收租的工具，而不是赌博杠杆，这才是买方机构的正道。',
+        createdAt: '4小时前',
+        likes: 25
+      },
+      {
+        id: 'c-702',
+        author: {
+          name: 'John',
+          avatar: '/static/avatar_john.png',
+          role: 'guest'
+        },
+        content: '结合当前美股回购静默期结束，下周行权价安全垫非常厚。',
+        createdAt: '4小时前',
+        likes: 11
+      }
+    ]
+  },
+  {
+    id: 'post-8',
+    author: {
+      id: 'u-jerry',
+      name: 'Jerry',
+      avatar: '/static/avatar_jerry.png',
+      role: 'guest',
+      roleTitle: '特邀专家'
+    },
+    title: '',
+    content: `**【家庭稳健底仓：当存款利率跌破 1.5%，我们的钱该往哪放？】**近期很多星友私信聊家庭现金管理。随着大额存单与传统货币基金收益率持续下行，单纯靠单一存款已经很难跑赢实际通胀。
+
+分享一套我们给高净值家庭配置的**「三阶梯固收+」底仓模型**：
+1. **第一阶梯（15% 极高流动性）**：场内短融 ETF + 国债逆回购组合，兼顾随时取用与周末计息；
+2. **第二阶梯（55% 稳健票息压舱石）**：高等级城投债与央企永续债基金，久期控制在 2~3 年，锁定 3.2%~3.8% 区间收益；
+3. **第三阶梯（30% 红利低波与黄金对冲）**：用 20% 港A红利低波 ETF 叠加 10% 实物黄金 ETF，在不显著放大回撤的前提下将组合整体预期年化提升至 **5.5%~6.5%**。`,
+    tags: ['大类资产配置', '红利低波', '理财配置'],
+    images: [
+      'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=750&auto=format&fit=crop&q=80'
+    ],
+    attachments: [
+      {
+        type: 'file',
+        name: '家庭稳健资产三阶梯配置配比测算表.xlsx',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 980000
+      }
+    ],
+    likes: 215,
+    isLiked: false,
+    commentsCount: 34,
+    sharesCount: 28,
+    createdAt: '6小时前',
+    likers: ['老林说宏观', 'Rich', 'John', '若琪', '远山求道', '新晋星友_8888', '价值守望者', 'wendy', 'Charlie', 'Stocks', 'Leo', 'Nana', 'Ken', '阿伟', '静水流深', '老白', 'Mia', 'Tina', 'Jason', 'Yuki'],
+    likersCount: 215,
+    comments: [
+      {
+        id: 'c-801',
+        author: {
+          name: '远山求道',
+          avatar: '/static/avatar_john.png',
+          role: 'vip'
+        },
+        content: '非常实用！家里正好有一笔三年期大额存单到期，按 Jerry 老师的三阶梯方案重新规划了一下，心里踏实多了。',
+        createdAt: '5小时前',
+        likes: 19
+      },
+      {
+        id: 'c-802',
+        author: {
+          name: '老林说宏观',
+          avatar: '/static/avatar_mark.png',
+          role: 'founder'
+        },
+        content: '低利率时代拼的不是单品暴利，而是不同低相关性资产之间的组合夏普比率。',
+        createdAt: '5小时前',
+        likes: 22
+      },
+      {
+        id: 'c-803',
+        author: {
+          name: 'Jerry',
+          avatar: '/static/avatar_jerry.png',
+          role: 'guest'
+        },
+        content: '大家可以根据家庭未来 12 个月的刚性支出比例微调第一阶梯权重，表格里有自动公式可以直接填。',
+        createdAt: '4小时前',
+        likes: 12
+      }
+    ]
+  },
+  {
+    id: 'post-9',
+    author: {
+      id: 'u-founder',
+      name: '老林说宏观',
+      avatar: '/static/avatar_mark.png',
+      role: 'founder',
+      roleTitle: '星主'
+    },
+    title: '',
+    content: `**【夜读思考：为什么慢即是快？】**今晚复盘过去十年星球核心组合的净值曲线，感触最深的一点是：决定长期复合收益率的，从来不是在牛市最狂热时赚了多少，而是在市场情绪冰点与宏观逆风期少亏了多少。
+
+假设一个组合第一年涨 50%、第二年跌 40%，两年累计收益其实是 **-10%**；而另一个看似不起眼的稳健组合每年只赚 12%，两年累计却是 **+25.4%**。控制回撤、守住能力圈、持续积累正现金流，时间自然会站在你这一边。`,
+    tags: ['宏观策略', '交易追踪'],
+    images: [],
+    likes: 276,
+    isLiked: true,
+    commentsCount: 31,
+    sharesCount: 24,
+    createdAt: '昨天 22:15',
+    likers: ['Rich', 'John', 'Jerry', '若琪', '远山求道', '志诚', '价值守望者', 'wendy', 'Charlie', 'Stocks', 'Leo', 'Nana', 'Ken', '阿伟', '静水流深', '老白', 'Mia', 'Tina', 'Jason', 'Yuki', '大鹏展翅', '向阳'],
+    likersCount: 276,
+    comments: [
+      {
+        id: 'c-901',
+        author: {
+          name: 'Rich',
+          avatar: '/static/avatar_rich.png',
+          role: 'partner'
+        },
+        content: '复利最大的敌人就是大幅回撤，每年稳稳当当跑赢基准，五年下来就是巨大的身位优势。',
+        createdAt: '昨天 22:30',
+        likes: 29
+      },
+      {
+        id: 'c-902',
+        author: {
+          name: '远山求道',
+          avatar: '/static/avatar_john.png',
+          role: 'vip'
+        },
+        content: '加入星球这一年多，最大的改变就是戒掉了追涨杀跌的焦虑，开始真正看懂资产负债表和现金流。',
+        createdAt: '昨天 22:48',
+        likes: 17
+      }
+    ]
+  },
+  {
+    id: 'post-10',
+    author: {
+      id: 'u-john',
+      name: 'John',
+      avatar: '/static/avatar_john.png',
+      role: 'guest',
+      roleTitle: '特邀专家'
+    },
+    questionTarget: 'Rich',
+    title: '',
+    content: `Rich 兄，近期日元套息交易（Carry Trade）平仓潮暂告一段落，但日本央行四季度仍有议息窗口。从你跨市场衍生品监控的维度来看，目前日元期货非商业净空头头寸出清彻底了吗？对纳指高权重科技股的流动性冲击还有二次反复的可能吗？`,
+    tags: ['机构观点', '宏观市场'],
+    images: [],
+    likes: 72,
+    isLiked: false,
+    commentsCount: 9,
+    sharesCount: 5,
+    createdAt: '昨天 18:40',
+    likers: ['老林说宏观', 'Rich', 'Jerry', '若琪', '远山求道', 'Charlie', 'Stocks'],
+    likersCount: 72,
+    comments: [
+      {
+        id: 'c-1001',
+        author: {
+          name: 'Rich',
+          avatar: '/static/avatar_rich.png',
+          role: 'partner'
+        },
+        content: 'John 兄好！CFTC 最新周度持仓显示日元投机净空头已经出清了约 85%，最剧烈的去杠杆冲击已经过去。后续即便日银温和调息，对美股科技龙头的流动性冲击也会显著钝化。',
+        createdAt: '昨天 19:05',
+        likes: 24
+      },
+      {
+        id: 'c-1002',
+        author: {
+          name: 'John',
+          avatar: '/static/avatar_john.png',
+          role: 'guest'
+        },
+        content: '非常清晰！CFTC 头寸数据与美日利差远期掉期互印证，这样四季度海外宽基的底仓就可以安心持有了。',
+        createdAt: '昨天 19:20',
+        likes: 11
+      }
+    ]
+  },
+  {
+    id: 'post-11',
+    author: {
+      id: 'u-ruoqi',
+      name: '若琪',
+      avatar: '/static/avatar_jerry.png',
+      role: 'guest',
+      roleTitle: '特邀专家'
+    },
+    title: '',
+    content: `**【自动驾驶与具身智能硬件BOM成本拆解】**刚整理完新一代人形机器人与 L4 级智驾域控制器的 BOM（物料清单）成本结构：行星滚柱丝杠、六维力矩传感器与空心杯电机三大核心执行器合计占比超过 **52%**。随着国内精密制造大厂进入定点放量阶段，硬件端降本曲线正在复刻 2019~2021 年新能源汽车供应链的国产替代路径。`,
+    tags: ['话题研究', 'AI产业'],
+    images: [
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=750&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=750&auto=format&fit=crop&q=80'
+    ],
+    likes: 95,
+    isLiked: false,
+    commentsCount: 14,
+    sharesCount: 8,
+    createdAt: '昨天 15:20',
+    likers: ['老林说宏观', 'Rich', 'John', '远山求道', '价值守望者', 'Leo', 'Nana', '阿伟'],
+    likersCount: 95,
+    comments: [
+      {
+        id: 'c-1101',
+        author: {
+          name: '远山求道',
+          avatar: '/static/avatar_john.png',
+          role: 'vip'
+        },
+        content: '执行器环节的壁垒确实最高，尤其是丝杠磨床工艺，国内有汽零底子的精密加工龙头切入最快。',
+        createdAt: '昨天 16:00',
+        likes: 8
+      }
+    ]
+  },
+  {
+    id: 'post-12',
+    author: {
+      id: 'u-founder',
+      name: '老林说宏观',
+      avatar: '/static/avatar_mark.png',
+      role: 'founder',
+      roleTitle: '星主'
+    },
+    title: '',
+    content: `**【十月全球大类资产月度复盘与十一月配置月报】**已正式上传至星球文档库！本期月报共 42 页，核心涵盖四个章节：
+1. 美欧降息节奏微调下的全球美元流动性路线图；
+2. 港股与 A 股红利资产、互联网核心龙头最新估值分位与股息率对比表；
+3. 黄金、美债与大宗商品在四季度地缘博弈窗口期的对冲配比；
+4. 星球全天候实盘参考组合十月归因分析与十一月再平衡操作细则。
+
+欢迎各位星友下载研读，有任何针对具体持仓比例的疑问，可以直接在评论区或向嘉宾提问交流。`,
+    tags: ['宏观策略', '机构观点', '大类资产配置', '深度研报'],
+    images: [
+      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=750&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=750&auto=format&fit=crop&q=80'
+    ],
+    attachments: [
+      {
+        type: 'file',
+        name: '财不外露·2026年11月全球大类资产配置策略月报(完整版).pdf',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 6480000
+      },
+      {
+        type: 'file',
+        name: '港A核心红利与低估值龙头股息率跟踪底表(11月更新).xlsx',
+        url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+        size: 1620000
+      }
+    ],
+    likes: 412,
+    isLiked: true,
+    commentsCount: 58,
+    sharesCount: 36,
+    createdAt: '2天前',
+    likers: ['老林说宏观', 'Rich', 'John', 'Jerry', '若琪', '远山求道', '志诚', '价值守望者', 'wendy', 'Charlie', 'Stocks', 'Leo', 'Nana', 'Ken', '阿伟', '静水流深', '老白', 'Mia', 'Tina', 'Jason', 'Yuki', '大鹏展翅', '向阳', '句号', 'Charming', '蜜课斯', '盒儿云'],
+    likersCount: 412,
+    comments: [
+      {
+        id: 'c-1201',
+        author: {
+          name: 'Rich',
+          avatar: '/static/avatar_rich.png',
+          role: 'partner'
+        },
+        content: '本期月报第三章关于美债久期与黄金对冲比例的量化回测非常精彩，强烈推荐大家精读！',
+        createdAt: '2天前',
+        likes: 33
+      },
+      {
+        id: 'c-1202',
+        author: {
+          name: 'Jerry',
+          avatar: '/static/avatar_jerry.png',
+          role: 'guest'
+        },
+        content: '每月最期待的重磅干货，底表里的自由现金流收益率（FCF Yield）指标已经同步更新到最新三季报数据了。',
+        createdAt: '2天前',
+        likes: 21
+      },
+      {
+        id: 'c-1203',
+        author: {
+          name: '远山求道',
+          avatar: '/static/avatar_john.png',
+          role: 'vip'
+        },
+        content: '已经打印出来周末细读，感谢林总和各位合伙人老师的倾力输出！',
+        createdAt: '2天前',
+        likes: 14
       }
     ]
   }
@@ -874,7 +1391,12 @@ export const restoreAuthSession = () => {
       if (typeof saved.isLoggedIn === 'boolean') appState.isLoggedIn = saved.isLoggedIn;
       if (saved.currentPerspective) appState.currentPerspective = saved.currentPerspective;
       if (typeof saved.isVipMember === 'boolean') appState.isVipMember = saved.isVipMember;
-      if (saved.user) Object.assign(appState.user, saved.user);
+      if (saved.user) {
+        if (!saved.user.avatar || saved.user.avatar.includes('avatar_mark') || saved.user.avatar.includes('avatar_john') || saved.user.avatar.includes('avatar_jerry')) {
+          saved.user.avatar = '/static/avatar_user_hd.jpg';
+        }
+        Object.assign(appState.user, saved.user);
+      }
     }
   } catch (e) {
     // ignore corrupted session
@@ -1019,10 +1541,10 @@ export const filteredPosts = computed(() => {
     return appState.posts.filter(p => p.tags.some(t => t.includes('交易') || t.includes('现金流') || t.includes('实盘')));
   }
   if (appState.activeFeedFilter === 'market_news') {
-    return appState.posts.filter(p => p.tags.some(t => t.includes('宏观') || t.includes('市场')));
+    return appState.posts.filter(p => p.tags.some(t => t.includes('机构') || t.includes('市场') || t.includes('宏观')));
   }
   if (appState.activeFeedFilter === 'wealth_news') {
-    return appState.posts.filter(p => p.tags.some(t => t.includes('红利') || t.includes('资产') || t.includes('理财')));
+    return appState.posts.filter(p => p.tags.some(t => t.includes('红利') || t.includes('资产') || t.includes('理财') || t.includes('宏观')));
   }
   if (appState.activeFeedFilter === 'topic_research') {
     return appState.posts.filter(p => p.tags.some(t => t.includes('话题研究') || t.includes('AI产业') || t.includes('研报')));

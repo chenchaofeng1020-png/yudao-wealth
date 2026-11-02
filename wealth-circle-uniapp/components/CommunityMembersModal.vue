@@ -273,14 +273,16 @@ const handleAsk = (member) => {
 .m-role-chip {
   font-size: 10px;
   font-weight: 600;
-  padding: 1px 6px;
+  line-height: 1;
+  padding: 2px 5px;
   border-radius: 4px;
 
-  &.chip-founder { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-  &.chip-partner { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-  &.chip-guest { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-  &.chip-vip { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
-  &.chip-member { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  /* 与信息流角色徽章 (c-role-badge) 同一套配色 */
+  &.chip-founder { background: #fff7ed; color: #ea580c; border: 0.5px solid #fdba74; }
+  &.chip-partner { background: #fff7ed; color: #ea580c; border: 0.5px solid #fdba74; }
+  &.chip-guest { background: #fff7ed; color: #ea580c; border: 0.5px solid #fdba74; }
+  &.chip-vip { background: #eff6ff; color: #2563eb; border: 0.5px solid #93c5fd; }
+  &.chip-member { background: #eff6ff; color: #2563eb; border: 0.5px solid #93c5fd; }
 }
 
 .m-title-text {

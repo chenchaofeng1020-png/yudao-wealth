@@ -108,7 +108,7 @@
         <!-- 点赞人文字条（对齐截图样式：全部名字可点，超 8 行折叠可展开） -->
         <view v-if="postLikers.length > 0" class="social-feedback-bar">
           <view class="feedback-left">
-            <svg class="feedback-thumb-icon" width="15" height="15" viewBox="0 0 24 24" fill="#64748b" stroke="#64748b" stroke-width="1.5">
+            <svg class="feedback-thumb-icon" width="15" height="15" viewBox="0 0 24 24" fill="#0284c7" stroke="#0284c7" stroke-width="1.5">
               <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
             </svg>
             <view class="feedback-body">
@@ -470,10 +470,17 @@ const handleOpenVipModal = () => {
 };
 </script>
 
+<style lang="scss">
+/* 导航栏底部浅分割线（uni 原生导航栏在组件外，需非 scoped 样式；通过 data-page 限定仅本页生效） */
+uni-page[data-page="pages/feed/detail"] .uni-page-head {
+  border-bottom: 0.5px solid rgba(60, 60, 67, 0.12);
+}
+</style>
+
 <style lang="scss" scoped>
 .detail-page-root {
   min-height: 100vh;
-  background-color: #f6f6f6;
+  background-color: #ffffff;
   padding-bottom: 80px;
 }
 
@@ -628,7 +635,7 @@ const handleOpenVipModal = () => {
   width: 80px;
   height: 80px;
   border-radius: 8px;
-  background: #f6f6f6;
+  background: #f8fafc;
 }
 
 /* 6. 文档卡片 */
@@ -643,8 +650,10 @@ const handleOpenVipModal = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f6f6f6;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+  border-radius: 10px;
   padding: 8px 12px;
 }
 
@@ -687,8 +696,8 @@ const handleOpenVipModal = () => {
   gap: 6px;
   padding: 8px 18px;
   border-radius: 20px;
-  background: #f6f6f6;
-  border: 0.5px solid #e2e8f0;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
   cursor: pointer;
   transition: all 0.15s ease;
 
@@ -882,7 +891,8 @@ const handleOpenVipModal = () => {
 .reply-list {
   margin-top: 10px;
   padding: 10px 12px;
-  background: #f6f6f6;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -966,7 +976,8 @@ const handleOpenVipModal = () => {
 .reply-text-input {
   flex: 1;
   height: 38px;
-  background: #f6f6f6;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 19px;
   padding: 0 14px;
   font-size: 13px;

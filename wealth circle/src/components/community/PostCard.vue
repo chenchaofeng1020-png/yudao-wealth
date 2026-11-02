@@ -436,7 +436,7 @@ const submitComment = () => {
 <style scoped>
 .post-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: none;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 6px;

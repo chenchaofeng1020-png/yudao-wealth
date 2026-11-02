@@ -10,6 +10,7 @@
         <view class="author-text-meta">
           <view class="name-line">
             <text class="author-name">{{ post.author.name }}</text>
+            <text v-if="post.author.role && showRoleBadge(post.author.role)" class="c-role-badge" :class="isExpertRole(post.author.role) ? 'is-expert' : 'is-member'">{{ getRoleLabel(post.author.role) }}</text>
           </view>
           <text class="post-time-text">{{ post.createdAt }}</text>
         </view>
@@ -31,26 +32,19 @@
       <text class="q-lead">向 <text class="q-target-name">@{{ post.questionTarget }}</text> 提问：</text>
     </view>
 
-    <!-- 3. 话题标签与大标题 -->
-    <view v-if="post.tags && post.tags.length" class="post-tags-row">
-      <text 
-        v-for="tag in post.tags" 
-        :key="tag" 
-        class="tag-link-item"
-        @tap.stop="handleTagClick(tag)"
-      >
-        #{{ tag }}
-      </text>
-    </view>
-
-    <text v-if="post.title" class="post-headline" @tap="handleCardClick">
-      {{ post.title }}
-    </text>
-
+    <!-- 3. 话题标签（正文一部分：天蓝色文字流，与 PC 端一致） -->
     <!-- 4. 正文排版与段落展示 -->
     <view class="post-body-container" @tap="handleCardClick">
-      <view 
-        class="content-paragraphs-wrap" 
+      <view v-if="post.tags && post.tags.length" class="post-tags-inline">
+        <text
+          v-for="tag in post.tags"
+          :key="tag"
+          class="tag-inline-text"
+          @tap.stop="handleTagClick(tag)"
+        >#{{ tag }} </text>
+      </view>
+      <view
+        class="content-paragraphs-wrap"
         :class="{ 'is-clamped': !isExpanded && isContentLong }"
       >
         <view 
@@ -64,7 +58,7 @@
 
       <!-- 全文 / 收起 展开按钮 (知识星球经典绿色文字) -->
       <view v-if="isContentLong" class="expand-action-row" @tap.stop="isExpanded = !isExpanded">
-        <text class="expand-btn-text">{{ isExpanded ? '收起' : '全文' }}</text>
+        <text class="expand-btn-text">{{ isExpanded ? '收起' : '查看全文' }}</text>
       </view>
     </view>
 
@@ -100,11 +94,11 @@
 
     <!-- 7. 点赞人条（扁平样式，对齐详情页；全部名字可点，超 6 行折叠可展开） -->
     <view v-if="post.likers && post.likers.length" class="social-feedback-strip" @tap.stop="handleCardClick">
-      <svg class="thumb-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="#64748b" stroke="#64748b" stroke-width="1.5">
-        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-      </svg>
       <view class="feedback-body">
-        <view :class="['likers-names-wrap', { 'collapsed': !likersExpanded }]">
+        <view class="likers-names-wrap collapsed">
+          <svg class="thumb-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="#0284c7" stroke="#0284c7" stroke-width="1.5">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
           <text
             v-for="(liker, idx) in post.likers"
             :key="liker"
@@ -113,20 +107,14 @@
           >{{ liker }}{{ idx < post.likers.length - 1 ? '、' : '' }}</text>
           <text class="liker-suffix"> 等 {{ post.likersCount || post.likes }}人觉得很赞</text>
         </view>
-        <view v-if="likersOverflow" class="likers-toggle" @tap.stop="likersExpanded = !likersExpanded">
-          <text class="likers-toggle-txt">{{ likersExpanded ? '收起' : '展开' }}</text>
-          <svg class="likers-toggle-arrow" :class="{ 'is-expanded': likersExpanded }" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </view>
       </view>
     </view>
 
     <!-- 8. 精选热门评论预览 (知识星球经典直接露出1~2条高价值讨论) -->
     <view v-if="post.comments && post.comments.length" class="featured-comments-box" @tap.stop="handleCardClick">
       <view v-for="c in post.comments.slice(0, 2)" :key="c.id" class="featured-comment-line">
-        <text class="c-author-name">{{ c.author.name }}:</text>
-        <text class="c-content-text">{{ c.content }}</text>
+        <text class="c-author-name" :class="isExpertRole(c.author.role) ? 'is-expert' : 'is-member'" @tap.stop="goMemberProfile(c.author.name)">{{ c.author.name }}</text>
+        <text class="c-content-text">：{{ c.content }}</text>
       </view>
       <view v-if="post.comments.length > 2" class="view-more-comments-link">
         <text class="vm-text">查看全部 {{ post.commentsCount || post.comments.length }} 条讨论 ›</text>
@@ -141,7 +129,7 @@
         :class="{ active: post.isLiked }"
         @tap.stop="handleLikeToggle"
       >
-        <svg class="action-svg" width="18" height="18" viewBox="0 0 24 24" :fill="post.isLiked ? '#d97706' : 'none'" :stroke="post.isLiked ? '#d97706' : '#64748b'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="action-svg" width="16" height="16" viewBox="0 0 24 24" :fill="post.isLiked ? '#d97706' : 'none'" :stroke="post.isLiked ? '#d97706' : '#64748b'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
         </svg>
         <text class="action-counter" :class="{ active: post.isLiked }">
@@ -151,7 +139,7 @@
 
       <!-- 讨论按钮 -->
       <view class="action-item-wrap" @tap.stop="handleCommentClick">
-        <svg class="action-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="action-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
         </svg>
         <text class="action-counter">
@@ -161,7 +149,7 @@
 
       <!-- 分享按钮 -->
       <view class="action-item-wrap" @tap.stop="handleShareClick">
-        <svg class="action-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="action-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="18" cy="5" r="3"></circle>
           <circle cx="6" cy="12" r="3"></circle>
           <circle cx="18" cy="19" r="3"></circle>
@@ -195,7 +183,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, getCurrentInstance, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { appState, actions } from '../store/community.js';
 import FileTypeIcon from './FileTypeIcon.vue';
 
@@ -213,6 +201,21 @@ const isContentLong = computed(() => {
   return props.post.content && (props.post.content.length > 120 || props.post.content.split('\n').length > 4);
 });
 
+// 身份配色与角色标签：星主/合伙人/嘉宾/小助理名字橙色，其余（年度会员/星友）蓝色
+const isExpertRole = (role) => ['founder', 'partner', 'guest', 'assistant'].includes(role);
+
+// 名字后的角色徽章仅星主/合伙人/嘉宾/小助理展示，其余身份不显示
+const showRoleBadge = isExpertRole;
+
+const getRoleLabel = (role) => ({
+  founder: '星主',
+  partner: '合伙人',
+  guest: '嘉宾',
+  assistant: '小助理',
+  vip: '会员',
+  member: '星友'
+}[role] || '星友');
+
 // 段落拆解
 const formattedParagraphs = computed(() => {
   if (!props.post.content) return [];
@@ -223,7 +226,7 @@ const formattedParagraphs = computed(() => {
 const formatMarkdown = (text) => {
   if (!text) return '';
   return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #1c1c1e; font-weight: 700;">$1</strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #0f172a; font-weight: 600;">$1</strong>')
     .replace(/(https?:\/\/[^\s]+)/g, '<span style="color: #059669; text-decoration: underline;">$1</span>');
 };
 
@@ -235,28 +238,6 @@ const formatFileSize = (bytes) => {
 const handleAuthorClick = () => {
   uni.navigateTo({ url: `/pages/member/profile?name=${encodeURIComponent(props.post.author.name)}` });
 };
-
-const likersExpanded = ref(false);
-const likersOverflow = ref(false);
-
-// 检测点赞名单是否超过 6 行折叠高度（约 115px = 6 行 × 19.2px 行高）
-const instance = getCurrentInstance();
-const measureLikersOverflow = () => {
-  nextTick(() => {
-    uni.createSelectorQuery()
-      .in(instance?.proxy)
-      .select('.likers-names-wrap')
-      .boundingClientRect((rect) => {
-        if (rect) likersOverflow.value = rect.height > 110;
-      })
-      .exec();
-  });
-};
-
-onMounted(() => {
-  measureLikersOverflow();
-  setTimeout(measureLikersOverflow, 400);
-});
 
 const goMemberProfile = (name) => {
   uni.navigateTo({ url: `/pages/member/profile?name=${encodeURIComponent(name)}` });
@@ -343,20 +324,20 @@ const handleOpenAttachment = (att) => {
 .post-card-container {
   background: #ffffff;
   border-radius: 0;
-  padding: 16px 16px 14px 16px;
+  padding: 14px 16px 12px 16px;
   margin: 0;
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   box-shadow: none !important;
   border: none;
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.08);
+  border-bottom: 0.5px solid #f1f5f9;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #f6f6f6;
+    background-color: #f8fafc;
   }
 }
 
@@ -365,7 +346,7 @@ const handleOpenAttachment = (att) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 11px;
+  margin-bottom: 8px;
 }
 
 .author-left-wrap {
@@ -381,23 +362,25 @@ const handleOpenAttachment = (att) => {
 
 .avatar-box {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
 }
 
 .author-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border: 0.5px solid rgba(15, 23, 42, 0.08);
+  display: block;
 }
 
 .avatar-badge {
   position: absolute;
   right: -2px;
   bottom: -2px;
-  font-size: 8.5px;
-  font-weight: 800;
+  font-size: 9px;
+  font-weight: 700;
   padding: 0 4px;
   height: 14px;
   line-height: 14px;
@@ -413,6 +396,7 @@ const handleOpenAttachment = (att) => {
 .author-text-meta {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 2px;
 }
 
@@ -423,16 +407,18 @@ const handleOpenAttachment = (att) => {
 }
 
 .author-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: #1c1c1e;
-  letter-spacing: -0.2px;
+  color: #0f172a;
+  line-height: 1.25;
+  letter-spacing: -0.1px;
 }
 
 .author-role-chip {
   font-size: 10px;
-  color: #8e8e93;
-  background: #f6f6f6;
+  color: #475569;
+  background: #f1f5f9;
+  border: 0.5px solid #e2e8f0;
   padding: 1px 6px;
   border-radius: 4px;
   font-weight: 500;
@@ -440,19 +426,21 @@ const handleOpenAttachment = (att) => {
 
 .post-time-text {
   font-size: 12px;
-  color: #8e8e93;
+  color: #94a3b8;
+  line-height: 1.2;
 }
 
 .more-menu-btn {
   padding: 6px;
+  margin-right: -6px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
 
   &:active {
-    background-color: #f6f6f6;
+    background-color: #f8fafc;
   }
 }
 
@@ -470,8 +458,8 @@ const handleOpenAttachment = (att) => {
 .more-drawer-panel {
   width: 100%;
   background: #ffffff;
-  border-radius: 16px 16px 0 0;
-  padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  border-radius: 12px 12px 0 0;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   animation: drawerSlideUp 0.25s ease;
 }
@@ -486,23 +474,23 @@ const handleOpenAttachment = (att) => {
 
 .drawer-title {
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #94a3b8;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 .drawer-item {
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   color: #0f172a;
-  padding: 13px 0;
-  border-radius: 10px;
+  padding: 12px 0;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .drawer-item:active {
-  background: #f6f6f6;
+  background: #f8fafc;
 }
 
 .drawer-item-danger {
@@ -511,7 +499,7 @@ const handleOpenAttachment = (att) => {
 }
 
 .drawer-cancel {
-  margin-top: 8px;
+  margin-top: 6px;
   border-top: 0.5px solid #f1f5f9;
   color: #64748b;
 }
@@ -526,55 +514,54 @@ const handleOpenAttachment = (att) => {
   to { transform: translateY(0); }
 }
 
-/* 2. 问答卡片 (彻底斩除 3px 侧边条，改用 Apple 风格精致微框) */
+/* 2. 问答卡片 (8px 圆角规范，紧凑微框) */
 .question-callout-box {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  margin-left: 46px;
   background: rgba(245, 158, 11, 0.08);
   border: 0.5px solid rgba(245, 158, 11, 0.2);
-  border-radius: 10px;
-  padding: 9px 13px;
-  margin-bottom: 11px;
-}
-
-.q-badge {
-  font-size: 10px;
-  font-weight: 700;
-  background: rgba(245, 158, 11, 0.18);
-  color: #b45309;
-  border: 0.5px solid rgba(245, 158, 11, 0.3);
-  padding: 1.5px 6px;
-  border-radius: 4px;
-  line-height: 1.3;
-}
-
-.q-lead {
-  font-size: 12.5px;
-  color: #78350f;
-}
-
-.q-target-name {
-  font-weight: 700;
-  color: #b45309;
-}
-
-/* 3. 话题与标题 */
-.post-tags-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  border-radius: 8px;
+  padding: 7px 10px;
   margin-bottom: 8px;
 }
 
-.tag-link-item {
-  font-size: 11.5px;
+.q-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+  border: 0.5px solid rgba(245, 158, 11, 0.28);
+  padding: 1.5px 5px;
+  border-radius: 4px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.q-lead {
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.45;
+}
+
+.q-target-name {
+  font-weight: 600;
+  color: #b45309;
+}
+
+/* 3. 话题标签 */
+.post-tags-inline {
+  margin-bottom: 2px;
+  line-height: 1.6;
+}
+
+/* 话题标签：正文文字流样式（天蓝色，与 PC 端 title-tag 一致） */
+.tag-inline-text {
+  font-size: 14px;
   font-weight: 500;
-  color: #047857;
-  background: rgba(16, 185, 129, 0.08);
-  padding: 2.5px 9px;
-  border-radius: 99px;
-  line-height: 1.4;
+  color: #0284c7;
+  line-height: 1.6;
   cursor: pointer;
   transition: opacity 0.15s ease;
 
@@ -583,26 +570,16 @@ const handleOpenAttachment = (att) => {
   }
 }
 
-.post-headline {
-  font-size: 16.5px;
-  font-weight: 600;
-  color: #1c1c1e;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  display: block;
-  letter-spacing: -0.25px;
-  cursor: pointer;
-}
-
-/* 4. 正文排版 */
+/* 4. 正文排版 (14px 主字体规范) */
 .post-body-container {
-  margin-bottom: 11px;
+  margin-left: 46px;
+  margin-bottom: 10px;
 }
 
 .content-paragraphs-wrap {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 
   &.is-clamped {
     overflow: hidden;
@@ -614,34 +591,35 @@ const handleOpenAttachment = (att) => {
 }
 
 .paragraph-item {
-  line-height: 1.68;
+  line-height: 1.65;
 }
 
 .rich-paragraph {
-  font-size: 15px;
-  color: #3a3a3c;
+  font-size: 14px;
+  color: #334155;
   word-break: break-word;
-  letter-spacing: -0.1px;
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   -webkit-user-select: text;
   user-select: text;
 }
 
 .expand-action-row {
-  margin-top: 5px;
+  margin-top: 4px;
   cursor: pointer;
   display: inline-block;
 }
 
 .expand-btn-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: #10b981;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0284c7;
 }
 
-/* 5. 图片媒体（3 列方形缩略图宫格） */
+/* 5. 图片媒体（3 列方形缩略图宫格，8px 圆角） */
 .post-media-area {
-  margin-bottom: 11px;
+  margin-left: 46px;
+  margin-bottom: 10px;
 }
 
 .grid-images-wrap {
@@ -651,77 +629,85 @@ const handleOpenAttachment = (att) => {
 }
 
 .grid-img-item {
-  width: 80px;
-  height: 80px;
+  width: 82px;
+  height: 82px;
   border-radius: 8px;
-  background: #f6f6f6;
+  background: #f8fafc;
+  border: 0.5px solid rgba(15, 23, 42, 0.06);
 }
 
-/* 6. 文档附件 */
+/* 6. 文档附件 (8px 圆角规范) */
 .post-files-area {
-  margin-bottom: 11px;
+  margin-left: 46px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .file-attachment-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f6f6f6;
-  border-radius: 11px;
-  padding: 9px 13px;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+  border-radius: 8px;
+  padding: 8px 10px;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: all 0.15s ease;
 
   &:active {
-    opacity: 0.75;
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
   }
 }
 
 .file-meta-col {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .file-title-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1c1c1e;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  line-height: 1.35;
 }
 
 .file-size-text {
   font-size: 11px;
-  color: #8e8e93;
+  color: #94a3b8;
+  line-height: 1.2;
 }
 
-/* 7. 点赞人条（扁平样式，对齐详情页） */
+/* 7. 点赞人条（扁平样式，14px 统一主字体规范） */
 .social-feedback-strip {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  padding: 4px 0 0;
-  margin-bottom: 9px;
+  margin-left: 46px;
+  padding: 2px 0 0;
+  margin-bottom: 6px;
 }
 
 .thumb-icon-svg {
-  flex-shrink: 0;
-  margin-top: 2px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 4px;
 }
 
 .likers-names-wrap {
   flex: 1;
   min-width: 0;
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
   word-break: break-word;
 }
 
-/* 折叠态：最多 6 行（6 × 19.2px） */
+/* 折叠态：最多 6 行（6 × 21.7px） */
 .likers-names-wrap.collapsed {
-  max-height: 116px;
+  max-height: 132px;
   overflow: hidden;
 }
 
@@ -730,89 +716,86 @@ const handleOpenAttachment = (att) => {
   min-width: 0;
 }
 
-.likers-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-top: 4px;
-}
-
-.likers-toggle-txt {
-  font-size: 12px;
-  font-weight: 500;
-  color: #0284c7;
-}
-
-.likers-toggle-arrow {
-  transition: transform 0.2s ease;
-}
-
-.likers-toggle-arrow.is-expanded {
-  transform: rotate(180deg);
-}
-
 .liker-name {
   color: #0284c7;
   font-weight: 500;
 }
 
 .liker-suffix {
-  color: #475569;
+  color: #64748b;
 }
 
-/* 8. 精选讨论预览 (Sage 浅面板) */
+/* 8. 精选讨论预览 (扁平样式，14px 统一主字体规范) */
 .featured-comments-box {
-  background: #f6f6f6;
-  border: 0.5px solid rgba(40, 60, 45, 0.04);
-  border-radius: 11px;
-  padding: 9px 13px;
-  margin-bottom: 10px;
+  margin-left: 46px;
+  padding: 0;
+  margin-bottom: 8px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .featured-comment-line {
-  font-size: 12.5px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
+/* 名字颜色：星主/合伙人/嘉宾橙色，年度会员/星友蓝色 */
 .c-author-name {
   font-weight: 600;
-  color: #1c1c1e;
-  margin-right: 5px;
+
+  &.is-expert { color: #ea580c; }
+  &.is-member { color: #0284c7; }
+}
+
+/* 名字后的星球角色小徽章 */
+.c-role-badge {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+
+  &.is-expert { background: #fff7ed; color: #ea580c; border: 0.5px solid #fdba74; }
+  &.is-member { background: #eff6ff; color: #2563eb; border: 0.5px solid #93c5fd; }
 }
 
 .c-content-text {
-  color: #48484a;
+  color: #334155;
 }
 
 .view-more-comments-link {
-  margin-top: 2px;
+  margin-top: 1px;
   cursor: pointer;
 }
 
 .vm-text {
-  font-size: 11.5px;
+  font-size: 14px;
   color: #059669;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-/* 9. 底部操作栏 */
+/* 9. 底部操作栏 (首尾负边距光学补偿，与正文左缘 46px、右缘 16px 严格对齐) */
 .post-bottom-actions-row {
+  margin-left: 46px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .action-item-wrap {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   padding: 4px 6px;
+  border-radius: 6px;
   cursor: pointer;
   transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+
+  &:first-child {
+    margin-left: -6px;
+  }
 
   &:active {
     transform: scale(0.92);
@@ -821,7 +804,7 @@ const handleOpenAttachment = (att) => {
   &.active {
     .action-counter {
       color: #d97706;
-      font-weight: 700;
+      font-weight: 600;
     }
 
     .action-svg {
@@ -843,8 +826,9 @@ const handleOpenAttachment = (att) => {
 
 .action-counter {
   font-size: 12px;
-  color: #8e8e93;
+  color: #64748b;
   font-weight: 500;
+  line-height: 1;
 }
 
 .detail-jump-wrap {
@@ -852,6 +836,8 @@ const handleOpenAttachment = (att) => {
   align-items: center;
   gap: 2px;
   padding: 4px 6px;
+  margin-right: -6px;
+  border-radius: 6px;
   cursor: pointer;
   transition: opacity 0.15s ease;
 
@@ -862,7 +848,8 @@ const handleOpenAttachment = (att) => {
 
 .detail-jump-text {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: #059669;
+  line-height: 1;
 }
 </style>
