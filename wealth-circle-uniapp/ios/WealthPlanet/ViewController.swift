@@ -55,6 +55,9 @@ class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKSc
         config.userContentController.add(self, name: "logHandler")
 
         webView = WKWebView(frame: view.bounds, configuration: config)
+        // 标记 App 运行环境：H5 侧通过 userAgent 判断走 Apple 内购支付分支
+        let defaultUA = webView.value(forKey: "userAgent") as? String ?? ""
+        webView.customUserAgent = "\(defaultUA) WealthPlanetApp/1.0"
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         webView.navigationDelegate = self
         webView.uiDelegate = self

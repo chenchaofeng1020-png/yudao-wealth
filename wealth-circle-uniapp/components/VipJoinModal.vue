@@ -138,57 +138,124 @@
         </view>
       </view>
 
-      <!-- 支付方式与操作区（固定底部） -->
+      <!-- 支付方式与操作区（固定底部）：iOS App 走 Apple 内购，H5 走微信支付 -->
       <view class="checkout-footer">
-        <view class="pay-selector-row">
-          <text class="pay-label">支付方式</text>
-          <view class="pay-card wechat-pay active">
-            <view class="wechat-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="#07c160">
-                <path d="M8.5 2C4.36 2 1 4.91 1 8.5c0 1.94.97 3.69 2.5 4.88L2.7 16.2c-.08.26.17.49.42.39l3.52-1.4c.59.19 1.21.31 1.86.31h.5c-.17-.64-.26-1.31-.26-2 0-4.14 3.81-7.5 8.5-7.5.34 0 .67.02 1 .06C17.06 3.69 13.09 2 8.5 2zm-2.25 5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm5.5 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
-                <path d="M16 9c-3.87 0-7 2.69-7 6s3.13 6 7 6c.55 0 1.09-.06 1.6-.18l2.94 1.17c.21.08.42-.11.35-.33l-.68-2.33c1.07-.99 1.79-2.4 1.79-3.95 0-3.31-3.13-6-7-6zm-2.5 4.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+        <!-- iOS App：Apple 内购分支（审核合规：价格周期明示 + 自动续订条款 + 恢复购买） -->
+        <template v-if="payChannel === 'ios'">
+          <view class="pay-selector-row">
+            <text class="pay-label">支付方式</text>
+            <view class="pay-card iap-pay active">
+              <view class="iap-apple-logo">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#1f2329">
+                  <path d="M17.05 12.54c-.03-2.89 2.36-4.27 2.47-4.34-1.35-1.97-3.44-2.24-4.18-2.27-1.78-.18-3.47 1.05-4.37 1.05-.9 0-2.29-1.02-3.77-1-1.94.03-3.72 1.13-4.72 2.86-2.01 3.49-.51 8.66 1.45 11.49.96 1.39 2.1 2.94 3.6 2.88 1.44-.06 1.99-.93 3.73-.93s2.23.93 3.76.9c1.56-.03 2.54-1.41 3.49-2.8 1.1-1.61 1.55-3.17 1.58-3.25-.04-.02-3.02-1.16-3.04-4.59zM14.17 4.06c.79-.96 1.33-2.29 1.18-3.62-1.14.05-2.53.76-3.35 1.72-.73.85-1.38 2.21-1.21 3.51 1.28.1 2.58-.65 3.38-1.61z"/>
+                </svg>
+              </view>
+              <text class="pay-card-name iap-name">Apple ID 内购</text>
+              <view class="pay-radio-check iap-radio-check">
+                <view class="radio-inner iap-radio-inner"></view>
+              </view>
+            </view>
+          </view>
+
+          <view class="btn-vip-checkout" @tap="handleConfirmPay">
+            <text class="btn-text">{{ isMember ? '通过 App Store 续费 · ¥599/年' : '通过 App Store 订阅 · ¥599/年' }}</text>
+            <svg class="btn-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </view>
+
+          <view class="iap-terms-block">
+            <text class="iap-terms-text">确认购买后将通过您的 Apple ID 账户扣款。订阅按年（365 天）自动续期，如需取消请在「设置 → Apple ID → 订阅」中关闭，至少提前 24 小时操作。</text>
+            <view class="iap-terms-links">
+              <text class="iap-link">用户协议</text>
+              <text class="iap-link-divider">·</text>
+              <text class="iap-link">隐私政策</text>
+              <text class="iap-link-divider">·</text>
+              <text class="iap-link iap-restore" @tap="handleRestorePurchase">恢复购买</text>
+            </view>
+          </view>
+        </template>
+
+        <!-- H5：微信支付分支（现有流程） -->
+        <template v-else>
+          <view class="pay-selector-row">
+            <text class="pay-label">支付方式</text>
+            <view class="pay-card wechat-pay active">
+              <view class="wechat-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="#07c160">
+                  <path d="M8.5 2C4.36 2 1 4.91 1 8.5c0 1.94.97 3.69 2.5 4.88L2.7 16.2c-.08.26.17.49.42.39l3.52-1.4c.59.19 1.21.31 1.86.31h.5c-.17-.64-.26-1.31-.26-2 0-4.14 3.81-7.5 8.5-7.5.34 0 .67.02 1 .06C17.06 3.69 13.09 2 8.5 2zm-2.25 5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm5.5 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
+                  <path d="M16 9c-3.87 0-7 2.69-7 6s3.13 6 7 6c.55 0 1.09-.06 1.6-.18l2.94 1.17c.21.08.42-.11.35-.33l-.68-2.33c1.07-.99 1.79-2.4 1.79-3.95 0-3.31-3.13-6-7-6zm-2.5 4.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm5 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+              </view>
+              <text class="pay-card-name">微信支付</text>
+              <view class="pay-radio-check">
+                <view class="radio-inner"></view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 立即支付大按钮 -->
+          <view class="btn-vip-checkout" @tap="handleConfirmPay">
+            <view class="btn-shine"></view>
+            <text class="btn-text">{{ isMember ? '立即续费 ¥599' : '立即支付 ¥599 · 解锁全站私享特权' }}</text>
+            <svg class="btn-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </view>
+
+          <!-- 安全背书与有效期提示 -->
+          <view class="pay-trust-row">
+            <view class="trust-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
+              <text>安全合规支付</text>
             </view>
-            <text class="pay-card-name">微信支付</text>
-            <view class="pay-radio-check">
-              <view class="radio-inner"></view>
+            <text class="trust-divider">·</text>
+            <view class="trust-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+              </svg>
+              <text>支付成功即开通 365 天会员权益</text>
             </view>
+            <text class="trust-divider">·</text>
+            <view class="trust-item">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <text>官方权益保障</text>
+            </view>
+          </view>
+        </template>
+      </view>
+    </view>
+
+    <!-- App Store 收银台确认弹层（iOS 内购沙盒演示：真实环境由 StoreKit 系统弹层接管） -->
+    <view v-if="isIAPSheetVisible" class="iap-sheet-backdrop" @tap="!isIAPPaying && (isIAPSheetVisible = false)">
+      <view class="iap-sheet" @tap.stop>
+        <text class="iap-sheet-title">确认订阅</text>
+        <view class="iap-sheet-app-row">
+          <image src="/static/brand_logo.jpg" class="iap-sheet-app-icon" mode="aspectFill" />
+          <view class="iap-sheet-app-meta">
+            <text class="iap-sheet-app-name">财不外露</text>
+            <text class="iap-sheet-app-sub">App 内购买</text>
           </view>
         </view>
-
-        <!-- 立即支付大按钮 -->
-        <view class="btn-vip-checkout" @tap="handleConfirmPay">
-          <view class="btn-shine"></view>
-          <text class="btn-text">{{ isMember ? '立即续费 ¥599' : '立即支付 ¥599 · 解锁全站私享特权' }}</text>
-          <svg class="btn-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+        <view class="iap-sheet-plan-row">
+          <view class="iap-sheet-plan-meta">
+            <text class="iap-sheet-plan-name">年度会员（自动续期）</text>
+            <text class="iap-sheet-plan-sub">按年计费 · 365 天有效期</text>
+          </view>
+          <text class="iap-sheet-plan-price">¥599.00/年</text>
         </view>
-
-        <!-- 安全背书与有效期提示 -->
-        <view class="pay-trust-row">
-          <view class="trust-item">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <text>安全合规支付</text>
-          </view>
-          <text class="trust-divider">·</text>
-          <view class="trust-item">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-            </svg>
-            <text>支付成功即开通 365 天会员权益</text>
-          </view>
-          <text class="trust-divider">·</text>
-          <view class="trust-item">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <text>官方权益保障</text>
-          </view>
+        <view class="iap-sheet-confirm-btn" :class="{ 'is-paying': isIAPPaying }" @tap="confirmIAPPurchase">
+          <text>{{ isIAPPaying ? '正在处理…' : '订阅' }}</text>
+        </view>
+        <text class="iap-sheet-account-hint">Apple ID：demo@icloud.com（沙盒测试账号）</text>
+        <view class="iap-sheet-cancel" @tap="isIAPSheetVisible = false">
+          <text>取消</text>
         </view>
       </view>
     </view>
@@ -196,10 +263,45 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { appState, actions } from '../store/community.js';
 
 const isMember = computed(() => appState.isVipMember);
+
+// 支付渠道：真实 iOS App（壳工程 userAgent 带 WealthPlanetApp 标记）走 Apple 内购；H5 走微信支付。
+// payChannelSim 供验收控制台强制切换演示。
+const isIOSAppRuntime = typeof navigator !== 'undefined' && /WealthPlanetApp/i.test(navigator.userAgent || '');
+const payChannel = computed(() => {
+  if (appState.payChannelSim === 'h5') return 'h5';
+  if (appState.payChannelSim === 'ios') return 'ios';
+  return isIOSAppRuntime ? 'ios' : 'h5';
+});
+
+// App Store 收银台模拟（真实环境由 StoreKit 系统弹层与后端凭证验证接管）
+const isIAPSheetVisible = ref(false);
+const isIAPPaying = ref(false);
+
+const handleConfirmPay = () => {
+  if (payChannel.value === 'ios') {
+    isIAPSheetVisible.value = true;
+    return;
+  }
+  actions.completeVipPayment();
+};
+
+const confirmIAPPurchase = () => {
+  if (isIAPPaying.value) return;
+  isIAPPaying.value = true;
+  setTimeout(() => {
+    isIAPPaying.value = false;
+    isIAPSheetVisible.value = false;
+    actions.completeVipPayment();
+  }, 1200);
+};
+
+const handleRestorePurchase = () => {
+  uni.showToast({ title: '沙盒演示：未找到可恢复的购买', icon: 'none' });
+};
 
 // 与 PC 端 membershipBenefits 保持一致
 const membershipBenefits = [
@@ -250,10 +352,6 @@ const getBenefitTheme = (name) => {
 
 const close = () => {
   appState.isVipModalVisible = false;
-};
-
-const handleConfirmPay = () => {
-  actions.completeVipPayment();
 };
 </script>
 
@@ -720,6 +818,200 @@ const handleConfirmPay = () => {
   height: 5px;
   border-radius: 50%;
   background: #10b981;
+}
+
+/* ============ iOS Apple 内购分支 ============ */
+.pay-card.iap-pay.active {
+  background: #f1f5f9;
+  border-color: rgba(31, 35, 41, 0.28);
+}
+
+.iap-apple-logo {
+  display: flex;
+  align-items: center;
+}
+
+.pay-card-name.iap-name {
+  color: #1f2329;
+}
+
+.pay-radio-check.iap-radio-check {
+  border-color: #1f2329;
+}
+
+.radio-inner.iap-radio-inner {
+  background: #1f2329;
+}
+
+/* 自动续订条款与协议/恢复购买（审核合规必备） */
+.iap-terms-block {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.iap-terms-text {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.55;
+}
+
+.iap-terms-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.iap-link {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #0284c7;
+}
+
+.iap-link-divider {
+  font-size: 10px;
+  color: #cbd5e1;
+}
+
+/* ============ App Store 收银台模拟弹层 ============ */
+.iap-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 13, 24, 0.55);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 34px;
+}
+
+.iap-sheet {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 18px 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  animation: iapPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes iapPop {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.iap-sheet-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1f2329;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.iap-sheet-app-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid #f1f5f9;
+}
+
+.iap-sheet-app-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.iap-sheet-app-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.iap-sheet-app-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.iap-sheet-app-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.iap-sheet-plan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 0.5px solid #f1f5f9;
+}
+
+.iap-sheet-plan-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.iap-sheet-plan-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.iap-sheet-plan-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.iap-sheet-plan-price {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.iap-sheet-confirm-btn {
+  margin-top: 14px;
+  height: 40px;
+  border-radius: 20px;
+  background: #0a84ff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease;
+
+  &.is-paying {
+    opacity: 0.6;
+  }
+}
+
+.iap-sheet-account-hint {
+  margin-top: 9px;
+  font-size: 10px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.iap-sheet-cancel {
+  margin-top: 10px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0a84ff;
+  }
 }
 
 /* 立即支付大按钮：奢雅琥珀金渐变 + 沉稳阴影 */

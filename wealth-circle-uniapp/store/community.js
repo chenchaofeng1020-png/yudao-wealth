@@ -1355,7 +1355,10 @@ export const appState = reactive({
   
   // 微信/支付宝支付选择
   payChannel: 'wechat', // 'wechat' | 'alipay'
-  selectedVipTier: 'annual' // 'annual' | 'lifetime'
+  selectedVipTier: 'annual', // 'annual' | 'lifetime'
+
+  // 支付渠道验收模拟：'auto' 按运行环境自动判断 | 'h5' 强制 H5 支付 | 'ios' 强制 iOS 内购
+  payChannelSim: 'auto'
 });
 
 const MOBILE_AUTH_STORAGE_KEY = 'wealth_circle_mobile_auth_v1';
@@ -1991,6 +1994,6 @@ export const actions = {
     appState.user.vipExpireAt = appState.selectedVipTier === 'lifetime' ? '终身有效' : '2027-10-16';
     appState.isVipModalVisible = false;
     saveAuthSession();
-    uni.showToast({ title: '🎉 恭喜开通成功！已解锁全站特权', icon: 'success' });
+    uni.showToast({ title: '开通成功', icon: 'success' });
   }
 };

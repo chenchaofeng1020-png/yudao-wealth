@@ -222,6 +222,34 @@
             <text class="ps-item-name">星友</text>
           </view>
         </view>
+
+        <!-- 支付渠道模拟（iOS 内购验收） -->
+        <view class="console-title pay-console-title">支付渠道模拟（iOS 内购验收）</view>
+        <view class="ps-segmented-grid">
+          <view
+            class="ps-seg-item"
+            :class="{ 'is-active': appState.payChannelSim === 'auto' }"
+            @tap="appState.payChannelSim = 'auto'"
+          >
+            <text class="ps-item-name">自动检测</text>
+          </view>
+
+          <view
+            class="ps-seg-item"
+            :class="{ 'is-active': appState.payChannelSim === 'h5' }"
+            @tap="appState.payChannelSim = 'h5'"
+          >
+            <text class="ps-item-name">H5 支付</text>
+          </view>
+
+          <view
+            class="ps-seg-item"
+            :class="{ 'is-active': appState.payChannelSim === 'ios' }"
+            @tap="appState.payChannelSim = 'ios'"
+          >
+            <text class="ps-item-name">iOS 内购</text>
+          </view>
+        </view>
       </view>
 
       <!-- 底部合规备案落款 -->
@@ -849,6 +877,10 @@ const handleSettings = () => {
   color: #94a3b8;
   font-weight: 500;
   margin-bottom: 10px;
+}
+
+.pay-console-title {
+  margin-top: 14px;
 }
 
 .ps-segmented-grid {
