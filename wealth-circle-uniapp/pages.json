@@ -14,7 +14,7 @@
     {
       "path": "pages/column/index",
       "style": {
-        "navigationBarTitleText": "学习",
+        "navigationBarTitleText": "学院",
         "navigationStyle": "custom",
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "black",
@@ -174,7 +174,7 @@
       },
       {
         "pagePath": "pages/column/index",
-        "text": "学习",
+        "text": "学院",
         "iconPath": "static/tabbar/example.png",
         "selectedIconPath": "static/tabbar/exampleHL.png"
       },

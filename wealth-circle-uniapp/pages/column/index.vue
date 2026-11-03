@@ -22,7 +22,7 @@
         <view 
           class="editorial-tab-item" 
           :class="{ 'is-active': activeTab === 'course' }"
-          @tap="switchLearningTab('course')"
+          @tap="showComingSoon"
         >
           <view class="tab-title-wrap">
             <text class="tab-title-text">课程</text>
@@ -34,7 +34,7 @@
         <view 
           class="editorial-tab-item" 
           :class="{ 'is-active': activeTab === 'live' }"
-          @tap="switchLearningTab('live')"
+          @tap="showComingSoon"
         >
           <view class="tab-title-wrap">
             <text class="tab-title-text">直播</text>
@@ -656,7 +656,7 @@
     <view v-if="isPcGuideModalVisible" class="pc-guide-mask" @tap="isPcGuideModalVisible = false">
       <view class="pc-guide-modal-dialog" @tap.stop>
         <view class="modal-top-bar">
-          <text class="modal-title">在电脑端畅享音视频学习</text>
+          <text class="modal-title">电脑端大屏观看</text>
           <view class="modal-close-icon" @tap="isPcGuideModalVisible = false">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -667,36 +667,18 @@
 
         <view class="modal-body-content">
           <text class="modal-intro">
-            体系视频课与闭门路演回放均已在 PC 网页端完整上线，大屏学习体验更清晰、更系统：
+            在电脑浏览器打开下方网址并登录同一账号，即可大屏观看：
           </text>
-
-          <view class="step-guide-box">
-            <view class="guide-step-row">
-              <view class="step-circle"><text class="step-num">1</text></view>
-              <text class="step-detail">在电脑浏览器访问星球网址并登录当前账号</text>
-            </view>
-            <view class="guide-step-row">
-              <view class="step-circle"><text class="step-num">2</text></view>
-              <text class="step-detail">点击左侧「课程」或「直播」进入专属学习中心</text>
-            </view>
-            <view class="guide-step-row">
-              <view class="step-circle"><text class="step-num">3</text></view>
-              <text class="step-detail">享受 1080P 超清全屏、倍速调节与核心投研资料下载</text>
-            </view>
-          </view>
 
           <!-- 网址展示与复制 -->
           <view class="pc-url-display-box" @tap="copyPcUrl">
             <text class="pc-url-text">{{ pcWebUrl }}</text>
-            <view class="copy-badge-pill">
-              <text class="copy-badge-text">点击复制</text>
-            </view>
           </view>
         </view>
 
         <view class="modal-footer-row">
           <view class="btn-modal-primary" @tap="copyPcUrl">
-            <text class="btn-modal-label">一键复制电脑端访问网址</text>
+            <text class="btn-modal-label">复制网址</text>
           </view>
         </view>
       </view>
@@ -730,6 +712,13 @@ const reservedLiveIds = ref(['tm-live-0']);
 
 const isCourseReserved = (courseId) => {
   return reservedCourseIds.value.includes(courseId);
+};
+
+const showComingSoon = () => {
+  uni.showToast({
+    title: '敬请期待',
+    icon: 'none'
+  });
 };
 
 const toggleCourseReserve = (course) => {
@@ -2779,7 +2768,7 @@ page {
 .pc-url-display-box {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 9px 12px;
   background: #ecfdf5;
   border: 0.5px solid rgba(16, 185, 129, 0.35);

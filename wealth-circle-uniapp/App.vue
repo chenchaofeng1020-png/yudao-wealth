@@ -233,4 +233,9 @@ uni-tabbar .uni-tabbar__label {
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* 动态详情页：原生导航栏底部浅分割线 (uni-page-head 在页面组件之外，全局样式才能命中) */
+uni-page[data-page="pages/feed/detail"] .uni-page-head {
+  border-bottom: 0.5px solid rgba(60, 60, 67, 0.12);
+}
 </style>

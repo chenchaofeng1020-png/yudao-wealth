@@ -470,13 +470,6 @@ const handleOpenVipModal = () => {
 };
 </script>
 
-<style lang="scss">
-/* 导航栏底部浅分割线（uni 原生导航栏在组件外，需非 scoped 样式；通过 data-page 限定仅本页生效） */
-uni-page[data-page="pages/feed/detail"] .uni-page-head {
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.12);
-}
-</style>
-
 <style lang="scss" scoped>
 .detail-page-root {
   min-height: 100vh;
