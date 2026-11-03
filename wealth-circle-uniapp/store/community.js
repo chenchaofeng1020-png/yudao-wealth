@@ -1532,7 +1532,7 @@ export const resolveShareTargetInfo = (rawUrl = '') => {
 
 // 计算属性：当前用户是否为 VIP 或 管理员
 export const isVipOrAbove = computed(() => {
-  return appState.currentPerspective === 'founder' || appState.currentPerspective === 'vip' || appState.isVipMember;
+  return ['founder', 'partner', 'guest_expert', 'assistant', 'vip', 'vip_expiring'].includes(appState.currentPerspective) || appState.isVipMember;
 });
 
 // 筛选后的帖子
@@ -1561,6 +1561,22 @@ export const actions = {
       Object.assign(appState.user, currentUserMock);
       appState.isVipMember = true;
       if (!silent) uni.showToast({ title: '已切换至：星主/管理员视角', icon: 'none' });
+    } else if (role === 'partner') {
+      Object.assign(appState.user, currentUserMock);
+      appState.isVipMember = true;
+      if (!silent) uni.showToast({ title: '已切换至：合伙人视角', icon: 'none' });
+    } else if (role === 'guest_expert') {
+      Object.assign(appState.user, currentUserMock);
+      appState.isVipMember = true;
+      if (!silent) uni.showToast({ title: '已切换至：嘉宾视角', icon: 'none' });
+    } else if (role === 'assistant') {
+      Object.assign(appState.user, currentUserMock);
+      appState.isVipMember = true;
+      if (!silent) uni.showToast({ title: '已切换至：小助理视角', icon: 'none' });
+    } else if (role === 'vip_expiring') {
+      Object.assign(appState.user, demoVipUserMock, { vipExpireAt: '2026-11-28' });
+      appState.isVipMember = true;
+      if (!silent) uni.showToast({ title: '已切换至：年度会员(临期)视角', icon: 'none' });
     } else if (role === 'vip') {
       Object.assign(appState.user, demoVipUserMock);
       appState.isVipMember = true;

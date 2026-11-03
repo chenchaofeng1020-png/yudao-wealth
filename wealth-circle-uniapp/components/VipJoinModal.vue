@@ -33,7 +33,7 @@
             </view>
           </view>
 
-          <text class="vip-modal-title">{{ isMember ? '续费「财不外露」年度私享会员' : '开通「财不外露」年度私享会员' }}</text>
+          <text class="vip-modal-title">{{ isMember ? '续费「财不外露」年度会员' : '开通「财不外露」年度会员' }}</text>
           <text class="vip-modal-subtitle">资深宏观对冲视角 · 深度个股产业跟踪 · 建立系统投资框架</text>
         </view>
 
@@ -41,27 +41,18 @@
           <!-- 悬浮价格卡（压住 Hero 下缘） -->
           <view class="vip-pass-card">
             <view class="card-left">
-              <view class="pass-tag-row">
-                <text class="pass-chip">年度私享会籍</text>
-                <text class="pass-duration">365 天有效期</text>
-              </view>
-              <text class="pass-title">全站核心特权畅读畅享</text>
-              <text class="pass-sub">资深分析师及合伙人专属圈子与答疑</text>
+              <text class="pass-title">年度会员</text>
+              <text class="pass-duration">365 天有效期</text>
             </view>
             <view class="card-divider"></view>
             <view class="card-right">
-              <view class="pass-discount-badge">
-                <text class="discount-sparkle">✦</text>
-                <text>限时特惠 · 立省 ¥400</text>
-              </view>
               <view class="price-row">
                 <text class="currency">¥</text>
                 <text class="price-val">599</text>
                 <text class="price-unit">/ 年</text>
               </view>
               <view class="price-compare-row">
-                <text class="price-origin">原价 ¥999</text>
-                <text class="price-daily">折合仅需 ¥1.64/天</text>
+                <text class="price-origin">折合仅需 ¥1.64/天</text>
               </view>
             </view>
           </view>
@@ -270,8 +261,9 @@ const handleConfirmPay = () => {
 .vip-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(8, 12, 24, 0.78);
-  backdrop-filter: blur(10px);
+  background: rgba(9, 13, 24, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 999;
   display: flex;
   flex-direction: column;
@@ -279,14 +271,14 @@ const handleConfirmPay = () => {
 }
 
 .vip-modal-sheet {
-  background: #ffffff;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  background: #f8fafc;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
   max-height: 92vh;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.28);
   overflow: hidden;
 }
 
@@ -294,13 +286,14 @@ const handleConfirmPay = () => {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ============ 深色 Hero 头区 ============ */
 .vip-hero {
   position: relative;
-  background: linear-gradient(160deg, #101a33 0%, #0b1226 55%, #0d1527 100%);
-  padding: 26px 20px 46px;
+  background: linear-gradient(175deg, #090e1d 0%, #0d1527 60%, #111a30 100%);
+  padding: 24px 20px 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -309,12 +302,12 @@ const handleConfirmPay = () => {
 
 .hero-glow {
   position: absolute;
-  top: -70px;
+  top: -60px;
   left: 50%;
   transform: translateX(-50%);
   width: 320px;
-  height: 220px;
-  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.28) 0%, rgba(245, 158, 11, 0.06) 55%, transparent 100%);
+  height: 200px;
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.03) 60%, transparent 80%);
   pointer-events: none;
 }
 
@@ -322,19 +315,25 @@ const handleConfirmPay = () => {
   position: absolute;
   top: 14px;
   right: 14px;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
   color: #cbd5e1;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
+  transition: all 0.15s ease;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.16);
+    transform: scale(0.95);
+  }
 }
 
-/* 皇冠发光体 */
+/* 皇冠铸币徽标 */
 .crown-orbit {
   position: relative;
   width: 64px;
@@ -349,17 +348,17 @@ const handleConfirmPay = () => {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  box-shadow: 0 0 24px rgba(245, 158, 11, 0.35), inset 0 0 18px rgba(245, 158, 11, 0.12);
+  border: 0.5px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 28px rgba(245, 158, 11, 0.22), inset 0 0 14px rgba(245, 158, 11, 0.08);
 }
 
 .crown-core {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 1px solid rgba(217, 119, 6, 0.5);
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+  background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fef3c7 45%, #fde68a 100%);
+  border: 1px solid rgba(217, 119, 6, 0.45);
+  box-shadow: 0 4px 14px rgba(180, 83, 9, 0.24);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -371,85 +370,71 @@ const handleConfirmPay = () => {
   font-size: 18px;
   font-weight: 800;
   color: #ffffff;
-  letter-spacing: 0.2px;
+  letter-spacing: -0.2px;
   text-align: center;
-  line-height: 1.4;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  line-height: 1.38;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .vip-modal-subtitle {
   position: relative;
   z-index: 1;
-  font-size: 11px;
+  font-size: 11.5px;
   color: #94a3b8;
-  margin-top: 4px;
+  margin-top: 5px;
+  letter-spacing: 0.3px;
   text-align: center;
+  line-height: 1.45;
 }
 
-/* ============ 白色主体区 ============ */
+/* ============ 主体内容区 ============ */
 .sheet-body {
-  padding: 0 16px 4px;
+  padding: 0 16px 8px;
 }
 
-/* 悬浮价格卡：压住 Hero 下缘 */
+/* 悬浮价格卡：压住 Hero 下缘，高奢黑金卡片质感 */
 .vip-pass-card {
   position: relative;
   z-index: 2;
-  margin-top: -30px;
+  margin-top: -26px;
   background: #ffffff;
-  border-radius: 14px;
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.1), 0 1px 4px rgba(245, 158, 11, 0.06);
-  padding: 14px 16px;
+  border-radius: 16px;
+  border: 0.5px solid rgba(217, 119, 6, 0.22);
+  box-shadow: 0 10px 28px -6px rgba(15, 23, 42, 0.08), 0 2px 8px -2px rgba(217, 119, 6, 0.05);
+  padding: 16px 18px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .card-left {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 4px;
   flex: 1;
   min-width: 0;
 }
 
-.pass-tag-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.pass-chip {
-  background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
-  color: #ffffff;
-  font-size: 10px;
+.pass-title {
+  color: #0f172a;
+  font-size: 18px;
   font-weight: 800;
-  padding: 1.5px 7px;
-  border-radius: 4px;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
 }
 
 .pass-duration {
-  font-size: 10px;
-  color: #94a3b8;
-}
-
-.pass-title {
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.pass-sub {
-  color: #94a3b8;
-  font-size: 10.5px;
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .card-divider {
-  width: 1px;
+  width: 0.5px;
   align-self: stretch;
-  background: linear-gradient(180deg, transparent 0%, #f1f5f9 25%, #f1f5f9 75%, transparent 100%);
+  background: #f1f5f9;
   flex-shrink: 0;
 }
 
@@ -461,49 +446,51 @@ const handleConfirmPay = () => {
 }
 
 .pass-discount-badge {
-  background: #fffbeb;
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(217, 119, 6, 0.07);
+  border: 0.5px solid rgba(217, 119, 6, 0.28);
   color: #b45309;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 1.5px 7px;
+  padding: 2px 8px;
   border-radius: 99px;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
   display: flex;
   align-items: center;
   gap: 3px;
+  line-height: 1;
 }
 
 .discount-sparkle {
-  color: #f59e0b;
+  color: #d97706;
+  font-size: 9px;
 }
 
 .price-row {
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 1px;
 }
 
 .currency {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
-  color: #d97706;
+  color: #b45309;
+  margin-right: 1px;
 }
 
 .price-val {
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 900;
   line-height: 1;
-  background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: #b45309;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
 }
 
 .price-unit {
-  font-size: 10.5px;
-  color: #94a3b8;
+  font-size: 11px;
+  color: #64748b;
   font-weight: 600;
   margin-left: 2px;
 }
@@ -512,31 +499,30 @@ const handleConfirmPay = () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .price-origin {
-  font-size: 10px;
-  color: #b0b7c3;
-  text-decoration: line-through;
+  font-size: 10.5px;
+  color: #94a3b8;
 }
 
 .price-daily {
-  font-size: 10px;
-  color: #d97706;
+  font-size: 10.5px;
+  color: #b45309;
   font-weight: 600;
 }
 
 /* ============ 核心权益：双列网格 ============ */
 .benefits-section {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .b-header-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .b-header-title {
@@ -544,39 +530,42 @@ const handleConfirmPay = () => {
   font-weight: 800;
   color: #0f172a;
   flex-shrink: 0;
+  letter-spacing: 0.1px;
 }
 
 .b-header-line {
   flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.4) 0%, rgba(241, 245, 249, 0) 100%);
+  height: 0.5px;
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.35) 0%, rgba(226, 232, 240, 0.6) 60%, transparent 100%);
 }
 
 .benefit-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .benefit-card {
-  background: #f6f6f6;
-  border: 1px solid #edf2f7;
+  background: #ffffff;
+  border: 0.5px solid #eef2f6;
   border-radius: 12px;
-  padding: 11px 12px;
+  padding: 12px 13px;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 2px 6px -2px rgba(15, 23, 42, 0.04);
 }
 
 .b-card-top {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 5px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
+/* 图标容器：采用现代高端微透色系（8% 极微透明度，告别粗糙色块） */
 .b-icon-wrapper {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -584,120 +573,124 @@ const handleConfirmPay = () => {
   flex-shrink: 0;
 }
 
-.theme-amber { background: #fef3c7; color: #b45309; }
-.theme-blue { background: #e0f2fe; color: #0369a1; }
-.theme-emerald { background: #d1fae5; color: #047857; }
-.theme-purple { background: #f3e8ff; color: #7e22ce; }
-.theme-rose { background: #ffe4e6; color: #be123c; }
-.theme-indigo { background: #e0e7ff; color: #4338ca; }
+.theme-amber { background: rgba(217, 119, 6, 0.08); color: #b45309; }
+.theme-blue { background: rgba(37, 99, 235, 0.08); color: #1d4ed8; }
+.theme-emerald { background: rgba(16, 185, 129, 0.08); color: #059669; }
+.theme-purple { background: rgba(147, 51, 234, 0.08); color: #7e22ce; }
+.theme-rose { background: rgba(225, 29, 72, 0.08); color: #be123c; }
+.theme-indigo { background: rgba(79, 70, 229, 0.08); color: #4338ca; }
 
 .b-name {
-  font-size: 12.5px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   color: #0f172a;
 }
 
 .b-desc {
-  font-size: 10.5px;
+  font-size: 11px;
   color: #64748b;
   line-height: 1.55;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   flex: 1;
 }
 
 .b-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
 }
 
 .b-tag {
-  font-size: 9.5px;
-  color: #b45309;
-  background: #fffbeb;
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  padding: 0.5px 5px;
+  font-size: 10px;
+  color: #475569;
+  background: #f8fafc;
+  border: 0.5px solid #e2e8f0;
+  padding: 1.5px 6px;
   border-radius: 4px;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 /* ============ 功能特权横幅 ============ */
 .all-access-strip {
-  background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 10px;
-  padding: 9px 12px;
-  margin-top: 10px;
+  background: linear-gradient(135deg, #fdfbf7 0%, #fefcf9 100%);
+  border: 0.5px solid rgba(217, 119, 6, 0.22);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 12px;
   margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.04);
 }
 
 .strip-badge {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11.5px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   color: #92400e;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 .strip-items {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px 12px;
+  gap: 6px 14px;
 }
 
 .strip-item {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 11px;
-  color: #78350f;
-  font-weight: 600;
+  gap: 4px;
+  font-size: 11.5px;
+  color: #57534e;
+  font-weight: 500;
 }
 
 .check-icon {
   color: #d97706;
-  font-weight: 900;
+  font-weight: 800;
+  font-size: 11px;
 }
 
 /* ============ 底部结算区 ============ */
 .checkout-footer {
   flex-shrink: 0;
   background: #ffffff;
-  border-top: 1px solid rgba(241, 245, 249, 0.9);
-  padding: 10px 20px;
-  padding-bottom: calc(12px + constant(safe-area-inset-bottom));
-  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  border-top: 0.5px solid #f1f5f9;
+  padding: 12px 18px;
+  padding-bottom: calc(14px + constant(safe-area-inset-bottom));
+  padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.03);
 }
 
 .pay-selector-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 11px;
 }
 
 .pay-label {
   font-size: 12px;
-  font-weight: 700;
-  color: #334155;
+  font-weight: 600;
+  color: #475569;
 }
 
 .pay-card {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  padding: 5px 11px;
   border-radius: 8px;
-  background: #f6f6f6;
-  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border: 0.5px solid #e2e8f0;
 }
 
 .pay-card.active {
-  background: #ffffff;
-  border-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12);
+  background: #f0fdf4;
+  border-color: rgba(16, 185, 129, 0.4);
 }
 
 .wechat-icon {
@@ -707,18 +700,19 @@ const handleConfirmPay = () => {
 
 .pay-card-name {
   font-size: 12px;
-  font-weight: 700;
-  color: #0f172a;
+  font-weight: 600;
+  color: #065f46;
 }
 
 .pay-radio-check {
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  border: 2px solid #10b981;
+  border: 1.5px solid #10b981;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: 2px;
 }
 
 .radio-inner {
@@ -728,46 +722,38 @@ const handleConfirmPay = () => {
   background: #10b981;
 }
 
-/* 立即支付大按钮：金色渐变 + 扫光 */
+/* 立即支付大按钮：奢雅琥珀金渐变 + 沉稳阴影 */
 .btn-vip-checkout {
   position: relative;
   width: 100%;
-  background: linear-gradient(135deg, #fbbf24 0%, #d97706 55%, #b45309 100%);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 60%, #92400e 100%);
   color: #ffffff;
-  padding: 13px 16px;
+  padding: 13.5px 18px;
   border-radius: 12px;
-  font-size: 14.5px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  box-shadow: 0 8px 22px rgba(217, 119, 6, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 6px 18px -2px rgba(180, 83, 9, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   box-sizing: border-box;
-  overflow: hidden;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+
+  &:active {
+    transform: scale(0.985);
+    opacity: 0.92;
+  }
 }
 
 .btn-shine {
-  position: absolute;
-  top: 0;
-  left: -60%;
-  width: 45%;
-  height: 100%;
-  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
-  transform: skewX(-20deg);
-  animation: shine 2.8s ease-in-out infinite;
-}
-
-@keyframes shine {
-  0%, 60% { left: -60%; }
-  100% { left: 130%; }
+  display: none;
 }
 
 .btn-text {
   position: relative;
   z-index: 1;
-  text-shadow: 0 1px 2px rgba(120, 53, 15, 0.3);
 }
 
 .btn-arrow {
@@ -782,9 +768,9 @@ const handleConfirmPay = () => {
   justify-content: center;
   flex-wrap: wrap;
   gap: 3px 6px;
-  margin-top: 9px;
-  color: #a3adbb;
-  font-size: 9.5px;
+  margin-top: 10px;
+  color: #94a3b8;
+  font-size: 10px;
 }
 
 .trust-item {
@@ -794,7 +780,7 @@ const handleConfirmPay = () => {
 }
 
 .trust-divider {
-  color: #d3d9e2;
+  color: #cbd5e1;
 }
 
 .animate-slide-up {

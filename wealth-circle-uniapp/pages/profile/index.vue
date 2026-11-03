@@ -59,17 +59,17 @@
       </view>
     </view>
 
-    <!-- 中间会员卡片（用户要求：中间那几个小卡片就换成会员卡片。简洁大方） -->
+    <!-- 中间会员卡片（随演示视角切换内容：星主/合伙人/嘉宾特权、年度会员权益、星友引导开通） -->
     <view class="vip-member-card" @tap="handleVipAction">
       <view class="vip-card-header">
         <view class="vip-title-wrap">
           <svg class="vip-crown-svg" width="16" height="16" viewBox="0 0 24 24" fill="#b45309">
             <path d="M2 13h20v2.5H2V13zm1.2-9l4.3 5.2L12 4l4.5 5.2 4.3-5.2.7 7.5H2.5L3.2 4z"/>
           </svg>
-          <text class="vip-title-text">{{ isVipOrAbove ? '星球尊享年会员' : '加入星球解锁专属特权' }}</text>
+          <text class="vip-title-text">{{ vipCard.title }}</text>
         </view>
-        <view class="vip-badge-btn">
-          <text class="vip-badge-text">{{ isVipOrAbove ? '特权中心' : '开通会员' }}</text>
+        <view class="vip-badge-btn" :class="{ 'is-renew': vipCard.isRenew }">
+          <text class="vip-badge-text">{{ vipCard.badge }}</text>
           <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
@@ -80,11 +80,9 @@
 
       <view class="vip-card-footer">
         <view class="vip-benefits-row">
-          <text class="benefit-item">✦ 专栏畅读</text>
-          <text class="benefit-item">✦ 活动回看</text>
-          <text class="benefit-item">✦ 星主提问</text>
+          <text v-for="b in vipCard.benefits" :key="b" class="benefit-item">{{ b }}</text>
         </view>
-        <text class="vip-expire-hint">{{ vipExpireText }}</text>
+        <text class="vip-expire-hint" :class="{ 'is-expiring': vipCard.isExpiring }">{{ vipCard.expireHint }}</text>
       </view>
     </view>
 
@@ -168,24 +166,56 @@
       <view class="card-group console-card-group">
         <view class="console-title">体验演示视角切换（验收控制台）</view>
         <view class="ps-segmented-grid">
-          <view 
-            class="ps-seg-item" 
+          <view
+            class="ps-seg-item"
             :class="{ 'is-active': appState.currentPerspective === 'founder' }"
             @tap="actions.switchPerspective('founder')"
           >
-            <text class="ps-item-name">星主/合伙人/嘉宾</text>
+            <text class="ps-item-name">星主</text>
           </view>
 
-          <view 
-            class="ps-seg-item" 
+          <view
+            class="ps-seg-item"
+            :class="{ 'is-active': appState.currentPerspective === 'partner' }"
+            @tap="actions.switchPerspective('partner')"
+          >
+            <text class="ps-item-name">合伙人</text>
+          </view>
+
+          <view
+            class="ps-seg-item"
+            :class="{ 'is-active': appState.currentPerspective === 'guest_expert' }"
+            @tap="actions.switchPerspective('guest_expert')"
+          >
+            <text class="ps-item-name">嘉宾</text>
+          </view>
+
+          <view
+            class="ps-seg-item"
+            :class="{ 'is-active': appState.currentPerspective === 'assistant' }"
+            @tap="actions.switchPerspective('assistant')"
+          >
+            <text class="ps-item-name">小助理</text>
+          </view>
+
+          <view
+            class="ps-seg-item"
             :class="{ 'is-active': appState.currentPerspective === 'vip' }"
             @tap="actions.switchPerspective('vip')"
           >
             <text class="ps-item-name">年度会员</text>
           </view>
 
-          <view 
-            class="ps-seg-item" 
+          <view
+            class="ps-seg-item"
+            :class="{ 'is-active': appState.currentPerspective === 'vip_expiring' }"
+            @tap="actions.switchPerspective('vip_expiring')"
+          >
+            <text class="ps-item-name">会员·临期</text>
+          </view>
+
+          <view
+            class="ps-seg-item"
             :class="{ 'is-active': appState.currentPerspective === 'guest' }"
             @tap="actions.switchPerspective('guest')"
           >
@@ -279,6 +309,13 @@
     <!-- 会员开通弹窗抽屉 -->
     <VipJoinModal />
 
+    <!-- 身份特权弹窗（星主/合伙人/嘉宾） -->
+    <RolePrivilegeModal
+      :visible="isRolePrivilegeVisible"
+      :role="rolePrivilegeRole"
+      @close="isRolePrivilegeVisible = false"
+    />
+
     <!-- 分享星球弹窗抽屉 -->
     <SharePlanetModal />
   </view>
@@ -289,6 +326,7 @@ import { ref, reactive, computed } from 'vue';
 import { appState, actions, isVipOrAbove } from '../../store/community.js';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 import SharePlanetModal from '../../components/SharePlanetModal.vue';
+import RolePrivilegeModal from '../../components/RolePrivilegeModal.vue';
 
 // 格式化会员到期时间或状态
 const vipExpireText = computed(() => {
@@ -304,7 +342,68 @@ const memberDaysText = computed(() => {
   return '同行 39 天';
 });
 
+// 会员卡片随演示视角联动的内容配置
+const vipCard = computed(() => {
+  const p = appState.currentPerspective;
+  // 星主 / 合伙人 / 嘉宾 / 小助理：身份特权（免费会员），点击查看特权弹窗
+  if (p === 'founder' || p === 'partner' || p === 'guest_expert' || p === 'assistant') {
+    const titles = { founder: '星主特权', partner: '合伙人特权', guest_expert: '嘉宾特权', assistant: '小助理特权' };
+    return {
+      title: titles[p],
+      badge: '查看特权',
+      benefits: ['✦ 免费会员', '✦ 荣誉身份标识', '✦ 全员推送'],
+      expireHint: '永久免费',
+      isRenew: false,
+      isExpiring: false,
+      action: 'privilege'
+    };
+  }
+  // 年度会员·临期：会员特权 + 续费引导
+  if (p === 'vip_expiring') {
+    return {
+      title: '年度会员',
+      badge: '续费',
+      benefits: ['✦ 市场资讯', '✦ 深度专栏', '✦ 会员直播'],
+      expireHint: '2026-11-28 到期',
+      isRenew: true,
+      isExpiring: true,
+      action: 'renew'
+    };
+  }
+  // 年度会员：正常有效期
+  if (p === 'vip') {
+    return {
+      title: '年度会员',
+      badge: '查看特权',
+      benefits: ['✦ 市场资讯', '✦ 深度专栏', '✦ 会员直播'],
+      expireHint: vipExpireText.value,
+      isRenew: false,
+      isExpiring: false,
+      action: 'renew'
+    };
+  }
+  // 星友（未开通）：引导开通会员
+  return {
+    title: '加入星球解锁专属特权',
+    badge: '开通会员',
+    benefits: ['✦ 专栏畅读', '✦ 活动回看', '✦ 星主提问'],
+    expireHint: '开通立即解锁',
+    isRenew: false,
+    isExpiring: false,
+    action: 'join'
+  };
+});
+
+// 身份特权弹窗（星主/合伙人/嘉宾）
+const isRolePrivilegeVisible = ref(false);
+const rolePrivilegeRole = ref('founder');
+
 const handleVipAction = () => {
+  if (vipCard.value.action === 'privilege') {
+    rolePrivilegeRole.value = appState.currentPerspective;
+    isRolePrivilegeVisible.value = true;
+    return;
+  }
   appState.isVipModalVisible = true;
 };
 
@@ -639,6 +738,18 @@ const handleSettings = () => {
   font-family: -apple-system, BlinkMacSystemFont, monospace;
 }
 
+/* 临期状态：到期提示警示色 */
+.vip-expire-hint.is-expiring {
+  color: #dc2626;
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* 临期状态：续费按钮金色高亮 */
+.vip-badge-btn.is-renew {
+  background-color: #b45309;
+}
+
 /* ================= 4. 列表卡片组（对齐截图：纯白圆角、单色线框图标、内嵌分割线） ================= */
 .list-cards-wrapper {
   margin: 0 16px;
@@ -742,6 +853,7 @@ const handleSettings = () => {
 
 .ps-segmented-grid {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   background-color: #f4f5f7;
   padding: 3.5px;
@@ -749,7 +861,8 @@ const handleSettings = () => {
 }
 
 .ps-seg-item {
-  flex: 1;
+  flex: 1 1 calc(25% - 6px);
+  min-width: calc(25% - 6px);
   text-align: center;
   padding: 7px 0;
   border-radius: 4px;

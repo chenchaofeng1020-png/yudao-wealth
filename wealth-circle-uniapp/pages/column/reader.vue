@@ -6,7 +6,7 @@
         <svg class="back-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
-        <text class="back-label">专栏</text>
+        <text class="back-label">学习</text>
       </view>
 
       <view class="nav-center ellipsis-1">

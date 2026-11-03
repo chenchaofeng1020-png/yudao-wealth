@@ -231,7 +231,7 @@ const handleGoBack = () => {
 
 <style lang="scss" scoped>
 .act-list-page {
-  background: #ffffff;
+  background: #f6f7f9;
   min-height: 100vh;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -330,44 +330,51 @@ const handleGoBack = () => {
   display: flex;
   align-items: center;
   gap: 4px;
+  height: 30px;
+  padding: 0 12px;
   background: #ffffff;
-  border: 0.5px solid rgba(60, 60, 67, 0.1);
-  border-radius: 99px;
-  padding: 6px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  -webkit-tap-highlight-color: transparent;
 
   &.active {
-    background: #4e4e4e;
-    border-color: #4e4e4e;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
 
     .filter-pill-text {
-      color: #ffffff;
-      font-weight: 700;
+      color: #059669;
+      font-weight: 600;
     }
 
     .filter-count-badge {
-      background: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
     }
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.95);
+    background: #f8fafc;
   }
 }
 
 .filter-pill-text {
-  font-size: 12.5px;
-  color: #475569;
+  font-size: 14px;
+  color: #64748b;
   font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .filter-count-badge {
   font-size: 10.5px;
   font-weight: 600;
-  color: #64748b;
-  background: #f6f6f6;
+  color: #94a3b8;
+  background: #f1f5f9;
   border-radius: 99px;
   padding: 1px 6px;
   line-height: 1.2;

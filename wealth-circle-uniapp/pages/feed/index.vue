@@ -305,7 +305,10 @@ const displayedPosts = filteredPosts;
 
 const perspectiveLabel = computed(() => {
   if (appState.currentPerspective === 'founder') return '星主';
-  if (appState.currentPerspective === 'vip') return 'VIP会员';
+  if (appState.currentPerspective === 'partner') return '合伙人';
+  if (appState.currentPerspective === 'guest_expert') return '嘉宾';
+  if (appState.currentPerspective === 'assistant') return '小助理';
+  if (appState.currentPerspective === 'vip' || appState.currentPerspective === 'vip_expiring') return 'VIP会员';
   return '普通星友';
 });
 
@@ -642,22 +645,23 @@ onPullDownRefresh(() => {
 /* 右侧毛玻璃搜索按钮 */
 .header-actions-group {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 3px;
   position: relative;
   z-index: 2;
 }
 
 .btn-glass-icon {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 0.5px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 0.5px 0.5px rgba(255, 255, 255, 0.22), 0 2px 6px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -752,7 +756,7 @@ onPullDownRefresh(() => {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 26px;
+  height: 24px;
   box-sizing: border-box;
   padding: 0 10px;
   border-radius: 8px;
@@ -762,13 +766,11 @@ onPullDownRefresh(() => {
   border: 0.5px solid rgba(255, 255, 255, 0.16);
   color: rgba(255, 255, 255, 0.88);
   cursor: pointer;
-  box-shadow: inset 0 0.5px 0.5px rgba(255, 255, 255, 0.22), 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.18s cubic-bezier(0.25, 1, 0.5, 1);
   -webkit-tap-highlight-color: transparent;
 
   &:active {
     background: rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.1);
     transform: scale(0.95);
   }
 }

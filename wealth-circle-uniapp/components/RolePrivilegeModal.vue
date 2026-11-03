@@ -42,6 +42,7 @@ const emit = defineEmits(['close']);
 const title = computed(() => {
   if (props.role === 'partner') return '合伙人特权';
   if (props.role === 'guest_expert') return '嘉宾特权';
+  if (props.role === 'assistant') return '小助理特权';
   return '星主特权';
 });
 </script>
