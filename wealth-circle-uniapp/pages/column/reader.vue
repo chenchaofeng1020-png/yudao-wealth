@@ -19,6 +19,18 @@
           <text class="font-label">Aa</text>
           <text class="font-level-text">{{ fontSizeLevel === 1 ? '标准' : (fontSizeLevel === 2 ? '大号' : '特大') }}</text>
         </view>
+
+        <!-- 便捷分享按钮 -->
+        <view class="nav-share-btn" @tap="handleShare" aria-label="分享文章">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <text class="nav-share-label">分享</text>
+        </view>
       </view>
     </view>
 
@@ -376,6 +388,9 @@
 
     <!-- 会员开通弹窗 -->
     <VipJoinModal />
+
+    <!-- 专栏长文分享海报抽屉 -->
+    <ArticleShareModal :article="currentArticle" :column="currentColumn" />
   </view>
 </template>
 
@@ -384,6 +399,7 @@ import { ref, computed, nextTick } from 'vue';
 import { onLoad, onReady } from '@dcloudio/uni-app';
 import { appState, actions, isVipOrAbove } from '../../store/community.js';
 import VipJoinModal from '../../components/VipJoinModal.vue';
+import ArticleShareModal from '../../components/ArticleShareModal.vue';
 
 const colId = ref('col-us-stock');
 const articleId = ref('art-mg-1');
@@ -647,7 +663,9 @@ const handleToggleLike = () => {
 };
 
 const handleShare = () => {
-  uni.showToast({ title: '长文链接已成功复制', icon: 'none' });
+  if (currentArticle.value) {
+    actions.openArticleShareModal(currentArticle.value);
+  }
 };
 </script>
 
@@ -731,6 +749,27 @@ const handleShare = () => {
   &:active {
     background: #e5e5ea;
   }
+}
+
+.nav-share-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f6f6f6;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:active {
+    background: #e5e5ea;
+  }
+}
+
+.nav-share-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #1c1c1e;
 }
 
 .font-label {

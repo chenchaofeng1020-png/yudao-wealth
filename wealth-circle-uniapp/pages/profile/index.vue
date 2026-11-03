@@ -350,7 +350,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 import { appState, actions, isVipOrAbove } from '../../store/community.js';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 import SharePlanetModal from '../../components/SharePlanetModal.vue';
@@ -506,6 +507,18 @@ const goFeedPage = () => {
 const handleSettings = () => {
   uni.navigateTo({ url: '/pages/profile/settings' });
 };
+
+onLoad((query) => {
+  if (query && (query.share === 'true' || query.share === '1')) {
+    actions.openShareModal();
+  }
+});
+
+onMounted(() => {
+  if (typeof window !== 'undefined' && (window.location.hash.includes('share=true') || window.location.search.includes('share=true'))) {
+    actions.openShareModal();
+  }
+});
 </script>
 
 <style lang="scss" scoped>

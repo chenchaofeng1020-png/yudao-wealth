@@ -4,15 +4,29 @@
     <view class="post-detail-card">
       <!-- 1. 作者信息行 -->
       <view class="detail-author-row">
-        <view class="avatar-wrap" @tap="goMemberProfile(currentPost.author.name)">
-          <image :src="currentPost.author.avatar" class="author-avatar" mode="aspectFill" />
+        <view class="author-left-cluster">
+          <view class="avatar-wrap" @tap="goMemberProfile(currentPost.author.name)">
+            <image :src="currentPost.author.avatar" class="author-avatar" mode="aspectFill" />
+          </view>
+
+          <view class="author-meta-col" @tap="goMemberProfile(currentPost.author.name)">
+            <view class="name-line">
+              <text class="author-name">{{ currentPost.author.name }}</text>
+            </view>
+            <text class="post-time">{{ currentPost.createdAt }}</text>
+          </view>
         </view>
 
-        <view class="author-meta-col" @tap="goMemberProfile(currentPost.author.name)">
-          <view class="name-line">
-            <text class="author-name">{{ currentPost.author.name }}</text>
-          </view>
-          <text class="post-time">{{ currentPost.createdAt }}</text>
+        <!-- 右侧便捷分享按钮 -->
+        <view class="btn-top-share" @tap="handleShare" aria-label="分享资讯">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <text class="top-share-txt">分享</text>
         </view>
       </view>
 
@@ -491,6 +505,34 @@ const handleOpenVipModal = () => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+}
+
+.author-left-cluster {
+  display: flex;
+  align-items: center;
+}
+
+.btn-top-share {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-top-share:active {
+  background: #f1f5f9;
+  transform: scale(0.97);
+}
+
+.top-share-txt {
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
 }
 
 .avatar-wrap {

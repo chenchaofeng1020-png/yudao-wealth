@@ -243,7 +243,7 @@
 
             <!-- 右侧：分享胶囊按钮 + 折叠箭头 -->
             <view class="header-right-actions">
-              <view v-if="isColumnExpanded(col.id)" class="col-share-pill" @tap.stop="handleShareColumn(col)">
+              <view class="col-share-pill" @tap.stop="handleShareColumn(col)">
                 <text class="col-share-label">分享</text>
               </view>
               <view class="col-caret-icon" :class="{ 'is-expanded': isColumnExpanded(col.id) }">
@@ -652,6 +652,9 @@
       </view>
     </view>
 
+    <!-- ==================== 专栏分组分享海报抽屉 ==================== -->
+    <ColumnShareModal />
+
     <!-- ==================== 弹窗 B：电脑端访问指引弹窗 (PC Guidance Modal) ==================== -->
     <view v-if="isPcGuideModalVisible" class="pc-guide-mask" @tap="isPcGuideModalVisible = false">
       <view class="pc-guide-modal-dialog" @tap.stop>
@@ -690,6 +693,7 @@
 import { ref, computed } from 'vue';
 import { appState, actions } from '@/store/community.js';
 import { learningCoursesMock, learningLiveMeetingsMock } from '@/common/learningMock.js';
+import ColumnShareModal from '@/components/ColumnShareModal.vue';
 
 // 当前处于哪个子 Tab ('column' | 'course' | 'live')
 const activeTab = ref('column');
@@ -922,10 +926,7 @@ const handleResumeReading = () => {
 };
 
 const handleShareColumn = (col) => {
-  uni.showToast({
-    title: `已复制「${col.title}」链接`,
-    icon: 'none'
-  });
+  actions.openColumnShareModal(col);
 };
 
 const selectCategory = (cat) => {

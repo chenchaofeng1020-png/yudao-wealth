@@ -194,6 +194,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['share']);
+
 const isExpanded = ref(false);
 
 // 判断正文是否较长需要折叠
@@ -268,7 +270,8 @@ const handleCommentClick = () => {
 };
 
 const handleShareClick = () => {
-  uni.showToast({ title: '已生成长图分享卡片', icon: 'none' });
+  emit('share', props.post);
+  actions.openPostShareModal(props.post);
 };
 
 // 更多操作底部抽屉（对齐 PC 端：复制链接所有人可见；编辑/删除仅星主或作者本人可见）

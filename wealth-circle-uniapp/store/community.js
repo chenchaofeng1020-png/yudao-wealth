@@ -1348,6 +1348,12 @@ export const appState = reactive({
   isPublishModalVisible: false,
   isMembersModalVisible: false,
   isShareModalVisible: false,
+  isPostShareModalVisible: false,
+  sharingPost: null,
+  isColumnShareModalVisible: false,
+  sharingColumn: null,
+  isArticleShareModalVisible: false,
+  sharingArticle: null,
   publishModalMode: 'post', // 'post' | 'question'
   publishTargetExpert: '老林说宏观',
   selectedColumnId: 'col-us-stock',
@@ -1795,6 +1801,42 @@ export const actions = {
 
   closeShareModal() {
     appState.isShareModalVisible = false;
+  },
+
+  openPostShareModal(post) {
+    if (post) {
+      appState.sharingPost = post;
+    }
+    appState.isPostShareModalVisible = true;
+  },
+
+  closePostShareModal() {
+    appState.isPostShareModalVisible = false;
+    appState.sharingPost = null;
+  },
+
+  openColumnShareModal(column) {
+    if (column) {
+      appState.sharingColumn = column;
+    }
+    appState.isColumnShareModalVisible = true;
+  },
+
+  closeColumnShareModal() {
+    appState.isColumnShareModalVisible = false;
+    appState.sharingColumn = null;
+  },
+
+  openArticleShareModal(article) {
+    if (article) {
+      appState.sharingArticle = article;
+    }
+    appState.isArticleShareModalVisible = true;
+  },
+
+  closeArticleShareModal() {
+    appState.isArticleShareModalVisible = false;
+    appState.sharingArticle = null;
   },
 
   // 点赞/取消点赞

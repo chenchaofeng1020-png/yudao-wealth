@@ -217,6 +217,9 @@
 
     <!-- 动态发布/向嘉宾提问弹窗 -->
     <PublishModal />
+
+    <!-- 资讯分享海报弹窗抽屉 -->
+    <PostShareModal />
   </view>
 </template>
 
@@ -229,6 +232,7 @@ import CommunityMembersModal from '../../components/CommunityMembersModal.vue';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 import PublishModal from '../../components/PublishModal.vue';
 import SharePlanetModal from '../../components/SharePlanetModal.vue';
+import PostShareModal from '../../components/PostShareModal.vue';
 
 // 页面滚动位置监听 (Apple 原生 Large Title 收缩机制)
 const scrollTop = ref(0);
