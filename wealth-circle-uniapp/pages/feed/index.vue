@@ -215,9 +215,6 @@
     <!-- VIP 开通/续费半屏抽屉 -->
     <VipJoinModal />
 
-    <!-- 动态发布/向嘉宾提问弹窗 -->
-    <PublishModal />
-
     <!-- 资讯分享海报弹窗抽屉 -->
     <PostShareModal />
   </view>
@@ -230,7 +227,6 @@ import { appState, actions, filteredPosts, isVipOrAbove } from '../../store/comm
 import PostCard from '../../components/PostCard.vue';
 import CommunityMembersModal from '../../components/CommunityMembersModal.vue';
 import VipJoinModal from '../../components/VipJoinModal.vue';
-import PublishModal from '../../components/PublishModal.vue';
 import SharePlanetModal from '../../components/SharePlanetModal.vue';
 import PostShareModal from '../../components/PostShareModal.vue';
 
@@ -361,12 +357,10 @@ const handleHeroAction = () => {
   }
 };
 
-// 右下角发表悬浮按钮：直接打开发布资讯弹窗（提问入口仅在星友名单）
+// 右下角发表悬浮按钮：跳转发布资讯二级页（提问入口仅在星友名单）
 const handleFabPublish = () => {
   if (!actions.checkVipPermission('发帖为会员专享，开通会员立即与星友交流')) return;
-  appState.publishModalMode = 'post';
-  appState.publishTargetExpert = '';
-  appState.isPublishModalVisible = true;
+  uni.navigateTo({ url: '/pages/feed/publish?mode=post' });
 };
 
 onPullDownRefresh(() => {

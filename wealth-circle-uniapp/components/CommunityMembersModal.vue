@@ -122,9 +122,7 @@ const close = () => {
 const handleAsk = (member) => {
   if (actions.checkVipPermission('向星友与专家提问为会员专享，开通会员立即向专家提问')) {
     appState.isMembersModalVisible = false;
-    appState.publishModalMode = 'question';
-    appState.publishTargetExpert = member.name;
-    appState.isPublishModalVisible = true;
+    uni.navigateTo({ url: `/pages/feed/publish?mode=question&target=${encodeURIComponent(member.name)}` });
   }
 };
 </script>

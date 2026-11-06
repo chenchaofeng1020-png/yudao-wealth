@@ -1,22 +1,23 @@
 <template>
-  <view v-if="appState.isPublishModalVisible" class="publish-backdrop" @tap.self="close">
-    <view class="publish-sheet">
-      <view class="publish-sheet-handle"></view>
+  <view class="publish-page">
+    <!-- 顶部状态栏固定遮罩 -->
+    <view class="status-bar-cover"></view>
 
-      <!-- 提问对象选择 -->
+    <!-- 1. 顶部标题栏：取消 | 标题 | 发布 -->
+    <view class="page-header">
+      <view class="header-cancel-btn" @tap="handleCancel">
+        <text class="header-cancel-text">取消</text>
+      </view>
+      <text class="header-title">{{ mode === 'question' ? '向TA提问' : '发动态' }}</text>
+      <button class="btn-header-publish" :disabled="!content.trim()" @tap="handleSubmit">发布</button>
+    </view>
+
+    <!-- 2. 内容编辑区 -->
+    <view class="publish-body">
+      <!-- 提问对象：仅显示被提问人 -->
       <view v-if="mode === 'question'" class="target-select-row">
         <text class="target-label">提问对象：</text>
-        <view class="target-chips">
-          <text
-            v-for="target in expertList"
-            :key="target"
-            class="target-chip"
-            :class="{ selected: selectedTarget === target }"
-            @tap="selectedTarget = target"
-          >
-            {{ target }}
-          </text>
-        </view>
+        <text class="target-chip selected">{{ selectedTarget }}</text>
       </view>
 
       <!-- 编辑区（灰底圆角容器） -->
@@ -62,74 +63,70 @@
 
       <!-- 提问模式公开提示 -->
       <text v-if="mode === 'question'" class="ask-public-hint">提交后问题将公开显示在星球内，TA 将在星球内回复。</text>
+    </view>
 
-      <!-- 表情面板 -->
-      <scroll-view v-if="showEmojiPanel" class="emoji-panel" :scroll-y="true">
-        <view class="emoji-grid">
-          <text v-for="e in EMOJIS" :key="e" class="emoji-item" @tap="insertEmoji(e)">{{ e }}</text>
-        </view>
-      </scroll-view>
+    <!-- 表情面板（固定于工具栏上方） -->
+    <scroll-view v-if="showEmojiPanel" class="emoji-panel" :scroll-y="true">
+      <view class="emoji-grid">
+        <text v-for="e in EMOJIS" :key="e" class="emoji-item" @tap="insertEmoji(e)">{{ e }}</text>
+      </view>
+    </scroll-view>
 
-      <!-- #标签选择菜单（数据与后台分类一致） -->
-      <scroll-view v-if="showTagMenu" class="tag-menu" :scroll-y="true">
-        <view v-for="cat in CATEGORIES" :key="cat.name" class="tag-menu-group">
-          <view class="tag-menu-parent">{{ cat.name }}</view>
-          <view class="tag-menu-children">
-            <text
-              v-for="child in cat.children"
-              :key="child"
-              class="tag-menu-item"
-              :class="{ active: selectedTags.includes(child) }"
-              @tap="pickTag(child)"
-            >
-              # {{ child }}
-            </text>
-          </view>
+    <!-- #标签选择菜单（固定于工具栏上方，数据与后台分类一致） -->
+    <scroll-view v-if="showTagMenu" class="tag-menu" :scroll-y="true">
+      <view v-for="cat in CATEGORIES" :key="cat.name" class="tag-menu-group">
+        <view class="tag-menu-parent">{{ cat.name }}</view>
+        <view class="tag-menu-children">
+          <text
+            v-for="child in cat.children"
+            :key="child"
+            class="tag-menu-item"
+            :class="{ active: selectedTags.includes(child) }"
+            @tap="pickTag(child)"
+          >
+            # {{ child }}
+          </text>
         </view>
-      </scroll-view>
+      </view>
+    </scroll-view>
 
-      <!-- 底部工具栏：表情 / 图片 / 文档 / 加粗 / #话题，右侧发布 -->
-      <view class="editor-toolbar">
-        <view class="toolbar-left">
-          <view class="tool-icon-btn" :class="{ 'is-active': showEmojiPanel }" @tap="toggleEmojiPanel">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-              <line x1="9" y1="9" x2="9.01" y2="9"></line>
-              <line x1="15" y1="9" x2="15.01" y2="9"></line>
-            </svg>
-          </view>
-          <view class="tool-icon-btn" @tap="pickImages">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-          </view>
-          <view class="tool-icon-btn" @tap="pickFiles">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-          </view>
-          <view class="tool-icon-btn" @tap="handleBold">
-            <text class="bold-text-icon">B</text>
-          </view>
-          <view class="tool-icon-btn" :class="{ 'is-active': showTagMenu }" @tap="toggleTagMenu">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="9" x2="20" y2="9"></line>
-              <line x1="4" y1="15" x2="20" y2="15"></line>
-              <line x1="10" y1="3" x2="8" y2="21"></line>
-              <line x1="16" y1="3" x2="14" y2="21"></line>
-            </svg>
-          </view>
+    <!-- 3. 底部工具栏：表情 / 图片 / 文档 / 加粗 / #话题 -->
+    <view class="editor-toolbar">
+      <view class="toolbar-left">
+        <view class="tool-icon-btn" :class="{ 'is-active': showEmojiPanel }" @tap="toggleEmojiPanel">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+          </svg>
         </view>
-        <view class="toolbar-right">
-          <button class="btn-cancel" @tap="close">取消</button>
-          <button class="btn-publish" :disabled="!content.trim()" @tap="handleSubmit">发布</button>
+        <view class="tool-icon-btn" @tap="pickImages">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </view>
+        <view class="tool-icon-btn" @tap="pickFiles">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </view>
+        <view class="tool-icon-btn" @tap="handleBold">
+          <text class="bold-text-icon">B</text>
+        </view>
+        <view class="tool-icon-btn" :class="{ 'is-active': showTagMenu }" @tap="toggleTagMenu">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="9" x2="20" y2="9"></line>
+            <line x1="4" y1="15" x2="20" y2="15"></line>
+            <line x1="10" y1="3" x2="8" y2="21"></line>
+            <line x1="16" y1="3" x2="14" y2="21"></line>
+          </svg>
         </view>
       </view>
     </view>
@@ -137,22 +134,23 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue';
-import { appState, actions } from '../store/community.js';
-import FileTypeIcon from './FileTypeIcon.vue';
+import { ref, computed, nextTick } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
+import { appState, actions } from '../../store/community.js';
+import FileTypeIcon from '../../components/FileTypeIcon.vue';
 
-const mode = ref(appState.publishModalMode || 'post');
-
-// 每次打开弹窗时同步入口指定的模式并清空草稿
-watch(() => appState.isPublishModalVisible, (visible) => {
-  if (visible) {
-    mode.value = appState.publishModalMode || 'post';
-    resetDraft();
-  }
-});
+const mode = ref('post');
 const content = ref('');
 const selectedTarget = ref('老林说宏观');
-const expertList = ['老林说宏观', 'Rich', '若琪', '志诚'];
+
+onLoad((options) => {
+  if (options && options.mode === 'question') {
+    mode.value = 'question';
+  }
+  if (options && options.target) {
+    selectedTarget.value = decodeURIComponent(options.target);
+  }
+});
 
 // 分类数据与 PC 端 PostEditor 一致（一级分类 + 二级标签）
 const CATEGORIES = [
@@ -340,28 +338,20 @@ const revokeIfBlob = (url) => {
 const formatSize = (size) =>
   size >= 1024 * 1024 ? `${(size / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(size / 1024))} KB`;
 
-// ===== 模式切换与提交 =====
-const resetDraft = () => {
-  content.value = '';
-  selectedTags.value = [];
-  attachments.value = [];
-  showEmojiPanel.value = false;
-  showTagMenu.value = false;
-};
-
-const close = () => {
-  // 取消/关闭：附件不会被发布，回收预览地址
+// ===== 取消与发布 =====
+const handleCancel = () => {
+  // 取消：附件不会被发布，回收预览地址
   attachments.value.forEach(a => revokeIfBlob(a.url));
-  resetDraft();
-  appState.isPublishModalVisible = false;
+  uni.navigateBack();
 };
 
 const handleSubmit = () => {
   const text = content.value.trim();
   if (!text) return;
 
+  let ok;
   if (mode.value === 'question') {
-    actions.publishPost({
+    ok = actions.publishPost({
       title: '',
       content: text,
       tags: selectedTags.value,
@@ -370,7 +360,7 @@ const handleSubmit = () => {
   } else {
     const images = attachments.value.filter(a => a.type === 'image').map(a => ({ ...a }));
     const files = attachments.value.filter(a => a.type === 'file').map(a => ({ ...a }));
-    actions.publishPost({
+    ok = actions.publishPost({
       title: '',
       content: text,
       tags: selectedTags.value,
@@ -378,38 +368,93 @@ const handleSubmit = () => {
       attachments: files
     });
   }
-  // 发布成功：仅重置草稿，不回收附件地址（信息流帖子仍引用）
-  resetDraft();
+  // 发布成功：返回上一页；附件地址不回收（信息流帖子仍引用）
+  if (ok) uni.navigateBack();
 };
 </script>
 
 <style lang="scss" scoped>
-.publish-backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.6);
-  z-index: 999;
+.publish-page {
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-}
-
-.publish-sheet {
   background-color: #ffffff;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.publish-sheet-handle {
-  width: 36px;
-  height: 4px;
-  border-radius: 2px;
-  background: #e2e8f0;
-  margin: 0 auto 14px;
+/* 顶部状态栏固定遮罩 */
+.status-bar-cover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: #ffffff;
+  height: constant(safe-area-inset-top);
+  height: env(safe-area-inset-top);
+}
+
+/* 1. 顶部标题栏 */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 0.5px solid #f1f5f9;
+  position: sticky;
+  top: constant(safe-area-inset-top);
+  top: env(safe-area-inset-top);
+  background: #ffffff;
+  z-index: 50;
+}
+
+.header-cancel-btn {
+  padding: 4px 6px;
+}
+
+.header-cancel-text {
+  font-size: 15px;
+  color: #64748b;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.btn-header-publish {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 16px;
+  border-radius: 4px;
+  line-height: 1.4;
+  margin: 0;
+
+  &::after {
+    border: none;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+  }
+}
+
+/* 2. 内容编辑区：撑满屏幕剩余高度 */
+.publish-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 12px 16px calc(58px + env(safe-area-inset-bottom));
 }
 
 .target-select-row {
@@ -429,12 +474,6 @@ const handleSubmit = () => {
   flex-shrink: 0;
 }
 
-.target-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 .target-chip {
   font-size: 11px;
   padding: 2px 8px;
@@ -451,9 +490,10 @@ const handleSubmit = () => {
   }
 }
 
-/* 编辑区：灰底圆角容器，对齐 PC 端编辑器 */
+/* 编辑区：白色背景，撑满可用高度 */
 .editor-box {
-  background: #f6f6f6;
+  flex: 1;
+  background: #ffffff;
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
@@ -477,7 +517,8 @@ const handleSubmit = () => {
 
 .content-textarea-wrap {
   position: relative;
-  height: 140px;
+  flex: 1;
+  min-height: 160px;
 }
 
 /* 高亮层：与输入框同样式，#有效标签渲染为蓝色 */
@@ -499,14 +540,15 @@ const handleSubmit = () => {
 
 .content-textarea {
   width: 100%;
-  height: 140px;
+  height: 100%;
 }
 
 /* 穿透 uni-textarea 内部结构 */
 :deep(.uni-textarea-textarea) {
   position: relative;
   width: 100%;
-  height: 140px;
+  height: 100%;
+  min-height: 160px;
   padding: 0;
   margin: 0;
   font-size: 14px;
@@ -610,14 +652,16 @@ const handleSubmit = () => {
   margin: 8px 2px 0;
 }
 
-/* 表情面板 */
+/* 表情面板（固定于工具栏上方） */
 .emoji-panel {
-  height: 180px;
-  margin-top: 10px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(46px + env(safe-area-inset-bottom));
+  z-index: 55;
+  height: 220px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  flex-shrink: 0;
+  border-top: 1px solid #e2e8f0;
 }
 
 .emoji-grid {
@@ -634,16 +678,18 @@ const handleSubmit = () => {
   text-align: center;
 }
 
-/* #标签选择菜单 */
+/* #标签选择菜单（固定于工具栏上方） */
 .tag-menu {
-  max-height: 220px;
-  margin-top: 10px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(46px + env(safe-area-inset-bottom));
+  z-index: 55;
+  max-height: 260px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-top: 1px solid #e2e8f0;
   padding: 12px 14px 4px;
   box-sizing: border-box;
-  flex-shrink: 0;
 }
 
 .tag-menu-group {
@@ -690,12 +736,20 @@ const handleSubmit = () => {
   }
 }
 
-/* 底部工具栏 */
+/* 3. 底部工具栏（固定页面底部） */
 .editor-toolbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 56;
+  height: calc(46px + env(safe-area-inset-bottom));
+  padding: 0 12px env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  background: #ffffff;
+  border-top: 0.5px solid #f1f5f9;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
 }
 
 .toolbar-left {
@@ -724,38 +778,5 @@ const handleSubmit = () => {
   font-weight: 800;
   font-size: 17px;
   line-height: 1;
-}
-
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-cancel {
-  background: none;
-  border: 1px solid #cbd5e1;
-  color: #64748b;
-  font-size: 13px;
-  padding: 5px 14px;
-  border-radius: 4px;
-  line-height: 1.4;
-}
-
-.btn-publish {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: none;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 5px 18px;
-  border-radius: 4px;
-  line-height: 1.4;
-
-  &[disabled] {
-    opacity: 0.5;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #ffffff;
-  }
 }
 </style>

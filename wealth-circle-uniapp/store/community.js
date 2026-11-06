@@ -1345,7 +1345,6 @@ export const appState = reactive({
   
   // 弹窗状态
   isVipModalVisible: false,
-  isPublishModalVisible: false,
   isMembersModalVisible: false,
   isShareModalVisible: false,
   isPostShareModalVisible: false,
@@ -1354,8 +1353,6 @@ export const appState = reactive({
   sharingColumn: null,
   isArticleShareModalVisible: false,
   sharingArticle: null,
-  publishModalMode: 'post', // 'post' | 'question'
-  publishTargetExpert: '老林说宏观',
   selectedColumnId: 'col-us-stock',
   selectedArticleId: 'art-mg-1',
   
@@ -1542,6 +1539,14 @@ export const resolveShareTargetInfo = (rawUrl = '') => {
 // 计算属性：当前用户是否为 VIP 或 管理员
 export const isVipOrAbove = computed(() => {
   return ['founder', 'partner', 'guest_expert', 'assistant', 'vip', 'vip_expiring'].includes(appState.currentPerspective) || appState.isVipMember;
+});
+
+// 计算属性：当前是否为 iOS 内购渠道（真实 App 壳环境 UA 带 WealthPlanetApp 标记；payChannelSim 供验收控制台强制切换）
+const isIOSAppRuntime = typeof navigator !== 'undefined' && /WealthPlanetApp/i.test(navigator.userAgent || '');
+export const isIosPayChannel = computed(() => {
+  if (appState.payChannelSim === 'ios') return true;
+  if (appState.payChannelSim === 'h5') return false;
+  return isIOSAppRuntime;
 });
 
 // 筛选后的帖子
@@ -1929,7 +1934,6 @@ export const actions = {
       comments: []
     };
     appState.posts.unshift(newPost);
-    appState.isPublishModalVisible = false;
     uni.showToast({ title: '发布成功', icon: 'success' });
     return true;
   },

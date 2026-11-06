@@ -30,8 +30,7 @@ import { appState, actions } from '../store/community.js';
 
 const handleOpenPublish = (mode = 'post') => {
   if (actions.checkVipPermission(mode === 'question' ? '提问功能为会员专享，开通会员即可向嘉宾提问' : '发帖为会员专享，开通会员立即与星友交流')) {
-    appState.publishModalMode = mode;
-    appState.isPublishModalVisible = true;
+    uni.navigateTo({ url: `/pages/feed/publish?mode=${mode}` });
   }
 };
 </script>

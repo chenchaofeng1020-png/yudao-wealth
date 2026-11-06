@@ -68,9 +68,9 @@
           </svg>
           <text class="vip-title-text">{{ vipCard.title }}</text>
         </view>
-        <view class="vip-badge-btn" :class="{ 'is-renew': vipCard.isRenew }">
+        <view class="vip-badge-btn" :class="{ 'is-renew': vipCard.isRenew, 'is-static': vipCard.action === 'none' }">
           <text class="vip-badge-text">{{ vipCard.badge }}</text>
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg v-if="vipCard.action !== 'none'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </view>
@@ -282,16 +282,14 @@
           <view class="edit-field">
             <text class="edit-label">头像</text>
             <view class="edit-avatar-row">
-              <image :src="editForm.avatar" class="edit-avatar-preview" mode="aspectFill" />
-              <view class="edit-avatar-list">
-                <view
-                  v-for="a in presetAvatars"
-                  :key="a"
-                  class="edit-avatar-item"
-                  :class="{ on: editForm.avatar === a }"
-                  @tap="editForm.avatar = a"
-                >
-                  <image :src="a" mode="aspectFill" class="edit-avatar-thumb" />
+              <view class="edit-avatar-wrap" @tap="handleChangeAvatar">
+                <image :src="editForm.avatar" class="edit-avatar-preview" mode="aspectFill" />
+                <view class="edit-avatar-upload-badge">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
                 </view>
               </view>
             </view>
@@ -352,7 +350,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
-import { appState, actions, isVipOrAbove } from '../../store/community.js';
+import { appState, actions, isVipOrAbove, isIosPayChannel } from '../../store/community.js';
 import VipJoinModal from '../../components/VipJoinModal.vue';
 import SharePlanetModal from '../../components/SharePlanetModal.vue';
 import RolePrivilegeModal from '../../components/RolePrivilegeModal.vue';
@@ -387,11 +385,11 @@ const vipCard = computed(() => {
       action: 'privilege'
     };
   }
-  // 年度会员·临期：会员特权 + 续费引导
+  // 年度会员·临期：会员特权 + 续费引导（iOS 渠道不做支付引导，仅提示即将到期）
   if (p === 'vip_expiring') {
     return {
       title: '年度会员',
-      badge: '续费',
+      badge: isIosPayChannel.value ? '即将到期' : '续费',
       benefits: ['✦ 市场资讯', '✦ 深度专栏', '✦ 会员直播'],
       expireHint: '2026-11-28 到期',
       isRenew: true,
@@ -411,15 +409,15 @@ const vipCard = computed(() => {
       action: 'renew'
     };
   }
-  // 星友（未开通）：引导开通会员
+  // 星友（未开通）：引导开通会员（iOS 渠道不做支付引导，仅展示未开通状态）
   return {
     title: '加入星球解锁专属特权',
-    badge: '开通会员',
+    badge: isIosPayChannel.value ? '未开通' : '开通会员',
     benefits: ['✦ 专栏畅读', '✦ 活动回看', '✦ 星主提问'],
     expireHint: '开通立即解锁',
     isRenew: false,
     isExpiring: false,
-    action: 'join'
+    action: isIosPayChannel.value ? 'none' : 'join'
   };
 });
 
@@ -428,6 +426,7 @@ const isRolePrivilegeVisible = ref(false);
 const rolePrivilegeRole = ref('founder');
 
 const handleVipAction = () => {
+  if (vipCard.value.action === 'none') return;
   if (vipCard.value.action === 'privilege') {
     rolePrivilegeRole.value = appState.currentPerspective;
     isRolePrivilegeVisible.value = true;
@@ -457,12 +456,17 @@ const userAvatarUrl = computed(() => {
 
 // ===== 编辑个人资料抽屉 =====
 const isEditProfileVisible = ref(false);
-const presetAvatars = [
-  '/static/avatar_user_hd.jpg',
-  '/static/avatar_user.jpg',
-  '/static/avatar_profile.jpg'
-];
 const editForm = reactive({ name: '', avatar: '', bio: '' });
+
+const handleChangeAvatar = () => {
+  uni.chooseImage({
+    count: 1,
+    success: (res) => {
+      const file = (res.tempFiles && res.tempFiles[0]) || null;
+      if (file) editForm.avatar = file.path;
+    }
+  });
+};
 
 const openEditProfile = () => {
   editForm.name = appState.user.name;
@@ -791,6 +795,13 @@ onMounted(() => {
   background-color: #b45309;
 }
 
+/* iOS 渠道未开通：仅状态展示，弱化不可点击 */
+.vip-badge-btn.is-static {
+  background-color: rgba(133, 77, 14, 0.18);
+  color: #854d0e;
+  box-shadow: none;
+}
+
 /* ================= 4. 列表卡片组（对齐截图：纯白圆角、单色线框图标、内嵌分割线） ================= */
 .list-cards-wrapper {
   margin: 0 16px;
@@ -1070,39 +1081,34 @@ onMounted(() => {
   gap: 12px;
 }
 
+.edit-avatar-wrap {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
 .edit-avatar-preview {
   width: 52px;
   height: 52px;
   border-radius: 50%;
   border: 2px solid #e2e8f0;
   flex-shrink: 0;
+  display: block;
 }
 
-.edit-avatar-list {
+.edit-avatar-upload-badge {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #059669;
+  border: 1.5px solid #ffffff;
   display: flex;
   align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 2px 0;
-}
-
-.edit-avatar-item {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  flex-shrink: 0;
-  cursor: pointer;
-
-  &.on {
-    border-color: #059669;
-  }
-}
-
-.edit-avatar-thumb {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+  justify-content: center;
 }
 
 .edit-input {

@@ -138,46 +138,10 @@
         </view>
       </view>
 
-      <!-- 支付方式与操作区（固定底部）：iOS App 走 Apple 内购，H5 走微信支付 -->
-      <view class="checkout-footer">
-        <!-- iOS App：Apple 内购分支（审核合规：价格周期明示 + 自动续订条款 + 恢复购买） -->
-        <template v-if="payChannel === 'ios'">
-          <view class="pay-selector-row">
-            <text class="pay-label">支付方式</text>
-            <view class="pay-card iap-pay active">
-              <view class="iap-apple-logo">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#1f2329">
-                  <path d="M17.05 12.54c-.03-2.89 2.36-4.27 2.47-4.34-1.35-1.97-3.44-2.24-4.18-2.27-1.78-.18-3.47 1.05-4.37 1.05-.9 0-2.29-1.02-3.77-1-1.94.03-3.72 1.13-4.72 2.86-2.01 3.49-.51 8.66 1.45 11.49.96 1.39 2.1 2.94 3.6 2.88 1.44-.06 1.99-.93 3.73-.93s2.23.93 3.76.9c1.56-.03 2.54-1.41 3.49-2.8 1.1-1.61 1.55-3.17 1.58-3.25-.04-.02-3.02-1.16-3.04-4.59zM14.17 4.06c.79-.96 1.33-2.29 1.18-3.62-1.14.05-2.53.76-3.35 1.72-.73.85-1.38 2.21-1.21 3.51 1.28.1 2.58-.65 3.38-1.61z"/>
-                </svg>
-              </view>
-              <text class="pay-card-name iap-name">Apple ID 内购</text>
-              <view class="pay-radio-check iap-radio-check">
-                <view class="radio-inner iap-radio-inner"></view>
-              </view>
-            </view>
-          </view>
-
-          <view class="btn-vip-checkout" @tap="handleConfirmPay">
-            <text class="btn-text">{{ isMember ? '通过 App Store 续费 · ¥599/年' : '通过 App Store 订阅 · ¥599/年' }}</text>
-            <svg class="btn-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </view>
-
-          <view class="iap-terms-block">
-            <text class="iap-terms-text">确认购买后将通过您的 Apple ID 账户扣款。订阅按年（365 天）自动续期，如需取消请在「设置 → Apple ID → 订阅」中关闭，至少提前 24 小时操作。</text>
-            <view class="iap-terms-links">
-              <text class="iap-link">用户协议</text>
-              <text class="iap-link-divider">·</text>
-              <text class="iap-link">隐私政策</text>
-              <text class="iap-link-divider">·</text>
-              <text class="iap-link iap-restore" @tap="handleRestorePurchase">恢复购买</text>
-            </view>
-          </view>
-        </template>
-
+      <!-- 支付方式与操作区（固定底部）：仅 H5 微信支付；iOS 渠道不做任何支付展示 -->
+      <view v-if="payChannel === 'h5'" class="checkout-footer">
         <!-- H5：微信支付分支（现有流程） -->
-        <template v-else>
+        <template>
           <view class="pay-selector-row">
             <text class="pay-label">支付方式</text>
             <view class="pay-card wechat-pay active">
@@ -1030,6 +994,13 @@ const close = () => {
   align-items: center;
   justify-content: center;
   gap: 6px;
+
+  &.is-disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    box-shadow: none;
+    pointer-events: none;
+  }
   box-sizing: border-box;
   transition: transform 0.12s ease, opacity 0.12s ease;
 
